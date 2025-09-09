@@ -20,7 +20,13 @@ int main(int argc, char** argv) {
     }
     LOG_PRINT("Successfully loaded ROOT file and TTree.");
 
-    Table table(energyConfig);
+    tmd.loadTable(energyConfig);
+    const Table* table = tmd.getTable();
+    if (!table) {
+        LOG_FATAL("Failed to load table for energy config: " + energyConfig);
+        return 1;
+    }
 
+    
     return 0;
 }
