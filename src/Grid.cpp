@@ -12,11 +12,18 @@ void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRan
             auto it = binRanges.find(name);
             if (it != binRanges.end()) {
                 mainKey += name + "[" + std::to_string(it->second.first) + "," + std::to_string(it->second.second) + "]";
-                mainBins[mainKey] = Bin(); // Initialize bin
             }
         }
-        mainBins[mainKey].incrementCount();
     }
+    // The structure of mainKey is like "X[0.1,0.2]Q[1.0,2.0]"
+    // e.g. for mainBinNames = {"X", "Q"}
+
+    // If mainKey not in map, initialize
+    if (mainBins.find(mainKey) == mainBins.end()) {
+        mainBins[mainKey] = Bin();
+    }
+    mainBins[mainKey].incrementCount();
+
     for (const auto& name : binNames) {
         auto it = binRanges.find(name);
         if (it != binRanges.end()) {
