@@ -41,3 +41,6 @@ bin/*
 # debug information files
 *.dwo
 playground/
+
+# .root files
+*.root

@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -O2 -Wall -Iinclude `root-config --cflags`
+CXXFLAGS = -O2 -Wall -Iinclude -Wno-deprecated-declarations `root-config --cflags`
 LDFLAGS = `root-config --libs`
 
 SRC_DIR = src

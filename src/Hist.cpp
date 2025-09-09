@@ -4,6 +4,10 @@
 #include "TCanvas.h"
 #include "TApplication.h"
 #include "TDirectory.h"
+#include "TFile.h"
+#include "TKey.h"
+#include <memory>
+#include <iostream>
 
 // Pre-determined params for recognized variables
 const std::map<std::string, HistParams> Hist::varParams = {
@@ -33,48 +37,118 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
 
     auto params = getParams(var, -1, -1, -1);
 
+    int totalBins = static_cast<int>(binTCuts.size());
+    int idx = 0;
+
     for (const auto& binPair : binTCuts) {
+        // Progress bar
+        static const int barWidth = 50;
+        float progressRatio = static_cast<float>(idx + 1) / totalBins;
+        int pos = static_cast<int>(barWidth * progressRatio);
+        std::cout << "[";
+        for (int i = 0; i < barWidth; ++i) {
+            if (i < pos) std::cout << "=";
+            else if (i == pos) std::cout << ">";
+            else std::cout << " ";
+        }
+        std::cout << "] " << int(progressRatio * 100.0) << "%\r";
+        std::cout.flush();
+
         const std::string& binKey = binPair.first;
         const TCut& cut = binPair.second;
-
         std::string histName = "hist_" + binKey;
-
-        // Draw directly into a histogram managed by ROOT
-        std::string drawCmd = var + ">>" + histName + "(" + 
-                      std::to_string(params.nbins) + "," + 
-                      std::to_string(params.xmin) + "," + 
-                      std::to_string(params.xmax) + ")";
+        std::string drawCmd = var + ">>" + histName + "(" +
+            std::to_string(params.nbins) + "," +
+            std::to_string(params.xmin) + "," +
+            std::to_string(params.xmax) + ")";
         tree->Draw(drawCmd.c_str(), cut, "goff");
 
-        // Retrieve it from gDirectory
         TH1D* h = static_cast<TH1D*>(gDirectory->Get(histName.c_str()));
-
         if (!h) {
             std::cerr << "Warning: Histogram " << histName << " not found after Draw.\n";
+            ++idx;
             continue;
         }
-
         histMap[var].push_back(h);
         binKeysMap[var].push_back(binKey);
         binCutsMap[var].push_back(cut);
-
-        break; // DEBUG
+        ++idx;
     }
+    std::cout << std::endl; // newline after progress bar
 }
 
 void Hist::plotBin(const std::string& var, size_t binIndex) {
-    if (histMap.find(var) == histMap.end() ||
-        binIndex >= histMap.at(var).size()) {
+    if (histMap.find(var) == histMap.end() || binIndex >= histMap.at(var).size()) {
         std::cerr << "Invalid bin index or variable: " << var << ", " << binIndex << std::endl;
         return;
     }
-
     std::cout << "TCut for bin " << binIndex << ": " << binCutsMap[var][binIndex].GetTitle() << std::endl;
     std::cout << "Bin key: " << binKeysMap[var][binIndex] << std::endl;
-
     TApplication app("app", nullptr, nullptr);
     TCanvas* c = new TCanvas("c","c",800,600);
     histMap[var][binIndex]->Draw();
     c->Update();
     app.Run();
+}
+
+bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) const {
+    auto it = histMap.find(var);
+    if (it == histMap.end() || it->second.empty()) return false;
+
+    std::unique_ptr<TFile> f(TFile::Open(cacheFile.c_str(), "RECREATE"));
+    if (!f || f->IsZombie()) {
+        LOG_ERROR("Failed to create cache file: " + cacheFile);
+        return false;
+    }
+
+    f->mkdir(var.c_str());
+    f->cd(var.c_str());
+
+    const auto& hists = it->second;
+    for (size_t i = 0; i < hists.size(); ++i) {
+        TH1* h = hists[i];
+        if (!h) continue;
+        std::string binKey = binKeysMap.at(var)[i];
+        std::string cutExpr = binCutsMap.at(var)[i].GetTitle();
+        h->SetName(binKey.c_str());
+        h->SetTitle(cutExpr.c_str());
+        h->Write();
+    }
+    f->Write();
+    LOG_INFO("Saved histogram cache: " + cacheFile);
+    return true;
+}
+
+bool Hist::loadHistCache(const std::string& cacheFile, const std::string& var) {
+    std::unique_ptr<TFile> f(TFile::Open(cacheFile.c_str(), "READ"));
+    if (!f || f->IsZombie()) {
+        return false;
+    }
+    TDirectory* dir = dynamic_cast<TDirectory*>(f->Get(var.c_str()));
+    if (!dir) {
+        return false;
+    }
+    dir->cd();
+    histMap[var].clear();
+    binKeysMap[var].clear();
+    binCutsMap[var].clear();
+    TIter next(dir->GetListOfKeys());
+    TKey* key;
+    while ((key = (TKey*)next())) {
+        TObject* obj = key->ReadObj();
+        TH1* h = dynamic_cast<TH1*>(obj);
+        if (!h) continue;
+        TH1* hc = (TH1*)h->Clone();
+        hc->SetDirectory(nullptr); // detach from file
+        histMap[var].push_back(hc);
+        std::string binKey = h->GetName();
+        binKeysMap[var].push_back(binKey);
+        std::string cutExpr = h->GetTitle();
+        binCutsMap[var].push_back(TCut(cutExpr.c_str()));
+    }
+    bool ok = !histMap[var].empty();
+    if (ok) {
+        LOG_INFO("Loaded histogram cache from: " + cacheFile);
+    }
+    return ok;
 }

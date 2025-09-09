@@ -5,6 +5,7 @@
 #include "Grid.h"
 #include <map>
 #include "Hist.h"
+#include <filesystem>
 
 TMD::TMD(const std::string& filename, const std::string& treename)
     : file(nullptr), tree(nullptr), filename(filename), treename(treename), table(nullptr), grid(nullptr) {
@@ -40,6 +41,7 @@ TTree* TMD::getTree() const {
 }
 
 void TMD::loadTable(const std::string& energyConfig) {
+    this->energyConfig = energyConfig; // store for cache naming
     table = std::make_unique<Table>(energyConfig);
 }
 
@@ -82,9 +84,33 @@ std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
     return binTCuts;
 }
 
-void TMD::fillHistograms(const std::string& var) {
+void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool overwrite) {
     if (!hist) return;
+
+    // Ensure out directory exists
+    std::filesystem::path dir(outDir);
+    if (!std::filesystem::exists(dir)) {
+        std::filesystem::create_directories(dir);
+    }
+
+    // Compose cache filename: hists_<rootstem>__<treename>__<energyConfig>__<var>__nbins<N>.root
+    std::string rootStem = std::filesystem::path(filename).stem().string();
+    size_t nBins = binTCuts.size();
+    std::string cacheName = "hists_" + rootStem + "__" + treename + "__" + energyConfig + "__" + var + "__nbin" + std::to_string(nBins) + ".root";
+    std::filesystem::path cachePath = dir / cacheName;
+
+    bool loaded = false;
+    if (!overwrite && std::filesystem::exists(cachePath)) {
+        loaded = hist->loadHistCache(cachePath.string(), var);
+        if (loaded) {
+            LOG_INFO("Using cached histograms: " + cachePath.string());
+            return;
+        }
+    }
+
+    // Build histograms and save
     hist->fillHistograms(var, binTCuts);
+    hist->saveHistCache(cachePath.string(), var);
 }
 
 void TMD::plotBin(const std::string& var, size_t binIndex) {

@@ -6,7 +6,8 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
-#include "TH1D.h"
+#include "TH1.h" // switch to base class
+class TFile; // forward decl
 
 struct HistParams {
     int nbins;
@@ -23,12 +24,15 @@ public:
     void plotBin(const std::string& var, size_t binIndex);
     HistParams getDefaultParams() const { return defaultParams; }
     static const std::map<std::string, HistParams>& getVarParams() { return varParams; }
+    // Caching helpers
+    bool loadHistCache(const std::string& cacheFile, const std::string& var);
+    bool saveHistCache(const std::string& cacheFile, const std::string& var) const;
 private:
     TTree* tree;
     static const std::map<std::string, HistParams> varParams;
     static const HistParams defaultParams;
     HistParams getParams(const std::string& var, int nbins, double xmin, double xmax) const;
-    std::unordered_map<std::string, std::vector<TH1D*>> histMap; // var -> list of hists
+    std::unordered_map<std::string, std::vector<TH1*>> histMap; // store generic TH1*
     std::unordered_map<std::string, std::vector<std::string>> binKeysMap; // var -> list of bin keys
     std::unordered_map<std::string, std::vector<TCut>> binCutsMap; // var -> list of cuts
 };

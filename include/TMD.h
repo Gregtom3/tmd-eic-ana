@@ -25,13 +25,14 @@ public:
     const Table* getTable() const;
     const Grid* getGrid() const;
     const std::map<std::string, TCut>& getBinTCuts() const;
-    void fillHistograms(const std::string& var);
+    void fillHistograms(const std::string& var, const std::string& outDir = "out", bool overwrite = false);
     void plotBin(const std::string& var, size_t binIndex);
 private:
     TFile* file;
     TTree* tree;
     std::string filename;
     std::string treename;
+    std::string energyConfig; // stored for cache naming
     std::unique_ptr<Table> table;
     std::unique_ptr<Grid> grid;
     std::map<std::string, TCut> binTCuts;
