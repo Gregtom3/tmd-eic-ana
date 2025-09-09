@@ -24,6 +24,8 @@ int main(int argc, char** argv) {
     LOG_PRINT("[main.cpp] Successfully loaded table for energy config: " + energyConfig);
     
     tmd.buildGrid({"X", "Q"});
+    const Grid* grid = tmd.getGrid();
+    grid->printGridSummary(5); // Print summary of first 5 bins
     LOG_PRINT("[main.cpp] Successfully built grid based on table data.");
 
 
