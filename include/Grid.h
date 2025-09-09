@@ -1,6 +1,7 @@
 #ifndef GRID_H
 #define GRID_H
 #include "Bin.h"
+#include "Logger.h"
 #include <vector>
 #include <string>
 #include <map>
