@@ -8,19 +8,19 @@ void loadRootFile(const char* filename, const char* treename) {
     // Open the ROOT file
     TFile* file = TFile::Open(filename);
     if (!file || file->IsZombie()) {
-        std::cerr << "Error: Could not open file " << filename << std::endl;
+        LOG_ERROR(std::string("Could not open file ") + filename);
         return;
     }
 
     // Load the TTree
     TTree* tree = (TTree*)file->Get(treename);
     if (!tree) {
-        std::cerr << "Error: Could not find tree " << treename << " in file " << filename << std::endl;
+        LOG_ERROR(std::string("Could not find tree ") + treename + " in file " + filename);
         file->Close();
         return;
     }
 
-    std::cout << "Successfully loaded TTree: " << treename << " from file: " << filename << std::endl;
+    LOG_INFO(std::string("Successfully loaded TTree: ") + treename + " from file: " + filename);
 
     // Clean up
     file->Close();

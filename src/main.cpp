@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " <ROOT file> <TTree name>" << std::endl;
+        LOG_ERROR(std::string("Usage: ") + argv[0] + " <ROOT file> <TTree name>");
         return 1;
     }
 

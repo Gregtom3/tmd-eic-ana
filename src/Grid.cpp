@@ -39,20 +39,20 @@ std::vector<std::string> Grid::getMainBinNames() const {
 }
 
 void Grid::printGridSummary() const {
-    std::cout << "Grid main bin names: ";
+    LOG_INFO("Grid main bin names: ");
     for (const auto& name : mainBinNames) {
-        std::cout << name << " ";
+        LOG_INFO(name);
     }
-    std::cout << std::endl;
+    LOG_INFO("");
     for (const auto& bin : mainBins) {
-        std::cout << "Main bin: " << bin.first << std::endl;
+        LOG_INFO(std::string("Main bin: ") + bin.first);
 
-        std::cout << "  Count: " << bin.second.getCount() << std::endl;
+        LOG_INFO(std::string("  Count: ") + std::to_string(bin.second.getCount()));
         for (const auto& name : binNames) {
-            std::cout << "  " << name << " range: [" << bin.second.getMin(name) << ", " << bin.second.getMax(name) << "]" << std::endl;
+            LOG_INFO(std::string("  ") + name + " range: [" + std::to_string(bin.second.getMin(name)) + ", " + std::to_string(bin.second.getMax(name)) + "]");
         }
     }
-    std::cout << "Total main bins: " << mainBins.size() << std::endl;
-    std::cout << "Total bins: " << mainBins.size() * binNames.size() << std::endl;
+    LOG_INFO(std::string("Total main bins: ") + std::to_string(mainBins.size()));
+    LOG_INFO(std::string("Total bins: ") + std::to_string(mainBins.size() * binNames.size()));
 }
 

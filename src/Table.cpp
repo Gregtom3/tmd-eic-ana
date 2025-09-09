@@ -17,14 +17,14 @@ std::string Table::getFilename(const std::string& energyConfig) const {
         return "tables/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt";
     if (energyConfig == "18x275")
         return "tables/AUT_average_PV20_EPIC_piplus_sqrts=140.712.txt";
-    std::cerr << "Unknown energy configuration: " << energyConfig << std::endl;
+    LOG_ERROR(std::string("Unknown energy configuration: ") + energyConfig);
     return "";
 }
 
 void Table::readTable(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Failed to open table file: " << filename << std::endl;
+        LOG_ERROR(std::string("Failed to open table file: ") + filename);
         return;
     }
 
@@ -47,8 +47,7 @@ void Table::readTable(const std::string& filename) {
         }
 
         if (fields.size() != 11) {
-            std::cerr << "Skipping malformed row (" << fields.size()
-                      << " fields, expected 11): " << line << std::endl;
+            LOG_WARN(std::string("Skipping malformed row (") + std::to_string(fields.size()) + ") in table: " + line);
             continue;
         }
 
@@ -65,8 +64,7 @@ void Table::readTable(const std::string& filename) {
             row.PhPerp_max  = std::stod(fields[9]);
             row.AUT         = std::stod(fields[10]);
         } catch (const std::exception& e) {
-            std::cerr << "Conversion error: " << e.what()
-                      << " in line: " << line << std::endl;
+            LOG_ERROR(std::string("Conversion error: ") + e.what() + " in line: " + line);
             continue;
         }
 
