@@ -7,11 +7,11 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    //const char* filename = argv[1];
-    //const char* treename = argv[2];
+    const char* filename = argv[1];
+    const char* treename = argv[2];
 
     // Load the ROOT file and TTree
-    //loadRootFile(filename, treename);
+    loadRootFile(filename, treename);
 
     return 0;
 }
