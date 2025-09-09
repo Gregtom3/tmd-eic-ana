@@ -28,8 +28,8 @@ int main(int argc, char** argv) {
     grid->printGridSummary(5); // Print summary of first 5 bins
     LOG_PRINT("[main.cpp] Successfully built grid based on table data.");
 
-
-    tmd.plotFirstBin1D("PhPerp");
+    tmd.fillHistograms("PhPerp");
+    tmd.plotBin("PhPerp",0);
 
     return 0;
 }

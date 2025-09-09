@@ -23,6 +23,7 @@ TMD::TMD(const std::string& filename, const std::string& treename)
         return;
     }
     LOG_INFO(std::string("Successfully loaded TTree: ") + treename + " from file: " + filename);
+    hist = std::make_unique<Hist>(tree);
 }
 
 TMD::~TMD() {
@@ -81,22 +82,13 @@ std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
     return binTCuts;
 }
 
-void TMD::plotFirstBin1D(const std::string& var, int nbins, double xmin, double xmax) {
-    if (!tree) {
-        LOG_ERROR("TTree not loaded in TMD::plotFirstBin1D");
-        return;
-    }
-    if (binTCuts.empty()) {
-        LOG_ERROR("No binTCuts available in TMD::plotFirstBin1D");
-        return;
-    }
-    const auto& firstCut = binTCuts.begin();
-    Hist hist(tree);
-    hist.plot1D(var, firstCut->second, nbins, xmin, xmax);
+void TMD::fillHistograms(const std::string& var) {
+    if (!hist) return;
+    hist->fillHistograms(var, binTCuts);
 }
 
-// Add overload for default arguments
-void TMD::plotFirstBin1D(const std::string& var) {
-    plotFirstBin1D(var, -1, -1, -1);
+void TMD::plotBin(const std::string& var, size_t binIndex) {
+    if (!hist) return;
+    hist->plotBin(var, binIndex);
 }
 

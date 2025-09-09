@@ -3,6 +3,7 @@
 #include "TH1D.h"
 #include "TCanvas.h"
 #include "TApplication.h"
+#include "TDirectory.h"
 
 // Pre-determined params for recognized variables
 const std::map<std::string, HistParams> Hist::varParams = {
@@ -25,25 +26,55 @@ HistParams Hist::getParams(const std::string& var, int nbins, double xmin, doubl
 
 Hist::Hist(TTree* tree) : tree(tree) {}
 
-void Hist::plot1D(const std::string& var, const TCut& cut, int nbins, double xmin, double xmax) {
-    if (!tree) {
-        LOG_ERROR("TTree pointer is null in Hist::plot1D");
+void Hist::fillHistograms(const std::string& var, const std::map<std::string, TCut>& binTCuts) {
+    histMap[var].clear();
+    binKeysMap[var].clear();
+    binCutsMap[var].clear();
+
+    auto params = getParams(var, -1, -1, -1);
+
+    for (const auto& binPair : binTCuts) {
+        const std::string& binKey = binPair.first;
+        const TCut& cut = binPair.second;
+
+        std::string histName = "hist_" + binKey;
+
+        // Draw directly into a histogram managed by ROOT
+        std::string drawCmd = var + ">>" + histName + "(" + 
+                      std::to_string(params.nbins) + "," + 
+                      std::to_string(params.xmin) + "," + 
+                      std::to_string(params.xmax) + ")";
+        tree->Draw(drawCmd.c_str(), cut, "goff");
+
+        // Retrieve it from gDirectory
+        TH1D* h = static_cast<TH1D*>(gDirectory->Get(histName.c_str()));
+
+        if (!h) {
+            std::cerr << "Warning: Histogram " << histName << " not found after Draw.\n";
+            continue;
+        }
+
+        histMap[var].push_back(h);
+        binKeysMap[var].push_back(binKey);
+        binCutsMap[var].push_back(cut);
+
+        break; // DEBUG
+    }
+}
+
+void Hist::plotBin(const std::string& var, size_t binIndex) {
+    if (histMap.find(var) == histMap.end() ||
+        binIndex >= histMap.at(var).size()) {
+        std::cerr << "Invalid bin index or variable: " << var << ", " << binIndex << std::endl;
         return;
     }
 
-    // Generate custom histName from cut
-    std::string histName = "hist1D";
-    if (cut) {
-        histName += "_" + std::string(cut.GetTitle());
-    }
-    histName += "_" + var;
+    std::cout << "TCut for bin " << binIndex << ": " << binCutsMap[var][binIndex].GetTitle() << std::endl;
+    std::cout << "Bin key: " << binKeysMap[var][binIndex] << std::endl;
 
-    LOG_INFO("Applying TCut: " + std::string(cut.GetTitle()));
-    HistParams params = getParams(var, nbins, xmin, xmax);
     TApplication app("app", nullptr, nullptr);
-    TCanvas* c = new TCanvas();
-    TH1D* hist = new TH1D(histName.c_str(), (var + ";" + var).c_str(), params.nbins, params.xmin, params.xmax);
-    tree->Draw((var + ">>" + histName).c_str(), cut);
-    hist->Draw("hist");
-    app.Run(true);
+    TCanvas* c = new TCanvas("c","c",800,600);
+    histMap[var][binIndex]->Draw();
+    c->Update();
+    app.Run();
 }

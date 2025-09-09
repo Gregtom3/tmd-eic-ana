@@ -4,11 +4,14 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "Grid.h"
+#include "TH1D.h"
 #include "TCut.h"
 #include "Table.h"
+#include "Hist.h"
 #include <map>
 #include <string>
 #include <memory>
+#include <vector>
 
 class TMD {
 public:
@@ -22,8 +25,8 @@ public:
     const Table* getTable() const;
     const Grid* getGrid() const;
     const std::map<std::string, TCut>& getBinTCuts() const;
-    void plotFirstBin1D(const std::string& var = "", int nbins = -1, double xmin = -1, double xmax = -1);
-    void plotFirstBin1D(const std::string& var);
+    void fillHistograms(const std::string& var);
+    void plotBin(const std::string& var, size_t binIndex);
 private:
     TFile* file;
     TTree* tree;
@@ -32,6 +35,7 @@ private:
     std::unique_ptr<Table> table;
     std::unique_ptr<Grid> grid;
     std::map<std::string, TCut> binTCuts;
+    std::unique_ptr<Hist> hist;
 };
 
 #endif // TMD_H
