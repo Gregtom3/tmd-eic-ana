@@ -8,14 +8,16 @@
 
 class Grid {
 public:
-    Grid(const std::vector<std::string>& binNames);
-    void addBin(const std::vector<double>& mins, const std::vector<double>& maxs);
-    const std::map<std::string, Bin>& getBins() const;
+    Grid(const std::vector<std::string>& mainBinNames);
+    void addBin(const std::map<std::string, std::pair<double, double>>& binRanges);
     std::vector<std::string> getBinNames() const;
+    std::vector<std::string> getMainBinNames() const;
     void printGridSummary() const;
+    const std::map<std::string, Bin>& getBins() const;
 private:
-    std::vector<std::string> binNames;
-    std::map<std::string, Bin> bins;
+    const std::vector<std::string> binNames = {"X", "Q", "Z", "PhPerp"};
+    std::vector<std::string> mainBinNames;
+    std::map<std::string, Bin> mainBins;
 };
 
 #endif // GRID_H

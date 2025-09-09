@@ -1,47 +1,58 @@
 #include "Grid.h"
+#include <algorithm>
 
-Grid::Grid(const std::vector<std::string>& names) : binNames(names) {}
+Grid::Grid(const std::vector<std::string>& mainNames)
+    : mainBinNames(mainNames) {}
 
-void Grid::addBin(const std::vector<double>& mins, const std::vector<double>& maxs) {
-    // Compose bin key from mins/maxs
-    std::string key;
-    for (size_t i = 0; i < binNames.size(); ++i) {
-        key += binNames[i] + "[" + std::to_string(mins[i]) + "," + std::to_string(maxs[i]) + "]";
-        if (i < binNames.size() - 1) key += ",";
+void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRanges) {
+    // Main bin key: combo of mainBinNames
+    std::string mainKey = "";
+    for (const auto& name : binNames) {
+        if (std::find(mainBinNames.begin(), mainBinNames.end(), name) != mainBinNames.end()) {
+            auto it = binRanges.find(name);
+            if (it != binRanges.end()) {
+                mainKey += name + "[" + std::to_string(it->second.first) + "," + std::to_string(it->second.second) + "]";
+                mainBins[mainKey] = Bin(); // Initialize bin
+            }
+        }
+        mainBins[mainKey].incrementCount();
     }
-    bins[key] = Bin(
-        binNames[0] == "X" ? mins[0] : 0,
-        binNames[0] == "X" ? maxs[0] : 0,
-        binNames[0] == "Q" ? mins[0] : 0,
-        binNames[0] == "Q" ? maxs[0] : 0,
-        binNames[0] == "Z" ? mins[0] : 0,
-        binNames[0] == "Z" ? maxs[0] : 0,
-        binNames[0] == "PhPerp" ? mins[0] : 0,
-        binNames[0] == "PhPerp" ? maxs[0] : 0
-    );
+    for (const auto& name : binNames) {
+        auto it = binRanges.find(name);
+        if (it != binRanges.end()) {
+            mainBins[mainKey].updateMin(name, it->second.first);
+            mainBins[mainKey].updateMax(name, it->second.second);
+        }
+    }
 }
 
 const std::map<std::string, Bin>& Grid::getBins() const {
-    return bins;
+    return mainBins;
 }
 
 std::vector<std::string> Grid::getBinNames() const {
     return binNames;
 }
 
+std::vector<std::string> Grid::getMainBinNames() const {
+    return mainBinNames;
+}
+
 void Grid::printGridSummary() const {
-    std::cout << "Grid bin names: ";
-    for (const auto& name : binNames) {
+    std::cout << "Grid main bin names: ";
+    for (const auto& name : mainBinNames) {
         std::cout << name << " ";
     }
     std::cout << std::endl;
-    std::cout << "Total bins: " << bins.size() << std::endl;
-    for (const auto& [key, bin] : bins) {
-        std::cout << "Bin: " << key << ", count: " << bin.getCount() << std::endl;
-        std::cout << "  X: [" << bin.getMin("X") << ", " << bin.getMax("X") << "]";
-        std::cout << " Q: [" << bin.getMin("Q") << ", " << bin.getMax("Q") << "]";
-        std::cout << " Z: [" << bin.getMin("Z") << ", " << bin.getMax("Z") << "]";
-        std::cout << " PhPerp: [" << bin.getMin("PhPerp") << ", " << bin.getMax("PhPerp") << "]" << std::endl;
+    for (const auto& bin : mainBins) {
+        std::cout << "Main bin: " << bin.first << std::endl;
+
+        std::cout << "  Count: " << bin.second.getCount() << std::endl;
+        for (const auto& name : binNames) {
+            std::cout << "  " << name << " range: [" << bin.second.getMin(name) << ", " << bin.second.getMax(name) << "]" << std::endl;
+        }
     }
+    std::cout << "Total main bins: " << mainBins.size() << std::endl;
+    std::cout << "Total bins: " << mainBins.size() * binNames.size() << std::endl;
 }
 

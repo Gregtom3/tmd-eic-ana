@@ -27,29 +27,54 @@ void Table::readTable(const std::string& filename) {
         std::cerr << "Failed to open table file: " << filename << std::endl;
         return;
     }
-    std::string line;
-    // Skip header
-    std::getline(file, line);
 
+    std::string line;
     while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        TableRow row;
-        char comma;
-        iss >> row.itar >> comma
-            >> row.ihad >> comma
-            >> row.X_min >> comma
-            >> row.X_max >> comma
-            >> row.Q_min >> comma
-            >> row.Q_max >> comma
-            >> row.Z_min >> comma
-            >> row.Z_max >> comma
-            >> row.PhPerp_min >> comma
-            >> row.PhPerp_max >> comma
-            >> row.AUT;
-        if (iss)
-            rows.push_back(row);
+        if (line.empty()) continue;
+
+        TableRow row{};
+        std::stringstream ss(line);
+        std::string field;
+        std::vector<std::string> fields;
+
+        // Split on commas
+        while (std::getline(ss, field, ',')) {
+            // trim whitespace
+            field.erase(0, field.find_first_not_of(" \t"));
+            field.erase(field.find_last_not_of(" \t") + 1);
+            if (!field.empty())
+                fields.push_back(field);
+        }
+
+        if (fields.size() != 11) {
+            std::cerr << "Skipping malformed row (" << fields.size()
+                      << " fields, expected 11): " << line << std::endl;
+            continue;
+        }
+
+        try {
+            row.itar        = std::stoi(fields[0]);
+            row.ihad        = std::stoi(fields[1]);
+            row.X_min       = std::stod(fields[2]);
+            row.X_max       = std::stod(fields[3]);
+            row.Q_min       = std::stod(fields[4]);
+            row.Q_max       = std::stod(fields[5]);
+            row.Z_min       = std::stod(fields[6]);
+            row.Z_max       = std::stod(fields[7]);
+            row.PhPerp_min  = std::stod(fields[8]);
+            row.PhPerp_max  = std::stod(fields[9]);
+            row.AUT         = std::stod(fields[10]);
+        } catch (const std::exception& e) {
+            std::cerr << "Conversion error: " << e.what()
+                      << " in line: " << line << std::endl;
+            continue;
+        }
+
+        rows.push_back(row);
     }
 }
+
+
 
 const std::vector<TableRow>& Table::getRows() const {
     return rows;
@@ -68,15 +93,16 @@ Grid Table::buildGrid(const std::vector<std::string>& binNames) const {
         }
     }
     Grid grid(binNames);
+    std::vector<std::string> allBinNames =  {"X", "Q", "Z", "PhPerp"};
     for (const auto& row : rows) {
-        std::vector<double> mins, maxs;
-        for (const auto& name : binNames) {
-            if (name == "X") { mins.push_back(row.X_min); maxs.push_back(row.X_max); }
-            else if (name == "Q") { mins.push_back(row.Q_min); maxs.push_back(row.Q_max); }
-            else if (name == "Z") { mins.push_back(row.Z_min); maxs.push_back(row.Z_max); }
-            else if (name == "PhPerp") { mins.push_back(row.PhPerp_min); maxs.push_back(row.PhPerp_max); }
+        std::map<std::string, std::pair<double, double>> binRanges;
+        for (const auto& name : allBinNames) {
+            if (name == "X") binRanges["X"] = {row.X_min, row.X_max};
+            else if (name == "Q") binRanges["Q"] = {row.Q_min, row.Q_max};
+            else if (name == "Z") binRanges["Z"] = {row.Z_min, row.Z_max};
+            else if (name == "PhPerp") binRanges["PhPerp"] = {row.PhPerp_min, row.PhPerp_max};
         }
-        grid.addBin(mins, maxs);
+        grid.addBin(binRanges);
     }
     return grid;
 }

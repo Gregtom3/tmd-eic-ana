@@ -23,8 +23,13 @@ jobs:
       run: |
         wget https://root.cern/download/root_v6.36.04.Linux-almalinux9.6-x86_64-gcc11.5.tar.gz
         tar -xzvf root_v6.36.04.Linux-almalinux9.6-x86_64-gcc11.5.tar.gz
-        echo "source $PWD/root/bin/thisroot.sh" >> $GITHUB_ENV
       shell: bash
+      
+    - name: Setup ROOT environment
+      shell: bash
+      run: |
+        source /home/runner/work/tmd-eic-ana/tmd-eic-ana/root/bin/thisroot.sh
+        echo "ROOTSYS is $ROOTSYS"
 
     - name: Build the project
       run: |
