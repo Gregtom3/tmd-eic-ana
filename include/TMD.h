@@ -21,6 +21,7 @@ public:
     void buildGrid(const std::vector<std::string>& binNames);
     const Table* getTable() const;
     const Grid* getGrid() const;
+    const std::map<std::string, TCut>& getBinTCuts() const;
 private:
     TFile* file;
     TTree* tree;
@@ -28,6 +29,7 @@ private:
     std::string treename;
     std::unique_ptr<Table> table;
     std::unique_ptr<Grid> grid;
+    std::map<std::string, TCut> binTCuts;
 };
 
 #endif // TMD_H

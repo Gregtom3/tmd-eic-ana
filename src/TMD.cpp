@@ -50,6 +50,12 @@ void TMD::buildGrid(const std::vector<std::string>& binNames) {
         throw std::runtime_error("Table not loaded in TMD::buildGrid");
     }
     grid = std::make_unique<Grid>(table->buildGrid(binNames));
+    binTCuts = generateBinTCuts(*grid);
+    LOG_INFO("Successfully generated " + std::to_string(binTCuts.size()) + " bin TCuts.");
+}
+
+const std::map<std::string, TCut>& TMD::getBinTCuts() const {
+    return binTCuts;
 }
 
 const Grid* TMD::getGrid() const {
