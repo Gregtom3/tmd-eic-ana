@@ -1,4 +1,5 @@
-#include "../include/Table.h"
+#include "Table.h"
+#include "Logger.h"
 #include <iostream>
 #include <vector>
 
@@ -8,13 +9,13 @@ int main() {
     std::vector<std::string> binNames2 = {"Z", "PhPerp"};
     try {
         Grid grid1 = table.buildGrid(binNames1);
-        std::cout << "--- Grid 1 (X, Q) ---" << std::endl;
+        LOG_INFO("--- Grid 1 (X, Q) ---");
         grid1.printGridSummary();
         //Grid grid2 = table.buildGrid(binNames2);
-        //std::cout << "--- Grid 2 (Z, PhPerp) ---" << std::endl;
+        //LOG_INFO("--- Grid 2 (Z, PhPerp) ---");
         //grid2.printGridSummary();
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        LOG_ERROR(e.what());
         return 1;
     }
     return 0;
