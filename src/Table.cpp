@@ -29,6 +29,7 @@ void Table::readTable(const std::string& filename) {
     }
 
     std::string line;
+    std::getline(file, line); // Skip header
     while (std::getline(file, line)) {
         if (line.empty()) continue;
 

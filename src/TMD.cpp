@@ -1,32 +1,42 @@
 #include "TMD.h"
+#include "Logger.h"
 #include <iostream>
 #include "TCut.h"
 #include "Grid.h"
 #include <map>
 
-void loadRootFile(const char* filename, const char* treename) {
-    // Open the ROOT file
-    TFile* file = TFile::Open(filename);
+TMD::TMD(const std::string& filename, const std::string& treename)
+    : file(nullptr), tree(nullptr), filename(filename), treename(treename) {
+    file = TFile::Open(filename.c_str());
     if (!file || file->IsZombie()) {
         LOG_ERROR(std::string("Could not open file ") + filename);
+        file = nullptr;
         return;
     }
-
-    // Load the TTree
-    TTree* tree = (TTree*)file->Get(treename);
+    tree = dynamic_cast<TTree*>(file->Get(treename.c_str()));
     if (!tree) {
-        LOG_ERROR(std::string("Could not find tree ") + treename + " in file " + filename);
+        LOG_ERROR(std::string("Could not find tree ") + treename + " in file: " + filename);
         file->Close();
+        file = nullptr;
+        tree = nullptr;
         return;
     }
-
     LOG_INFO(std::string("Successfully loaded TTree: ") + treename + " from file: " + filename);
-
-    // Clean up
-    file->Close();
 }
 
-std::map<std::string, TCut> generateBinTCuts(const Grid& grid) {
+TMD::~TMD() {
+    if (file) file->Close();
+}
+
+bool TMD::isLoaded() const {
+    return file && tree;
+}
+
+TTree* TMD::getTree() const {
+    return tree;
+}
+
+std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
     std::map<std::string, TCut> binTCuts;
     const auto& bins = grid.getBins();
     for (const auto& binPair : bins) {

@@ -6,11 +6,20 @@
 #include "Grid.h"
 #include "TCut.h"
 #include <map>
+#include <string>
 
-// Function to load a ROOT file and TTree
-void loadRootFile(const char* filename, const char* treename);
-
-// Generate TCuts for each bin in a Grid (for X and Q)
-std::map<std::string, TCut> generateBinTCuts(const Grid& grid);
+class TMD {
+public:
+    TMD(const std::string& filename, const std::string& treename);
+    ~TMD();
+    bool isLoaded() const;
+    TTree* getTree() const;
+    std::map<std::string, TCut> generateBinTCuts(const Grid& grid) const;
+private:
+    TFile* file;
+    TTree* tree;
+    std::string filename;
+    std::string treename;
+};
 
 #endif // TMD_H
