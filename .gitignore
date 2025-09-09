@@ -36,7 +36,8 @@
 *.exe
 *.out
 *.app
+tmd
+test_load_tables
 
 # debug information files
 *.dwo
-
