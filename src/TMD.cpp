@@ -4,6 +4,7 @@
 #include "TCut.h"
 #include "Grid.h"
 #include <map>
+#include "Hist.h"
 
 TMD::TMD(const std::string& filename, const std::string& treename)
     : file(nullptr), tree(nullptr), filename(filename), treename(treename), table(nullptr), grid(nullptr) {
@@ -78,5 +79,24 @@ std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
         binTCuts[key] = TCut(cutStr.c_str());
     }
     return binTCuts;
+}
+
+void TMD::plotFirstBin1D(const std::string& var, int nbins, double xmin, double xmax) {
+    if (!tree) {
+        LOG_ERROR("TTree not loaded in TMD::plotFirstBin1D");
+        return;
+    }
+    if (binTCuts.empty()) {
+        LOG_ERROR("No binTCuts available in TMD::plotFirstBin1D");
+        return;
+    }
+    const auto& firstCut = binTCuts.begin();
+    Hist hist(tree);
+    hist.plot1D(var, firstCut->second, nbins, xmin, xmax);
+}
+
+// Add overload for default arguments
+void TMD::plotFirstBin1D(const std::string& var) {
+    plotFirstBin1D(var, -1, -1, -1);
 }
 

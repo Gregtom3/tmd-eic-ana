@@ -22,6 +22,8 @@ public:
     const Table* getTable() const;
     const Grid* getGrid() const;
     const std::map<std::string, TCut>& getBinTCuts() const;
+    void plotFirstBin1D(const std::string& var = "", int nbins = -1, double xmin = -1, double xmax = -1);
+    void plotFirstBin1D(const std::string& var);
 private:
     TFile* file;
     TTree* tree;

@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
     LOG_PRINT("[main.cpp] Successfully built grid based on table data.");
 
 
+    tmd.plotFirstBin1D("PhPerp");
 
     return 0;
 }
