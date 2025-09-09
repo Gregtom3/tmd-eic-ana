@@ -18,15 +18,15 @@ int main(int argc, char** argv) {
         LOG_FATAL("Failed to load ROOT file or TTree.");
         return 1;
     }
-    LOG_PRINT("Successfully loaded ROOT file and TTree.");
+    LOG_PRINT("[main.cpp] Successfully loaded ROOT file and TTree.");
 
     tmd.loadTable(energyConfig);
-    const Table* table = tmd.getTable();
-    if (!table) {
-        LOG_FATAL("Failed to load table for energy config: " + energyConfig);
-        return 1;
-    }
-
+    LOG_PRINT("[main.cpp] Successfully loaded table for energy config: " + energyConfig);
     
+    tmd.buildGrid({"X", "Q"});
+    LOG_PRINT("[main.cpp] Successfully built grid based on table data.");
+
+
+
     return 0;
 }

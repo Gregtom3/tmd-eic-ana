@@ -18,13 +18,16 @@ public:
     TTree* getTree() const;
     std::map<std::string, TCut> generateBinTCuts(const Grid& grid) const;
     void loadTable(const std::string& energyConfig);
+    void buildGrid(const std::vector<std::string>& binNames);
     const Table* getTable() const;
+    const Grid* getGrid() const;
 private:
     TFile* file;
     TTree* tree;
     std::string filename;
     std::string treename;
     std::unique_ptr<Table> table;
+    std::unique_ptr<Grid> grid;
 };
 
 #endif // TMD_H

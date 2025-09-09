@@ -38,19 +38,21 @@ std::vector<std::string> Grid::getMainBinNames() const {
     return mainBinNames;
 }
 
-void Grid::printGridSummary() const {
+void Grid::printGridSummary(int maxEntries) const {
     LOG_INFO("Grid main bin names: ");
     for (const auto& name : mainBinNames) {
         LOG_INFO(name);
     }
     LOG_INFO("");
+    int count = 0;
     for (const auto& bin : mainBins) {
+        if (maxEntries > 0 && count >= maxEntries) break;
         LOG_INFO(std::string("Main bin: ") + bin.first);
-
         LOG_INFO(std::string("  Count: ") + std::to_string(bin.second.getCount()));
         for (const auto& name : binNames) {
             LOG_INFO(std::string("  ") + name + " range: [" + std::to_string(bin.second.getMin(name)) + ", " + std::to_string(bin.second.getMax(name)) + "]");
         }
+        ++count;
     }
     LOG_INFO(std::string("Total main bins: ") + std::to_string(mainBins.size()));
     LOG_INFO(std::string("Total bins: ") + std::to_string(mainBins.size() * binNames.size()));

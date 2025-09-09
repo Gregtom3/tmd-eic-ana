@@ -13,7 +13,7 @@ public:
     void addBin(const std::map<std::string, std::pair<double, double>>& binRanges);
     std::vector<std::string> getBinNames() const;
     std::vector<std::string> getMainBinNames() const;
-    void printGridSummary() const;
+    void printGridSummary(int maxEntries = -1) const;
     const std::map<std::string, Bin>& getBins() const;
 private:
     const std::vector<std::string> binNames = {"X", "Q", "Z", "PhPerp"};

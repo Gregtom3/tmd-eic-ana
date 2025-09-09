@@ -6,7 +6,7 @@
 #include <map>
 
 TMD::TMD(const std::string& filename, const std::string& treename)
-    : file(nullptr), tree(nullptr), filename(filename), treename(treename), table(nullptr) {
+    : file(nullptr), tree(nullptr), filename(filename), treename(treename), table(nullptr), grid(nullptr) {
     file = TFile::Open(filename.c_str());
     if (!file || file->IsZombie()) {
         LOG_ERROR(std::string("Could not open file ") + filename);
@@ -43,6 +43,17 @@ void TMD::loadTable(const std::string& energyConfig) {
 
 const Table* TMD::getTable() const {
     return table.get();
+}
+
+void TMD::buildGrid(const std::vector<std::string>& binNames) {
+    if (!table) {
+        throw std::runtime_error("Table not loaded in TMD::buildGrid");
+    }
+    grid = std::make_unique<Grid>(table->buildGrid(binNames));
+}
+
+const Grid* TMD::getGrid() const {
+    return grid.get();
 }
 
 std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
