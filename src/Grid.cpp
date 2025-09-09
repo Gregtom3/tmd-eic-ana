@@ -52,8 +52,10 @@ void Grid::printGridSummary(int maxEntries) const {
     }
     LOG_INFO("");
     int count = 0;
+    int totalBins = 0;
     for (const auto& bin : mainBins) {
-        if (maxEntries > 0 && count >= maxEntries) {++count; continue;}
+        totalBins += bin.second.getCount();
+        if (maxEntries > 0 && count >= maxEntries) {continue;}
         LOG_INFO(std::string("Main bin: ") + bin.first);
         LOG_INFO(std::string("  Count: ") + std::to_string(bin.second.getCount()));
         for (const auto& name : binNames) {
@@ -62,6 +64,6 @@ void Grid::printGridSummary(int maxEntries) const {
         ++count;
     }
     LOG_INFO(std::string("Total main bins: ") + std::to_string(mainBins.size()));
-    LOG_INFO(std::string("Total bins: ") + std::to_string(mainBins.size() * binNames.size()));
+    LOG_INFO(std::string("Total bins: ") + std::to_string(totalBins));
 }
 
