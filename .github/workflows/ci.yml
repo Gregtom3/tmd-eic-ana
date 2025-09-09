@@ -21,8 +21,8 @@ jobs:
 
     - name: Install CERN ROOT
       run: |
-        wget https://root.cern/download/root_v6.30.06.Linux-ubuntu22-x86_64-gcc11.4.tar.gz
-        tar -xzf root_v6.30.06.Linux-ubuntu22-x86_64-gcc11.4.tar.gz
+        wget https://root.cern/download/root_v6.36.04.Linux-almalinux9.6-x86_64-gcc11.5.tar.gz
+        tar -xzvf root_v6.36.04.Linux-almalinux9.6-x86_64-gcc11.5.tar.gz
         echo "source $PWD/root/bin/thisroot.sh" >> $GITHUB_ENV
       shell: bash
 
