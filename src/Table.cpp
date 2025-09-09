@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <set>
+#include <stdexcept>
 
 Table::Table(const std::string& energyConfig) {
     std::string filename = getFilename(energyConfig);
@@ -51,4 +53,30 @@ void Table::readTable(const std::string& filename) {
 
 const std::vector<TableRow>& Table::getRows() const {
     return rows;
+}
+
+Grid Table::buildGrid(const std::vector<std::string>& binNames) const {
+    // Validate bin names
+    std::set<std::string> allowed = {"X", "Q", "Z", "PhPerp"};
+    std::set<std::string> unique(binNames.begin(), binNames.end());
+    if (unique.size() != binNames.size()) {
+        throw std::invalid_argument("Duplicate bin names detected");
+    }
+    for (const auto& name : binNames) {
+        if (allowed.find(name) == allowed.end()) {
+            throw std::invalid_argument("Invalid bin name: " + name);
+        }
+    }
+    Grid grid(binNames);
+    for (const auto& row : rows) {
+        std::vector<double> mins, maxs;
+        for (const auto& name : binNames) {
+            if (name == "X") { mins.push_back(row.X_min); maxs.push_back(row.X_max); }
+            else if (name == "Q") { mins.push_back(row.Q_min); maxs.push_back(row.Q_max); }
+            else if (name == "Z") { mins.push_back(row.Z_min); maxs.push_back(row.Z_max); }
+            else if (name == "PhPerp") { mins.push_back(row.PhPerp_min); maxs.push_back(row.PhPerp_max); }
+        }
+        grid.addBin(mins, maxs);
+    }
+    return grid;
 }

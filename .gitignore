@@ -36,8 +36,7 @@
 *.exe
 *.out
 *.app
-tmd
-test_load_tables
+bin/*
 
 # debug information files
 *.dwo

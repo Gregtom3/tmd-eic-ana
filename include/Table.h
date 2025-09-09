@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <set>
+#include "Grid.h"
 
 struct TableRow {
     int itar;
@@ -21,6 +23,8 @@ public:
 
     // Access parsed rows
     const std::vector<TableRow>& getRows() const;
+
+    Grid buildGrid(const std::vector<std::string>& binNames) const;
 
 private:
     std::vector<TableRow> rows;
