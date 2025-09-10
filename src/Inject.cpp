@@ -1,4 +1,3 @@
-
 #include "Inject.h"
 #include <TRandom3.h>
 #include <TMath.h>
@@ -22,8 +21,15 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
     RooRealVar Q("Q", "Q", bin.getMin("Q"), bin.getMax("Q"));
     RooRealVar Z("Z", "Z", bin.getMin("Z"), bin.getMax("Z"));
     RooRealVar PhPerp("PhPerp", "PhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
+    RooRealVar TruePhiH("TruePhiH", "TruePhiH", -TMath::Pi(), TMath::Pi());
+    RooRealVar TruePhiS("TruePhiS", "TruePhiS", -TMath::Pi(), TMath::Pi());
+    RooRealVar TrueX("TrueX", "TrueX", bin.getMin("X"), bin.getMax("X"));
+    RooRealVar TrueQ("TrueQ", "TrueQ", bin.getMin("Q"), bin.getMax("Q"));
+    RooRealVar TrueZ("TrueZ", "TrueZ", bin.getMin("Z"), bin.getMax("Z"));
+    RooRealVar TruePhPerp("TruePhPerp", "TruePhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
+
     RooRealVar Spin_idx("Spin_idx", "Spin_idx", -1, 1);
-    RooArgSet obs(PhiH, PhiS, X, Q, Z, PhPerp, Spin_idx);
+    RooArgSet obs(PhiH, PhiS, X, Q, Z, PhPerp, TruePhiH, TruePhiS, TrueX, TrueQ, TrueZ, TruePhPerp, Spin_idx);
 
     // Create a dataset from the tree, applying the bin cuts
     std::string cut = "X >= " + std::to_string(bin.getMin("X")) + " && X <= " + std::to_string(bin.getMax("X")) +
@@ -38,10 +44,10 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
     TRandom3 rng(0);
     for (Long64_t i = 0; i < data.numEntries(); ++i) {
         const RooArgSet* row = data.get(i);
-        PhiH.setVal(row->getRealValue("PhiH"));
-        PhiS.setVal(row->getRealValue("PhiS"));
-        double asymmetry = table->getAUT(row->getRealValue("X"), row->getRealValue("Q"), row->getRealValue("Z"), row->getRealValue("PhPerp"));
-        double pPlus = 0.5 * (1 + asymmetry * std::sin(PhiH.getVal()));
+        TruePhiH.setVal(row->getRealValue("TruePhiH"));
+        TruePhiS.setVal(row->getRealValue("TruePhiS"));
+        double asymmetry = table->lookupAUT(row->getRealValue("TrueX"), row->getRealValue("TrueQ"), row->getRealValue("TrueZ"), row->getRealValue("TruePhPerp"));
+        double pPlus = 0.5 * (1 + asymmetry * std::sin(TruePhiH.getVal()+TruePhiS.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
         X.setVal(row->getRealValue("X"));
         Q.setVal(row->getRealValue("Q"));

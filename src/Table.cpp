@@ -4,6 +4,7 @@
 #include <iostream>
 #include <set>
 #include <stdexcept>
+#include <functional>
 
 Table::Table(const std::string& energyConfig) {
     std::string filename = getFilename(energyConfig);
@@ -107,4 +108,33 @@ Grid Table::buildGrid(const std::vector<std::string>& binNames) const {
     }
     grid.computeMainBinIndices();
     return grid;
+}
+
+double Table::lookupAUT(double X, double Q, double Z, double PhPerp) const {
+    std::function<double(const std::vector<TableRow>&, double, double, double, double, size_t, size_t)> binarySearch =
+        [&](const std::vector<TableRow>& rows, double X, double Q, double Z, double PhPerp, size_t left, size_t right) -> double {
+            if (left > right) {
+                return 0.0; // Base case: no match found
+            }
+
+        size_t mid = left + (right - left) / 2;
+        const auto& row = rows[mid];
+
+        if (X >= row.X_min && X <= row.X_max &&
+            Q >= row.Q_min && Q <= row.Q_max &&
+            Z >= row.Z_min && Z <= row.Z_max &&
+            PhPerp >= row.PhPerp_min && PhPerp <= row.PhPerp_max) {
+            return row.AUT; // Match found
+        }
+
+        if (X < row.X_min || (X == row.X_min && Q < row.Q_min) ||
+            (X == row.X_min && Q == row.Q_min && Z < row.Z_min) ||
+            (X == row.X_min && Q == row.Q_min && Z == row.Z_min && PhPerp < row.PhPerp_min)) {
+            return binarySearch(rows, X, Q, Z, PhPerp, left, mid - 1);
+        } else {
+            return binarySearch(rows, X, Q, Z, PhPerp, mid + 1, right);
+        }
+    };
+
+    return binarySearch(rows, X, Q, Z, PhPerp, 0, rows.size() - 1);
 }

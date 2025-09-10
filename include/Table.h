@@ -26,6 +26,9 @@ public:
 
     Grid buildGrid(const std::vector<std::string>& binNames) const;
 
+    // Fast lookup of AUT given X, Q, Z, and PhPerp
+    double lookupAUT(double X, double Q, double Z, double PhPerp) const;
+
 private:
     std::vector<TableRow> rows;
     std::string getFilename(const std::string& energyConfig) const;
