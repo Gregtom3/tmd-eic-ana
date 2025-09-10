@@ -36,6 +36,7 @@ private:
     std::string energyConfig; // stored for cache naming
     std::unique_ptr<Table> table;
     std::unique_ptr<Grid> grid;
+    std::vector<std::string> binNames; // mainBinNames (ex: <"X", "Q">)
     std::map<std::string, TCut> binTCuts;
     std::unique_ptr<Hist> hist;
 };

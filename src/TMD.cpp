@@ -49,11 +49,12 @@ const Table* TMD::getTable() const {
     return table.get();
 }
 
-void TMD::buildGrid(const std::vector<std::string>& binNames) {
+void TMD::buildGrid(const std::vector<std::string>& _binNames) {
     if (!table) {
         throw std::runtime_error("Table not loaded in TMD::buildGrid");
     }
-    grid = std::make_unique<Grid>(table->buildGrid(binNames));
+    binNames = _binNames; // save locally
+    grid = std::make_unique<Grid>(table->buildGrid(_binNames));
     binTCuts = generateBinTCuts(*grid);
     LOG_INFO("Successfully generated " + std::to_string(binTCuts.size()) + " bin TCuts.");
 }
@@ -93,10 +94,18 @@ void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool
         std::filesystem::create_directories(dir);
     }
 
-    // Compose cache filename: hists_<rootstem>__<treename>__<energyConfig>__<var>__nbins<N>.root
+    // Format binNames as "__X.Q.Z__" etc.
+    std::string binNamesStr = "___";
+    for (size_t i = 0; i < binNames.size(); ++i) {
+        binNamesStr += binNames[i];
+        if (i + 1 < binNames.size()) binNamesStr += ".";
+    }
+    binNamesStr += "___";
+
+    // Compose cache filename: hists_<rootstem>__<treename>__<energyConfig>__<binNamesStr><var>__nbins<N>.root
     std::string rootStem = std::filesystem::path(filename).stem().string();
     size_t nBins = binTCuts.size();
-    std::string cacheName = "hists_" + rootStem + "__" + treename + "__" + energyConfig + "__" + var + "__nbin" + std::to_string(nBins) + ".root";
+    std::string cacheName = "hists_" + rootStem + "__" + treename + "__" + energyConfig + binNamesStr + var + "__nbin" + std::to_string(nBins) + ".root";
     std::filesystem::path cachePath = dir / cacheName;
 
     bool histLoaded = false;
