@@ -23,6 +23,15 @@ TMD::TMD(const std::string& filename, const std::string& treename)
         tree = nullptr;
         return;
     }
+    // Check for Q branch, if not present, check for Q2 and set alias
+    if (!tree->GetBranch("Q")) {
+        if (tree->GetBranch("Q2")) {
+            tree->SetAlias("Q", "sqrt(Q2)");
+            LOG_INFO("Set alias Q as sqrt(Q2)");
+        } else {
+            LOG_WARN("Neither Q nor Q2 branch found in tree.");
+        }
+    }
     LOG_INFO(std::string("Successfully loaded TTree: ") + treename + " from file: " + filename);
     hist = std::make_unique<Hist>(tree);
 }
