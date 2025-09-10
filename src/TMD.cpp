@@ -76,6 +76,24 @@ const Grid* TMD::getGrid() const {
     return grid.get();
 }
 
+void TMD::inject_extract(int bin_index, double A) {
+    if (!grid) {
+        LOG_ERROR("Grid not built. Cannot inject/extract.");
+        return;
+    }
+    const auto& bins = grid->getBins();
+    if (static_cast<long unsigned int>(bin_index) >= bins.size()) {
+        LOG_ERROR("Bin index out of range.");
+        return;
+    }
+    auto it = bins.begin();
+    std::advance(it, bin_index);
+    const Bin& bin = it->second;
+    Inject injector(tree);
+    std::pair<double,double> extracted_A = injector.injectExtractForBin(bin, A);
+    LOG_INFO("Bin " + std::to_string(bin_index) + ": Injected A = " + std::to_string(A) + ", Extracted A = " + std::to_string(extracted_A.first) + " +/- " + std::to_string(extracted_A.second));
+}
+
 std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
     std::map<std::string, TCut> binTCuts;
     const auto& bins = grid.getBins();

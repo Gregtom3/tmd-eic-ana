@@ -8,6 +8,7 @@
 #include "TCut.h"
 #include "Table.h"
 #include "Hist.h"
+#include "Inject.h"
 #include <map>
 #include <string>
 #include <memory>
@@ -28,6 +29,7 @@ public:
     void fillHistograms(const std::string& var, const std::string& outDir = "out", bool overwrite = false);
     void plotBin(const std::string& var, size_t binIndex);
     void plot2DMap(const std::string& var);
+    void inject_extract(int bin_index, double A = 0.1);
 private:
     TFile* file;
     TTree* tree;

@@ -46,5 +46,7 @@ int main(int argc, char** argv) {
     tmd.fillHistograms("PhPerp", outDir, overwrite);
     //tmd.plotBin("PhPerp", 0);
     tmd.plot2DMap("PhPerp");
+
+    tmd.inject_extract(0);
     return 0;
 }

@@ -191,7 +191,7 @@ void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::ve
     ylatex->SetTextAlign(22);
     ylatex->SetTextSize(0.05);
     ylatex->Draw();
-    c->SaveAs("test.png");
+    c->SaveAs("playground/test.png");
     delete c; c=nullptr;
 }
 
