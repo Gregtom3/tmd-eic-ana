@@ -153,6 +153,7 @@ void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::ve
         //histMap[var][binIndex]->SetMinimum(globalMin);
         //histMap[var][binIndex]->SetMaximum(globalMax);
         histMap[var][binIndex]->Draw();
+        DrawMeanTLatex(meanMap[binKey], axisLabels, 3, 0.15, 0.92);
         LOG_PRINT("Drawing bin " + binKey + " at " + std::to_string(padIndex));
         histMap[var][binIndex]->SetTitle("");
         double x_left  = gPad->GetXlowNDC();             // left edge of pad in canvas NDC

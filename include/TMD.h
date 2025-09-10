@@ -19,6 +19,7 @@ public:
     TMD(const std::string& filename, const std::string& treename);
     ~TMD();
     bool isLoaded() const;
+    void setMaxEntries(Long64_t maxEntries);
     TTree* getTree() const;
     std::map<std::string, TCut> generateBinTCuts(const Grid& grid) const;
     void loadTable(const std::string& energyConfig);

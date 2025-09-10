@@ -21,7 +21,7 @@ public:
 private:
     const std::vector<std::string> binNames = {"X", "Q", "Z", "PhPerp"};
     std::vector<std::string> mainBinNames;
-    std::map<std::string, std::vector<double>> mainBinMeans;
+    std::map<std::string, std::vector<double>> mainBinLefts;
     std::map<std::string, Bin> mainBins;
     std::map<std::string, std::vector<int>> mainBinIndices;
 

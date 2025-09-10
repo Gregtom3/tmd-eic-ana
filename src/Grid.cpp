@@ -8,13 +8,13 @@ Grid::Grid(const std::vector<std::string>& mainNames)
 void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRanges) {
     // Main bin key: combo of mainBinNames
     std::string mainKey = "";
-    std::vector<double> mainBinMean;
+    std::vector<double> mainBinLeft;
     for (const auto& name : binNames) {  
         if (std::find(mainBinNames.begin(), mainBinNames.end(), name) != mainBinNames.end()) {
             auto it = binRanges.find(name);
             if (it != binRanges.end()) {
                 mainKey += name + "[" + std::to_string(it->second.first) + "," + std::to_string(it->second.second) + "]";
-                mainBinMean.push_back((it->second.first + it->second.second) / 2.0);
+                mainBinLeft.push_back(it->second.first);
             }
         }
     }
@@ -24,7 +24,7 @@ void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRan
     // If mainKey not in map, initialize
     if (mainBins.find(mainKey) == mainBins.end()) {
         mainBins[mainKey] = Bin();
-        mainBinMeans[mainKey] = mainBinMean;
+        mainBinLefts[mainKey] = mainBinLeft;
     }
     mainBins[mainKey].incrementCount();
 
@@ -84,21 +84,21 @@ void Grid::printGridSummary(int maxEntries) const {
 }
 
 
-// Compute integer indices for each main bin using sorted means (argsort-like)
+// Compute integer indices for each main bin using sorted lefts (argsort-like)
 void Grid::computeMainBinIndices() {
     // Hierarchical indexing for N dimensions
     // Prepare a vector of maps for each dimension: parent_key -> sorted unique values
     size_t ndim = mainBinNames.size();
     // For dim 0, parent_key is ""
     std::map<std::string, std::vector<double>> uniqueByParent[ndim];
-    // First, collect all means by parent key for each dimension
-    for (const auto& pair : mainBinMeans) {
-        const auto& means = pair.second;
+    // First, collect all lefts by parent key for each dimension
+    for (const auto& pair : mainBinLefts) {
+        const auto& lefts = pair.second;
         std::string parent = "";
         for (size_t d = 0; d < ndim; ++d) {
-            uniqueByParent[d][parent].push_back(means[d]);
-            // For next dim, parent is concatenation of previous means
-            parent += (d > 0 ? "," : "") + std::to_string(means[d]);
+            uniqueByParent[d][parent].push_back(lefts[d]);
+            // For next dim, parent is concatenation of previous lefts
+            parent += (d > 0 ? "," : "") + std::to_string(lefts[d]);
         }
     }
     // Sort and deduplicate
@@ -110,16 +110,16 @@ void Grid::computeMainBinIndices() {
         }
     }
     // Now assign indices
-    for (const auto& pair : mainBinMeans) {
+    for (const auto& pair : mainBinLefts) {
         const auto& key = pair.first;
-        const auto& means = pair.second;
+        const auto& lefts = pair.second;
         std::vector<int> indices(ndim);
         std::string parent = "";
         for (size_t d = 0; d < ndim; ++d) {
             const auto& vec = uniqueByParent[d][parent];
-            auto it = std::find(vec.begin(), vec.end(), means[d]);
+            auto it = std::find(vec.begin(), vec.end(), lefts[d]);
             indices[d] = (it != vec.end()) ? std::distance(vec.begin(), it) : -1;
-            parent += (d > 0 ? "," : "") + std::to_string(means[d]);
+            parent += (d > 0 ? "," : "") + std::to_string(lefts[d]);
         }
         mainBinIndices[key] = indices;
     }

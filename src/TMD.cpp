@@ -1,11 +1,12 @@
 #include "TMD.h"
 #include "Logger.h"
-#include <iostream>
 #include "TCut.h"
 #include "Grid.h"
-#include <map>
 #include "Hist.h"
+#include <TEntryList.h>
 #include <filesystem>
+#include <iostream>
+#include <map>
 
 TMD::TMD(const std::string& filename, const std::string& treename)
     : file(nullptr), tree(nullptr), filename(filename), treename(treename), table(nullptr), grid(nullptr) {
@@ -39,6 +40,15 @@ TMD::TMD(const std::string& filename, const std::string& treename)
 TMD::~TMD() {
     if (file) file->Close();
     // unique_ptr handles table cleanup
+}
+
+void TMD::setMaxEntries(Long64_t maxEntries) {
+    if (tree && maxEntries > 0) {
+        TEntryList *elist = new TEntryList("elist", "Max Entries");
+        for (Long64_t i = 0; i < std::min(tree->GetEntries(), maxEntries); i++)
+            elist->Enter(i);
+        tree->SetEntryList(elist);
+    }
 }
 
 bool TMD::isLoaded() const {
