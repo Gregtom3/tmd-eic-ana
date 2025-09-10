@@ -81,6 +81,22 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
     std::cout << std::endl; // newline after progress bar
 }
 
+void Hist::plot2DMap(const std::string& var){
+    TApplication app("app", nullptr, nullptr);
+    TCanvas * c = new TCanvas("c2d", "2D Map", 800, 800);
+    c->Divide(2,2);
+    ApplyGlobalStyle();
+    for(size_t binIndex = 0; binIndex < 4; ++binIndex){
+        c->cd(binIndex+1);
+        ApplyHistStyle(histMap[var][binIndex]);
+        histMap[var][binIndex]->Draw();
+        //histMap[var][binIndex]->SetTitle("");
+    }
+    c->Update();
+    app.Run();
+    delete c; c=nullptr;
+}
+
 void Hist::plotBin(const std::string& var, size_t binIndex) {
     if (histMap.find(var) == histMap.end() || binIndex >= histMap.at(var).size()) {
         std::cerr << "Invalid bin index or variable: " << var << ", " << binIndex << std::endl;

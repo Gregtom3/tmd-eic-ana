@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
     LOG_PRINT("[main.cpp] Successfully built grid based on table data.");
 
     tmd.fillHistograms("PhPerp", outDir, overwrite);
-    tmd.plotBin("PhPerp", 0);
+    //tmd.plotBin("PhPerp", 0);
+    tmd.plot2DMap("PhPerp");
     return 0;
 }

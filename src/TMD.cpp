@@ -130,3 +130,11 @@ void TMD::plotBin(const std::string& var, size_t binIndex) {
     hist->plotBin(var, binIndex);  
 }
 
+void TMD::plot2DMap(const std::string& var) {
+    if (binNames.size()!=2) {
+        std::cerr << "plot2DMap requires exactly 2 bin names." << std::endl;
+        return;
+    }
+    if (!hist) return;
+    hist->plot2DMap(var);
+}
