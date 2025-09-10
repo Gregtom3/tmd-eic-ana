@@ -6,7 +6,8 @@
 #include "TDirectory.h"
 #include "TFile.h"
 #include "TKey.h"
-#include "HistStyle.h"
+#include "Style.h"
+#include "TLatex.h"
 #include <memory>
 #include <iostream>
 
@@ -86,16 +87,20 @@ void Hist::plotBin(const std::string& var, size_t binIndex) {
         std::cerr << "Invalid bin index or variable: " << var << ", " << binIndex << std::endl;
         return;
     }
-    LOG_INFO("TCut for bin " + std::to_string(binIndex) + ": " + std::string(binCutsMap[var][binIndex].GetTitle()));
-    LOG_INFO("Bin key: " + binKeysMap[var][binIndex]);
-    //TApplication app("app", nullptr, nullptr);
+    TApplication app("app", nullptr, nullptr);
     TCanvas* c = new TCanvas("c","c",800,600);
     ApplyGlobalStyle();
     ApplyHistStyle(histMap[var][binIndex]);
     histMap[var][binIndex]->Draw();
+
+    const std::string& binKey = binKeysMap[var][binIndex];
+    std::vector<std::string> meanVars = {"X", "Q", "Z", "PhPerp"};
+    int meanPrecision = 3;
+    DrawMeanTLatex(meanMap[binKey], meanVars, meanPrecision, 0.15, 0.92);
+
     c->Update();
+    app.Run();
     delete c; c=nullptr;
-    //app.Run();
 }
 
 bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) const {
@@ -105,7 +110,7 @@ bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) c
     std::unique_ptr<TFile> f(TFile::Open(cacheFile.c_str(), "RECREATE"));
     if (!f || f->IsZombie()) {
         LOG_ERROR("Failed to create cache file: " + cacheFile);
-        return false;
+        return false; 
     }
 
     f->mkdir(var.c_str());

@@ -18,7 +18,8 @@ jobs:
 
     - name: Set up dependencies
       run: sudo apt-get update && sudo apt-get install -y build-essential wget
-
+           sudo apt-get install -y libtbb-dev
+    
     - name: Install CERN ROOT
       run: |
         wget https://root.cern/download/root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz

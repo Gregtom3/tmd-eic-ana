@@ -19,7 +19,7 @@ TMD::TMD(const std::string& filename, const std::string& treename)
     if (!tree) {
         LOG_ERROR(std::string("Could not find tree ") + treename + " in file: " + filename);
         file->Close();
-        file = nullptr;
+        file = nullptr; 
         tree = nullptr;
         return;
     }
@@ -117,7 +117,7 @@ void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool
 }
 
 void TMD::plotBin(const std::string& var, size_t binIndex) {
-    if (!hist) return;
-    hist->plotBin(var, binIndex);
+    if (!hist) return;   
+    hist->plotBin(var, binIndex);  
 }
 
