@@ -84,11 +84,12 @@ void Hist::plotBin(const std::string& var, size_t binIndex) {
     }
     std::cout << "TCut for bin " << binIndex << ": " << binCutsMap[var][binIndex].GetTitle() << std::endl;
     std::cout << "Bin key: " << binKeysMap[var][binIndex] << std::endl;
-    TApplication app("app", nullptr, nullptr);
+    //TApplication app("app", nullptr, nullptr);
     TCanvas* c = new TCanvas("c","c",800,600);
     histMap[var][binIndex]->Draw();
     c->Update();
-    app.Run();
+    delete c; c=nullptr;
+    //app.Run();
 }
 
 bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) const {
