@@ -82,35 +82,77 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
 }
 
 void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::vector<int>>& mainBinIndices){
-    TApplication app("app", nullptr, nullptr);
-
-    // Determine number of rows and columns
-    // Loop over mainBinIndices to determine maximum rows and columns
-    int nRows = 0;
-    int nCols = 0;
+    int maxRow = 0;
+    int maxCol = 0;
     for (const auto& pair : mainBinIndices) {
-        nRows = std::max(nRows, pair.second.at(1));
-        nCols = std::max(nCols, pair.second.at(0));
+        maxCol = std::max(maxCol, pair.second.at(0));
+        maxRow = std::max(maxRow, pair.second.at(1));
     }
+    int nCols = maxCol + 2; // add one for leftmost blank column
+    int nRows = maxRow + 2; // add one for bottommost blank row
     int windowX = 200;
     int windowY = 200;
     TCanvas * c = new TCanvas("c2d", "2D Map", windowX*nCols, windowY*nRows);
-    c->Divide(nCols, nRows);
+    c->Divide(nCols, nRows, 0, 0);
     ApplyGlobalStyle();
 
+    // Set pad margins: only far left and far bottom pads have margin for axes
+    double leftMargin = 0.15;
+    double bottomMargin = 0.15;
+    double zeroMargin = 0.0;
+    for (int row = 0; row < nRows; ++row) {
+        for (int col = 0; col < nCols; ++col) {
+            int flippedRow = (nRows - 1) - row;
+            int padIndex = col + flippedRow*nCols + 1;
+            c->cd(padIndex);
+            TPad* pad = (TPad*)c->GetPad(padIndex);
+            if (col == 1) {
+                pad->SetLeftMargin(leftMargin);
+            } else {
+                pad->SetLeftMargin(zeroMargin);
+            }
+            if (row == 1) {
+                pad->SetBottomMargin(bottomMargin);
+            } else {
+                pad->SetBottomMargin(zeroMargin);
+            }
+            pad->SetRightMargin(zeroMargin);
+            pad->SetTopMargin(zeroMargin);
+        }
+    }
+
+    // Find global min/max for y-axis
+    double globalMin = std::numeric_limits<double>::max();
+    double globalMax = -std::numeric_limits<double>::max();
+    for (size_t binIndex = 0; binIndex < histMap[var].size(); ++binIndex) {
+        TH1* h = histMap[var][binIndex];
+        if (!h) continue;
+        double min = h->GetMinimum();
+        double max = h->GetMaximum();
+        if (min < globalMin) globalMin = min;
+        if (max > globalMax) globalMax = max;
+    }
+
+    // Set y-axis limits for all histograms and draw
+    // Draw histograms in the (nCols-1)x(nRows-1) grid, skipping leftmost column and bottommost row
     for (size_t binIndex = 0; binIndex < histMap[var].size(); ++binIndex) {
         auto binKey = binKeysMap[var][binIndex];
         auto binPos = mainBinIndices.at(binKey);
-        int padIndex = binPos[1] * nCols + binPos[0] + 1;
+        int col = binPos[0] + 1; // shift right by 1
+        int row = binPos[1] + 1; // shift up by 1
+        int flippedRow = (nRows - 1) - row;
+        int padIndex = col + flippedRow*nCols + 1;
         c->cd(padIndex);
         ApplyHistStyle(histMap[var][binIndex]);
+        histMap[var][binIndex]->SetMinimum(globalMin);
+        histMap[var][binIndex]->SetMaximum(globalMax);
         histMap[var][binIndex]->Draw();
-        // debug quit if outside max rows and cols
-        if (binPos[0] >= nCols || binPos[1] >= nRows) break;
-        //histMap[var][binIndex]->SetTitle("");
+    
+        LOG_PRINT("Drawing bin " + binKey + " at " + std::to_string(padIndex));
+        histMap[var][binIndex]->SetTitle("");
     }
     c->Update();
-    app.Run();
+    c->SaveAs("test.pdf");
     delete c; c=nullptr;
 }
 
