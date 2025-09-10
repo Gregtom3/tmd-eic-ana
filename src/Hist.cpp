@@ -81,15 +81,32 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
     std::cout << std::endl; // newline after progress bar
 }
 
-void Hist::plot2DMap(const std::string& var){
+void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::vector<int>>& mainBinIndices){
     TApplication app("app", nullptr, nullptr);
-    TCanvas * c = new TCanvas("c2d", "2D Map", 800, 800);
-    c->Divide(2,2);
+
+    // Determine number of rows and columns
+    // Loop over mainBinIndices to determine maximum rows and columns
+    int nRows = 0;
+    int nCols = 0;
+    for (const auto& pair : mainBinIndices) {
+        nRows = std::max(nRows, pair.second.at(1));
+        nCols = std::max(nCols, pair.second.at(0));
+    }
+    int windowX = 200;
+    int windowY = 200;
+    TCanvas * c = new TCanvas("c2d", "2D Map", windowX*nCols, windowY*nRows);
+    c->Divide(nCols, nRows);
     ApplyGlobalStyle();
-    for(size_t binIndex = 0; binIndex < 4; ++binIndex){
-        c->cd(binIndex+1);
+
+    for (size_t binIndex = 0; binIndex < histMap[var].size(); ++binIndex) {
+        auto binKey = binKeysMap[var][binIndex];
+        auto binPos = mainBinIndices.at(binKey);
+        int padIndex = binPos[1] * nCols + binPos[0] + 1;
+        c->cd(padIndex);
         ApplyHistStyle(histMap[var][binIndex]);
         histMap[var][binIndex]->Draw();
+        // debug quit if outside max rows and cols
+        if (binPos[0] >= nCols || binPos[1] >= nRows) break;
         //histMap[var][binIndex]->SetTitle("");
     }
     c->Update();
