@@ -6,6 +6,7 @@
 #include "TDirectory.h"
 #include "TFile.h"
 #include "TKey.h"
+#include "HistStyle.h"
 #include <memory>
 #include <iostream>
 
@@ -72,7 +73,10 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
         histMap[var].push_back(h);
         binKeysMap[var].push_back(binKey);
         binCutsMap[var].push_back(cut);
+        // Compute means for this bin only
+        computeMeans(binKey, cut);
         ++idx;
+        break;
     }
     std::cout << std::endl; // newline after progress bar
 }
@@ -82,10 +86,12 @@ void Hist::plotBin(const std::string& var, size_t binIndex) {
         std::cerr << "Invalid bin index or variable: " << var << ", " << binIndex << std::endl;
         return;
     }
-    std::cout << "TCut for bin " << binIndex << ": " << binCutsMap[var][binIndex].GetTitle() << std::endl;
-    std::cout << "Bin key: " << binKeysMap[var][binIndex] << std::endl;
+    LOG_INFO("TCut for bin " + std::to_string(binIndex) + ": " + std::string(binCutsMap[var][binIndex].GetTitle()));
+    LOG_INFO("Bin key: " + binKeysMap[var][binIndex]);
     //TApplication app("app", nullptr, nullptr);
     TCanvas* c = new TCanvas("c","c",800,600);
+    ApplyGlobalStyle();
+    ApplyHistStyle(histMap[var][binIndex]);
     histMap[var][binIndex]->Draw();
     c->Update();
     delete c; c=nullptr;
@@ -117,6 +123,79 @@ bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) c
     }
     f->Write();
     LOG_INFO("Saved histogram cache: " + cacheFile);
+    return true;
+}
+
+// Compute means for a single bin using temporary 1D histograms
+void Hist::computeMeans(const std::string& binKey, const TCut& cut) {
+    std::vector<std::string> vars = {"X", "Q", "Z", "PhPerp"};
+    for (const auto& var : vars) {
+        std::string histName = "mean_tmp_" + var + "_" + binKey;
+        auto params = getParams(var, -1, -1, -1);
+        std::string drawCmd = var + ">>" + histName + "(" +
+            std::to_string(params.nbins) + "," +
+            std::to_string(params.xmin) + "," +
+            std::to_string(params.xmax) + ")";
+        tree->Draw(drawCmd.c_str(), cut, "goff");
+        TH1D* h = static_cast<TH1D*>(gDirectory->Get(histName.c_str()));
+        double mean = h ? h->GetMean() : 0.0;
+        meanMap[binKey][var] = mean;
+        if (h) { h->Delete(); }
+    }
+}
+
+// Save meanMap to cache as a TTree
+bool Hist::saveMeanCache(const std::string& cacheFile, const std::string& var) const {
+    std::unique_ptr<TFile> f(TFile::Open(cacheFile.c_str(), "UPDATE"));
+    if (!f || f->IsZombie()) return false;
+    std::string treeName = var + "_means";
+    TTree* t = new TTree(treeName.c_str(), "Bin means");
+    char binKey[256];
+    double X, Q, Z, PhPerp;
+    t->Branch("binKey", binKey, "binKey/C");
+    t->Branch("X", &X, "X/D");
+    t->Branch("Q", &Q, "Q/D");
+    t->Branch("Z", &Z, "Z/D");
+    t->Branch("PhPerp", &PhPerp, "PhPerp/D");
+    for (const auto& binPair : meanMap) {
+        strncpy(binKey, binPair.first.c_str(), 255);
+        binKey[255] = '\0';
+        X = binPair.second.at("X");
+        Q = binPair.second.at("Q");
+        Z = binPair.second.at("Z");
+        PhPerp = binPair.second.at("PhPerp");
+        t->Fill();
+    }
+    f->cd();
+    t->Write(treeName.c_str(), TObject::kOverwrite);
+    f->Write();
+    delete t;
+    return true;
+}
+
+// Load meanMap from cache TTree
+bool Hist::loadMeanCache(const std::string& cacheFile, const std::string& var) {
+    std::unique_ptr<TFile> f(TFile::Open(cacheFile.c_str(), "READ"));
+    if (!f || f->IsZombie()) return false;
+    std::string treeName = var + "_means";
+    TTree* t = (TTree*)f->Get(treeName.c_str());
+    if (!t) return false;
+    char binKey[256];
+    double X, Q, Z, PhPerp;
+    t->SetBranchAddress("binKey", binKey);
+    t->SetBranchAddress("X", &X);
+    t->SetBranchAddress("Q", &Q);
+    t->SetBranchAddress("Z", &Z);
+    t->SetBranchAddress("PhPerp", &PhPerp);
+    meanMap.clear();
+    Long64_t nentries = t->GetEntries();
+    for (Long64_t i = 0; i < nentries; ++i) {
+        t->GetEntry(i);
+        meanMap[binKey]["X"] = X;
+        meanMap[binKey]["Q"] = Q;
+        meanMap[binKey]["Z"] = Z;
+        meanMap[binKey]["PhPerp"] = PhPerp;
+    }
     return true;
 }
 

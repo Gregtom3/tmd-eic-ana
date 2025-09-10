@@ -99,11 +99,13 @@ void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool
     std::string cacheName = "hists_" + rootStem + "__" + treename + "__" + energyConfig + "__" + var + "__nbin" + std::to_string(nBins) + ".root";
     std::filesystem::path cachePath = dir / cacheName;
 
-    bool loaded = false;
+    bool histLoaded = false;
+    bool meanLoaded = false;
     if (!overwrite && std::filesystem::exists(cachePath)) {
-        loaded = hist->loadHistCache(cachePath.string(), var);
-        if (loaded) {
-            LOG_INFO("Using cached histograms: " + cachePath.string());
+        histLoaded = hist->loadHistCache(cachePath.string(), var);
+        meanLoaded = hist->loadMeanCache(cachePath.string(), var);
+        if (histLoaded && meanLoaded) {
+            LOG_INFO("Using cached histograms and means: " + cachePath.string());
             return;
         }
     }
@@ -111,6 +113,7 @@ void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool
     // Build histograms and save
     hist->fillHistograms(var, binTCuts);
     hist->saveHistCache(cachePath.string(), var);
+    hist->saveMeanCache(cachePath.string(), var);
 }
 
 void TMD::plotBin(const std::string& var, size_t binIndex) {

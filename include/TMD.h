@@ -26,6 +26,7 @@ public:
     const Grid* getGrid() const;
     const std::map<std::string, TCut>& getBinTCuts() const;
     void fillHistograms(const std::string& var, const std::string& outDir = "out", bool overwrite = false);
+    // Optionally expose mean cache load/save
     void plotBin(const std::string& var, size_t binIndex);
 private:
     TFile* file;
