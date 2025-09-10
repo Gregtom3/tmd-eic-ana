@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -O2 -Wall -Iinclude -Wno-deprecated-declarations `root-config --cflags`
+CXXFLAGS = -O2 -Wall -Iinclude -Wno-deprecated-declarations -MMD -MP `root-config --cflags`
 LDFLAGS = `root-config --libs`
 
 SRC_DIR = src
@@ -10,6 +10,8 @@ BIN = $(BIN_DIR)/tmd
 
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+DEPS = $(OBJECTS:.o=.d)
+
 
 all: $(BIN)
 
@@ -20,6 +22,8 @@ $(BIN): $(OBJECTS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	mkdir -p $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -I$(INC_DIR) -c $< -o $@
+# Include dependency files if they exist
+-include $(DEPS)
 
 # ----------------
 # Tests
