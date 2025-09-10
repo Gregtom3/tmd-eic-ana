@@ -18,10 +18,9 @@ struct HistParams {
 class Hist {
 public:
     Hist(TTree* tree);
-    void plot1D(const std::string& var, const TCut& cut, int nbins = -1, double xmin = -1, double xmax = -1);
     void fillHistograms(const std::string& var, const std::map<std::string, TCut>& binTCuts);
     void plotBin(const std::string& var, size_t binIndex);
-    void plot2DMap(const std::string& var, const std::map<std::string, std::vector<int>>& mainBinIndices);
+    void plot2DMap(const std::string& var, const std::map<std::string, std::vector<int>>& mainBinIndices, std::vector<std::string>& axisLabels);
     HistParams getDefaultParams() const { return defaultParams; }
     static const std::map<std::string, HistParams>& getVarParams() { return varParams; }
     // Caching helpers

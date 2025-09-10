@@ -8,6 +8,7 @@
 #include "TKey.h"
 #include "Style.h"
 #include "TLatex.h"
+#include "TArrow.h"
 #include <memory>
 #include <iostream>
 
@@ -81,7 +82,7 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
     std::cout << std::endl; // newline after progress bar
 }
 
-void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::vector<int>>& mainBinIndices){
+void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::vector<int>>& mainBinIndices, std::vector<std::string>& axisLabels){
     int maxRow = 0;
     int maxCol = 0;
     for (const auto& pair : mainBinIndices) {
@@ -90,8 +91,8 @@ void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::ve
     }
     int nCols = maxCol + 2; // add one for leftmost blank column
     int nRows = maxRow + 2; // add one for bottommost blank row
-    int windowX = 200;
-    int windowY = 200;
+    int windowX = 400;
+    int windowY = 400;
     TCanvas * c = new TCanvas("c2d", "2D Map", windowX*nCols, windowY*nRows);
     c->Divide(nCols, nRows, 0, 0);
     ApplyGlobalStyle();
@@ -135,6 +136,11 @@ void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::ve
 
     // Set y-axis limits for all histograms and draw
     // Draw histograms in the (nCols-1)x(nRows-1) grid, skipping leftmost column and bottommost row
+    double minPadX = std::numeric_limits<double>::max();
+    double maxPadX = -std::numeric_limits<double>::max();
+    double minPadY = std::numeric_limits<double>::max();
+    double maxPadY = -std::numeric_limits<double>::max();
+
     for (size_t binIndex = 0; binIndex < histMap[var].size(); ++binIndex) {
         auto binKey = binKeysMap[var][binIndex];
         auto binPos = mainBinIndices.at(binKey);
@@ -147,12 +153,45 @@ void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::ve
         histMap[var][binIndex]->SetMinimum(globalMin);
         histMap[var][binIndex]->SetMaximum(globalMax);
         histMap[var][binIndex]->Draw();
-    
         LOG_PRINT("Drawing bin " + binKey + " at " + std::to_string(padIndex));
         histMap[var][binIndex]->SetTitle("");
+        double x_left  = gPad->GetXlowNDC();             // left edge of pad in canvas NDC
+        double x_right = x_left + gPad->GetWNDC();       // right edge
+        double y_low   = gPad->GetYlowNDC();             // bottom edge
+        double y_high  = y_low + gPad->GetHNDC();        // top edge
+        minPadX = std::min(minPadX, x_left);
+        maxPadX = std::max(maxPadX, x_right);
+        minPadY = std::min(minPadY, y_low);
+        maxPadY = std::max(maxPadY, y_high);
     }
     c->Update();
-    c->SaveAs("test.pdf");
+    // Draw global canvas
+    c->cd();
+    // Draw a line with an arrow tip pointing right from minPadX to maxPadX at the bottom of the pads
+    double arrowY = minPadY - 0.03; // slightly below the bottom edge
+    TArrow* arrow = new TArrow(minPadX, arrowY, maxPadX, arrowY, 0.02, ">");
+    arrow->SetLineWidth(3);
+    arrow->SetLineColor(kBlack);
+    arrow->SetFillColor(kBlack);
+    arrow->Draw();
+    // Label the arrow with 'X'
+    TLatex* latex = new TLatex((minPadX + maxPadX) / 2.0, arrowY - 0.02, axisLabels[0].c_str());
+    latex->SetTextAlign(22);
+    latex->SetTextSize(0.05);
+    latex->Draw();
+    // Draw a vertical arrow for the Y axis at the leftmost pad edge
+    double arrowX = minPadX - 0.03; // slightly left of the left edge
+    TArrow* yarrow = new TArrow(arrowX, minPadY, arrowX, maxPadY, 0.02, ">");
+    yarrow->SetLineWidth(3);
+    yarrow->SetLineColor(kBlack);
+    yarrow->SetFillColor(kBlack);
+    yarrow->Draw();
+    // Label the Y arrow
+    TLatex* ylatex = new TLatex(arrowX - 0.02, (minPadY + maxPadY) / 2.0, axisLabels[1].c_str());
+    ylatex->SetTextAlign(22);
+    ylatex->SetTextSize(0.05);
+    ylatex->Draw();
+    c->SaveAs("test.png");
     delete c; c=nullptr;
 }
 

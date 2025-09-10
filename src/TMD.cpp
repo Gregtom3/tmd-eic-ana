@@ -146,5 +146,5 @@ void TMD::plot2DMap(const std::string& var) {
     }
     if (!hist) return;
     auto mainBinIndices = grid->getMainBinIndices();
-    hist->plot2DMap(var, mainBinIndices);
+    hist->plot2DMap(var, mainBinIndices, binNames);
 }
