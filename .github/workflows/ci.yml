@@ -21,8 +21,8 @@ jobs:
 
     - name: Install CERN ROOT
       run: |
-        wget https://root.cern/download/root_v6.36.04.Linux-almalinux9.6-x86_64-gcc11.5.tar.gz
-        tar -xzvf root_v6.36.04.Linux-almalinux9.6-x86_64-gcc11.5.tar.gz
+        wget https://root.cern/download/root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+        tar -xzvf root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
       shell: bash
 
     - name: Setup ROOT environment
