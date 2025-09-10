@@ -103,5 +103,6 @@ Grid Table::buildGrid(const std::vector<std::string>& binNames) const {
         }
         grid.addBin(binRanges);
     }
+    grid.computeMainBinIndices();
     return grid;
 }

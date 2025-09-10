@@ -1,3 +1,4 @@
+
 #include "Grid.h"
 #include <algorithm>
 
@@ -7,20 +8,23 @@ Grid::Grid(const std::vector<std::string>& mainNames)
 void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRanges) {
     // Main bin key: combo of mainBinNames
     std::string mainKey = "";
-    for (const auto& name : binNames) {
+    std::vector<double> mainBinMean;
+    for (const auto& name : binNames) {  
         if (std::find(mainBinNames.begin(), mainBinNames.end(), name) != mainBinNames.end()) {
             auto it = binRanges.find(name);
             if (it != binRanges.end()) {
                 mainKey += name + "[" + std::to_string(it->second.first) + "," + std::to_string(it->second.second) + "]";
+                mainBinMean.push_back((it->second.first + it->second.second) / 2.0);
             }
         }
     }
     // The structure of mainKey is like "X[0.1,0.2]Q[1.0,2.0]"
-    // e.g. for mainBinNames = {"X", "Q"}
+    // e.g. for mainBinNames = {"X", "Q"}  
 
     // If mainKey not in map, initialize
     if (mainBins.find(mainKey) == mainBins.end()) {
         mainBins[mainKey] = Bin();
+        mainBinMeans[mainKey] = mainBinMean;
     }
     mainBins[mainKey].incrementCount();
 
@@ -61,9 +65,62 @@ void Grid::printGridSummary(int maxEntries) const {
         for (const auto& name : binNames) {
             LOG_INFO(std::string("  ") + name + " range: [" + std::to_string(bin.second.getMin(name)) + ", " + std::to_string(bin.second.getMax(name)) + "]");
         }
+        // Print mainBinIndices if available
+        auto idxIt = mainBinIndices.find(bin.first);
+        std::cout << mainBinIndices.size() << std::endl;
+        if (idxIt != mainBinIndices.end()) {
+            std::string idxStr = "  Indices: [";
+            for (size_t i = 0; i < idxIt->second.size(); ++i) {
+                idxStr += std::to_string(idxIt->second[i]);
+                if (i + 1 < idxIt->second.size()) idxStr += ", ";
+            }
+            idxStr += "]";
+            LOG_INFO(idxStr);
+        }
         ++count;
     }
     LOG_INFO(std::string("Total main bins: ") + std::to_string(mainBins.size()));
     LOG_INFO(std::string("Total bins: ") + std::to_string(totalBins));
 }
 
+
+// Compute integer indices for each main bin using sorted means (argsort-like)
+void Grid::computeMainBinIndices() {
+    // Hierarchical indexing for N dimensions
+    // Prepare a vector of maps for each dimension: parent_key -> sorted unique values
+    size_t ndim = mainBinNames.size();
+    // For dim 0, parent_key is ""
+    std::map<std::string, std::vector<double>> uniqueByParent[ndim];
+    // First, collect all means by parent key for each dimension
+    for (const auto& pair : mainBinMeans) {
+        const auto& means = pair.second;
+        std::string parent = "";
+        for (size_t d = 0; d < ndim; ++d) {
+            uniqueByParent[d][parent].push_back(means[d]);
+            // For next dim, parent is concatenation of previous means
+            parent += (d > 0 ? "," : "") + std::to_string(means[d]);
+        }
+    }
+    // Sort and deduplicate
+    for (size_t d = 0; d < ndim; ++d) {
+        for (auto& kv : uniqueByParent[d]) {
+            auto& vec = kv.second;
+            std::sort(vec.begin(), vec.end());
+            vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+        }
+    }
+    // Now assign indices
+    for (const auto& pair : mainBinMeans) {
+        const auto& key = pair.first;
+        const auto& means = pair.second;
+        std::vector<int> indices(ndim);
+        std::string parent = "";
+        for (size_t d = 0; d < ndim; ++d) {
+            const auto& vec = uniqueByParent[d][parent];
+            auto it = std::find(vec.begin(), vec.end(), means[d]);
+            indices[d] = (it != vec.end()) ? std::distance(vec.begin(), it) : -1;
+            parent += (d > 0 ? "," : "") + std::to_string(means[d]);
+        }
+        mainBinIndices[key] = indices;
+    }
+}
