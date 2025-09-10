@@ -29,6 +29,9 @@ public:
     // Save/load meanMap to/from cache
     bool saveMeanCache(const std::string& cacheFile, const std::string& var) const;
     bool loadMeanCache(const std::string& cacheFile, const std::string& var);
+    const auto& getHistMap() const { return histMap; }
+    const auto& getBinKeysMap() const { return binKeysMap; }
+    const auto& getMeans() const { return meanMap; }
 private:
     TTree* tree;
     bool m_hasWeightBranch;

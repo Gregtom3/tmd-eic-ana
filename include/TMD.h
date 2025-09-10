@@ -9,6 +9,7 @@
 #include "Table.h"
 #include "Hist.h"
 #include "Inject.h"
+#include "Plotter.h"
 #include <map>
 #include <string>
 #include <memory>
@@ -29,7 +30,7 @@ public:
     const std::map<std::string, TCut>& getBinTCuts() const;
     void fillHistograms(const std::string& var, const std::string& outDir = "out", bool overwrite = false);
     void plotBin(const std::string& var, size_t binIndex);
-    void plot2DMap(const std::string& var);
+    void plot2DMap(const std::string& var, const std::string& outpath);
     void inject_extract(int bin_index, double A = 0.1);
 private:
     TFile* file;
@@ -42,6 +43,7 @@ private:
     std::vector<std::string> binNames; // mainBinNames (ex: <"X", "Q">)
     std::map<std::string, TCut> binTCuts;
     std::unique_ptr<Hist> hist;
+    std::unique_ptr<Plotter> plotter;
 };
 
 #endif // TMD_H

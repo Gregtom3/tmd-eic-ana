@@ -3,6 +3,7 @@
 #include "TCut.h"
 #include "Grid.h"
 #include "Hist.h"
+#include "Plotter.h"
 #include <TEntryList.h>
 #include <filesystem>
 #include <iostream>
@@ -35,6 +36,7 @@ TMD::TMD(const std::string& filename, const std::string& treename)
     }
     LOG_INFO(std::string("Successfully loaded TTree: ") + treename + " from file: " + filename);
     hist = std::make_unique<Hist>(tree);
+    plotter = std::make_unique<Plotter>();
 }
 
 TMD::~TMD() {
@@ -167,12 +169,11 @@ void TMD::plotBin(const std::string& var, size_t binIndex) {
     hist->plotBin(var, binIndex);  
 }
 
-void TMD::plot2DMap(const std::string& var) {
+void TMD::plot2DMap(const std::string& var, const std::string& outpath) {
     if (binNames.size()!=2) {
         std::cerr << "plot2DMap requires exactly 2 bin names." << std::endl;
         return;
     }
-    if (!hist) return;
-    auto mainBinIndices = grid->getMainBinIndices();
-    hist->plot2DMap(var, mainBinIndices, binNames);
+    if (!hist || !grid || !plotter) return;
+    plotter->plot2DMap(var, hist.get(), grid.get(), outpath);
 }
