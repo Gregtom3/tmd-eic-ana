@@ -31,6 +31,7 @@ public:
     bool loadMeanCache(const std::string& cacheFile, const std::string& var);
 private:
     TTree* tree;
+    bool m_hasWeightBranch;
     static const std::map<std::string, HistParams> varParams;
     static const HistParams defaultParams;
     HistParams getParams(const std::string& var, int nbins, double xmin, double xmax) const;

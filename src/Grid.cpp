@@ -50,24 +50,23 @@ std::vector<std::string> Grid::getMainBinNames() const {
 }
 
 void Grid::printGridSummary(int maxEntries) const {
-    LOG_INFO("Grid main bin names: ");
+    LOG_DEBUG("Grid main bin names: ");
     for (const auto& name : mainBinNames) {
-        LOG_INFO(name);
+        LOG_DEBUG(name);
     }
-    LOG_INFO("");
+    LOG_DEBUG("");
     int count = 0;
     int totalBins = 0;
     for (const auto& bin : mainBins) {
         totalBins += bin.second.getCount();
         if (maxEntries > 0 && count >= maxEntries) {continue;}
-        LOG_INFO(std::string("Main bin: ") + bin.first);
-        LOG_INFO(std::string("  Count: ") + std::to_string(bin.second.getCount()));
+        LOG_DEBUG(std::string("Main bin: ") + bin.first);
+        LOG_DEBUG(std::string("  Count: ") + std::to_string(bin.second.getCount()));
         for (const auto& name : binNames) {
-            LOG_INFO(std::string("  ") + name + " range: [" + std::to_string(bin.second.getMin(name)) + ", " + std::to_string(bin.second.getMax(name)) + "]");
+            LOG_DEBUG(std::string("  ") + name + " range: [" + std::to_string(bin.second.getMin(name)) + ", " + std::to_string(bin.second.getMax(name)) + "]");
         }
         // Print mainBinIndices if available
         auto idxIt = mainBinIndices.find(bin.first);
-        std::cout << mainBinIndices.size() << std::endl;
         if (idxIt != mainBinIndices.end()) {
             std::string idxStr = "  Indices: [";
             for (size_t i = 0; i < idxIt->second.size(); ++i) {
@@ -75,12 +74,12 @@ void Grid::printGridSummary(int maxEntries) const {
                 if (i + 1 < idxIt->second.size()) idxStr += ", ";
             }
             idxStr += "]";
-            LOG_INFO(idxStr);
+            LOG_DEBUG(idxStr);
         }
         ++count;
     }
-    LOG_INFO(std::string("Total main bins: ") + std::to_string(mainBins.size()));
-    LOG_INFO(std::string("Total bins: ") + std::to_string(totalBins));
+    LOG_DEBUG(std::string("Total main bins: ") + std::to_string(mainBins.size()));
+    LOG_DEBUG(std::string("Total bins: ") + std::to_string(totalBins));
 }
 
 

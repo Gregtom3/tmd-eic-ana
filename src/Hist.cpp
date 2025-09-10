@@ -31,7 +31,12 @@ HistParams Hist::getParams(const std::string& var, int nbins, double xmin, doubl
     return params;
 }
 
-Hist::Hist(TTree* tree) : tree(tree) {}
+Hist::Hist(TTree* tree) : tree(tree) {
+    m_hasWeightBranch = tree->GetBranch("Weight") != nullptr;
+    if (m_hasWeightBranch) {
+        LOG_INFO("TTree has a 'Weight' branch. It will be used in histogram filling.");
+    }
+}
 
 void Hist::fillHistograms(const std::string& var, const std::map<std::string, TCut>& binTCuts) {
     histMap[var].clear();
@@ -64,7 +69,9 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
             std::to_string(params.nbins) + "," +
             std::to_string(params.xmin) + "," +
             std::to_string(params.xmax) + ")";
-        tree->Draw(drawCmd.c_str(), cut, "goff");
+        
+        TCut weighted_cut = m_hasWeightBranch ? cut * "Weight" : cut;
+        tree->Draw(drawCmd.c_str(), weighted_cut, "goff");
 
         TH1D* h = static_cast<TH1D*>(gDirectory->Get(histName.c_str()));
         if (!h) {
@@ -153,8 +160,8 @@ void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::ve
         //histMap[var][binIndex]->SetMinimum(globalMin);
         //histMap[var][binIndex]->SetMaximum(globalMax);
         histMap[var][binIndex]->Draw();
-        DrawMeanTLatex(meanMap[binKey], axisLabels, 3, 0.15, 0.92);
-        LOG_PRINT("Drawing bin " + binKey + " at " + std::to_string(padIndex));
+        DrawMeanTLatex(meanMap[binKey], axisLabels, 6, 0.15, 0.92);
+        LOG_DEBUG("Drawing bin " + binKey + " at " + std::to_string(padIndex));
         histMap[var][binIndex]->SetTitle("");
         double x_left  = gPad->GetXlowNDC();             // left edge of pad in canvas NDC
         double x_right = x_left + gPad->GetWNDC();       // right edge
@@ -255,7 +262,8 @@ void Hist::computeMeans(const std::string& binKey, const TCut& cut) {
             std::to_string(params.nbins) + "," +
             std::to_string(params.xmin) + "," +
             std::to_string(params.xmax) + ")";
-        tree->Draw(drawCmd.c_str(), cut, "goff");
+        TCut weighted_cut = m_hasWeightBranch ? cut * "Weight" : cut;
+        tree->Draw(drawCmd.c_str(), weighted_cut, "goff");
         TH1D* h = static_cast<TH1D*>(gDirectory->Get(histName.c_str()));
         double mean = h ? h->GetMean() : 0.0;
         meanMap[binKey][var] = mean;

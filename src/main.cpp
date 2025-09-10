@@ -51,18 +51,18 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    LOG_PRINT("[main.cpp] Successfully loaded ROOT file and TTree.");
+    LOG_INFO("[main.cpp] Successfully loaded ROOT file and TTree.");
     tmd.setMaxEntries(args.maxEntries);
     if(args.maxEntries>0)
-        LOG_PRINT("[main.cpp] Set max entries to: " + std::to_string(args.maxEntries));
+        LOG_INFO("[main.cpp] Set max entries to: " + std::to_string(args.maxEntries));
 
     tmd.loadTable(args.energyConfig);
-    LOG_PRINT("[main.cpp] Successfully loaded table for energy config: " + args.energyConfig);
+    LOG_INFO("[main.cpp] Successfully loaded table for energy config: " + args.energyConfig);
 
     tmd.buildGrid({"X","Q"});
     const Grid* grid = tmd.getGrid();
     grid->printGridSummary(5); // Print summary of first 5 bins
-    LOG_PRINT("[main.cpp] Successfully built grid based on table data.");
+    LOG_INFO("[main.cpp] Successfully built grid based on table data.");
 
     tmd.fillHistograms("PhPerp", args.outDir, args.overwrite);
     //tmd.plotBin("PhPerp", 0);
