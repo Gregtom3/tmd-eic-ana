@@ -150,8 +150,8 @@ void Hist::plot2DMap(const std::string& var, const std::map<std::string, std::ve
         int padIndex = col + flippedRow*nCols + 1;
         c->cd(padIndex);
         ApplyHistStyle(histMap[var][binIndex]);
-        histMap[var][binIndex]->SetMinimum(globalMin);
-        histMap[var][binIndex]->SetMaximum(globalMax);
+        //histMap[var][binIndex]->SetMinimum(globalMin);
+        //histMap[var][binIndex]->SetMaximum(globalMax);
         histMap[var][binIndex]->Draw();
         LOG_PRINT("Drawing bin " + binKey + " at " + std::to_string(padIndex));
         histMap[var][binIndex]->SetTitle("");
