@@ -77,7 +77,6 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
         // Compute means for this bin only
         computeMeans(binKey, cut);
         ++idx;
-        break;
     }
     std::cout << std::endl; // newline after progress bar
 }
