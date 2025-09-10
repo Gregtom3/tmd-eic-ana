@@ -15,17 +15,16 @@ public:
     std::vector<std::string> getBinNames() const;
     std::vector<std::string> getMainBinNames() const;
     void printGridSummary(int maxEntries = -1) const; 
+    void computeMainBinIndices();
     const std::map<std::string, Bin>& getBins() const;
+    const std::map<std::string, std::vector<int>>& getMainBinIndices() const { return mainBinIndices; }
 private:
     const std::vector<std::string> binNames = {"X", "Q", "Z", "PhPerp"};
     std::vector<std::string> mainBinNames;
     std::map<std::string, std::vector<double>> mainBinMeans;
     std::map<std::string, Bin> mainBins;
     std::map<std::string, std::vector<int>> mainBinIndices;
-public:
-    // Call after all bins are added to compute integer indices
-    void computeMainBinIndices();
-    const std::map<std::string, std::vector<int>>& getMainBinIndices() const { return mainBinIndices; }
+
 };
 
 #endif // GRID_H
