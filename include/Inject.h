@@ -8,15 +8,16 @@
 #include "TCut.h"
 #include "Bin.h"
 #include "Grid.h"
+#include "Table.h"
 
 class Inject {
 public:
-    Inject(TTree* tree);
+    Inject(TTree* tree, const Table* table);
     ~Inject();
-    // Inject and extract asymmetry for a user-desired bin
-    std::pair<double, double> injectExtractForBin(const Bin& bin, double A = 0.1);
+    std::pair<double, double> injectExtractForBin(const Bin& bin, double A);
 private:
     TTree* tree;
+    const Table* table;
 };
 
 #endif // INJECT_H

@@ -89,7 +89,7 @@ void TMD::inject_extract(int bin_index, double A) {
     auto it = bins.begin();
     std::advance(it, bin_index);
     const Bin& bin = it->second;
-    Inject injector(tree);
+    Inject injector(tree, table.get());
     std::pair<double,double> extracted_A = injector.injectExtractForBin(bin, A);
     LOG_INFO("Bin " + std::to_string(bin_index) + ": Injected A = " + std::to_string(A) + ", Extracted A = " + std::to_string(extracted_A.first) + " +/- " + std::to_string(extracted_A.second));
 }

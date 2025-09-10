@@ -12,7 +12,7 @@
 
 using namespace RooFit;
 
-Inject::Inject(TTree* tree) : tree(tree) {}
+Inject::Inject(TTree* tree, const Table* table) : tree(tree), table(table) {}
 Inject::~Inject() {}
 
 std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) {
@@ -40,7 +40,8 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
         const RooArgSet* row = data.get(i);
         PhiH.setVal(row->getRealValue("PhiH"));
         PhiS.setVal(row->getRealValue("PhiS"));
-        double pPlus = 0.5 * (1 + A * std::sin(PhiH.getVal()));
+        double asymmetry = table->getAUT(row->getRealValue("X"), row->getRealValue("Q"), row->getRealValue("Z"), row->getRealValue("PhPerp"));
+        double pPlus = 0.5 * (1 + asymmetry * std::sin(PhiH.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
         X.setVal(row->getRealValue("X"));
         Q.setVal(row->getRealValue("Q"));
