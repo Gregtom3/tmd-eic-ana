@@ -125,17 +125,27 @@ void Grid::computeMainBinIndices() {
                           if (a.first == b.first) return a.second < b.second;
                           return a.first < b.first;
                       });
-            // Merge: keep only outer intervals, drop contained ones
+            // Merge overlapping or contained intervals into groups
             std::vector<std::pair<double,double>> merged;
-            for (auto& intv : vec) {
-                bool contained = false;
-                for (auto& m : merged) {
-                    if (m.first <= intv.first && intv.second <= m.second) {
-                        contained = true;
-                        break;
+            if (!vec.empty()) {
+                std::sort(vec.begin(), vec.end(),
+                        [](auto& a, auto& b) {
+                            if (a.first == b.first) return a.second < b.second;
+                            return a.first < b.first;
+                        });
+
+                auto current = vec[0];
+                for (size_t i = 1; i < vec.size(); ++i) {
+                    if (vec[i].first >= current.first && vec[i].second <= current.second) {
+                        // vec[i] is contained in current → skip it
+                        continue;
+                    } else {
+                        // No overlap → push and start new
+                        merged.push_back(current);
+                        current = vec[i];
                     }
                 }
-                if (!contained) merged.push_back(intv);
+                merged.push_back(current);
             }
             vec = merged;
         }

@@ -7,6 +7,7 @@
 #include "TDirectory.h"
 #include "TFile.h"
 #include "TKey.h"
+#include "TEntryList.h"
 #include "Style.h"
 #include "TLatex.h"
 #include "TArrow.h"
@@ -87,7 +88,8 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
     std::vector<std::vector<double>> sumWV(totalBins, std::vector<double>(meanVars.size(), 0.0));
 
     // Single pass over entries with progress
-    Long64_t nentries = tree->GetEntries();
+    TEntryList* el = tree->GetEntryList();
+    Long64_t nentries = (el ? el->GetN() : tree->GetEntries());
     util::ProgressBar pbar(static_cast<size_t>(nentries), 60, "Filling");
     for (Long64_t i = 0; i < nentries; ++i) {
         tree->GetEntry(i);
