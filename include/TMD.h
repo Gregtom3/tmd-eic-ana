@@ -23,6 +23,7 @@ public:
     void setMaxEntries(Long64_t maxEntries);
     TTree* getTree() const;
     std::map<std::string, TCut> generateBinTCuts(const Grid& grid) const;
+    void loadTable();
     void loadTable(const std::string& energyConfig);
     void buildGrid(const std::vector<std::string>& binNames);
     const Table* getTable() const;

@@ -67,6 +67,11 @@ TTree* TMD::getTree() const {
     return tree;
 }
 
+void TMD::loadTable(){
+    this->energyConfig = "default"; // store for cache naming
+    table = std::make_unique<Table>();
+}
+
 void TMD::loadTable(const std::string& energyConfig) {
     this->energyConfig = energyConfig; // store for cache naming
     table = std::make_unique<Table>(energyConfig);

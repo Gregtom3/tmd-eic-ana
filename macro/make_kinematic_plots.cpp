@@ -20,7 +20,8 @@ int main(int argc, char** argv) {
     if (args.maxEntries > 0)
         LOG_INFO("[make_kinematic_plots] Set max entries to: " + std::to_string(args.maxEntries));
 
-    tmd.loadTable(args.energyConfig);
+    // No arguments --> default table with single global bin
+    tmd.loadTable();
     tmd.buildGrid({"X","Q","Z","PhPerp"});
 
     tmd.fillHistograms("X", args.outDir, args.overwrite);
