@@ -44,6 +44,7 @@ void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binInde
     const std::string& binKey = binKeysMap.at(var)[binIndex];
 
     c->Update();
+    c->Draw();
     std::string filename = outpath;
     if (filename.empty()) {
         filename = "plot1D_" + var + "_" + binKey + ".png";
