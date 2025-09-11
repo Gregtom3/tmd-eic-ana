@@ -55,7 +55,7 @@ int main() {
         PhPerp = TruePhPerp + rng.Gaus(0, 0.01);
         PhiH = TruePhiH + rng.Gaus(0, 0.01);
         PhiS = TruePhiS + rng.Gaus(0, 0.01);
-        Y = TrueY + rng.Gaus(0, 0.01);
+        Y = TrueY + rng.Gaus(0,0.1);
 
         Weight = 1.0f;
         Spin_idx = 0;
