@@ -15,12 +15,12 @@ int main(int argc, char** argv) {
         LOG_FATAL("Failed to load ROOT file or TTree.");
         return 1;
     }
-
     LOG_INFO("[main.cpp] Successfully loaded ROOT file and TTree.");
     tmd.setMaxEntries(args.maxEntries);
     if (args.maxEntries > 0)
         LOG_INFO("[main.cpp] Set max entries to: " + std::to_string(args.maxEntries));
-
+    tmd.setTargetPolarization(0.7);
+    LOG_INFO("[main.cpp] Set target polarization to 0.7");
     tmd.loadTable(args.energyConfig);
     LOG_INFO("[main.cpp] Successfully loaded table for energy config: " + args.energyConfig);
 

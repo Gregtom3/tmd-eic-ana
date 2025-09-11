@@ -20,6 +20,8 @@
 class TMD {
 public:
     TMD(const std::string& filename, const std::string& treename);
+    void setTargetPolarization(double pol) { targetPolarization = pol; }
+    double getTargetPolarization() const { return targetPolarization; }
     ~TMD();
     bool isLoaded() const;
     void setMaxEntries(Long64_t maxEntries);
@@ -37,7 +39,6 @@ public:
     void queueInjection(const InjectionProject::Job& job);
     void runQueuedInjections();
 
-private:
     TFile* file;
     TTree* tree;
     std::string filename;
@@ -57,6 +58,9 @@ private:
     double mc_lumi{0.0};     // computed mc luminosity (nb^-1)
     double exp_lumi{0.0};    // computed expected luminosity (nb^-1)
     double scale{1.0};       // scale = exp_lumi / mc_lumi
+
+    // Target polarization
+    double targetPolarization{1.0};
 };
 
 #endif // TMD_H

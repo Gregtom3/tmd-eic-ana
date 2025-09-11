@@ -25,7 +25,7 @@ public:
         std::optional<double> A_opt;
     };
 
-    InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid);
+    InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization);
     void addJob(const Job& job);
     bool run();
 
@@ -36,8 +36,8 @@ private:
     std::string outPrefix;
     const Table* table;
     double scale;
-
     const Grid* grid;
+    double targetPolarization;
     std::vector<Job> jobs;
 };
 

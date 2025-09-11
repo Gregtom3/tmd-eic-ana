@@ -3,8 +3,8 @@
 #include <yaml-cpp/yaml.h>
 #include <iostream>
 
-InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid)
-    : filename(filename), tree(tree), table(table), scale(scale), grid(grid) {
+InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization)
+    : filename(filename), tree(tree), table(table), scale(scale), grid(grid), targetPolarization(targetPolarization) {
         // Create outprefix
         std::string rootStem = std::filesystem::path(filename).stem().string();
         outPrefix = std::string("injection_") + rootStem + "_" + tree->GetName();
@@ -33,7 +33,7 @@ bool InjectionProject::run() {
         auto it = bins.begin();
         std::advance(it, job.bin_index);
         const Bin& bin = it->second;
-        Inject injector(tree, table, scale);
+        Inject injector(tree, table, scale, targetPolarization);
         std::vector<double> extractedVals;
         std::vector<double> extractedErrs;
         for (int i = 0; i < job.n; ++i) {

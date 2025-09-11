@@ -27,7 +27,10 @@ int main() {
     tmd.getGrid()->printGridSummary();
 
     // Run a simple inject/extract on bin 0
-    tmd.inject_extract(0, 0.2);
+    const int n_injections = 5;
+    const int bin_index = 0;
+    tmd.queueInjection({ .bin_index = bin_index, .n = n_injections, .A_opt = 0.3 });
+    tmd.runQueuedInjections();
     LOG_INFO("inject_extract completed");
 
     std::cout << "Test passed." << std::endl;

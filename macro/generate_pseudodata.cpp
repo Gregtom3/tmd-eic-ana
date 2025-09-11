@@ -16,9 +16,9 @@ int main() {
     TFile fout(outpath.c_str(), "RECREATE");
     TTree tree("tree", "Toy Tree");
 
-    float X, Q2, Z, PhPerp, PhiH, PhiS;
+    float X, Q2, Z, PhPerp, PhiH, PhiS, Y;
     float Weight = 1.0f;
-    float TrueX, TrueQ2, TrueZ, TruePhPerp, TruePhiH, TruePhiS;
+    float TrueX, TrueQ2, TrueZ, TruePhPerp, TruePhiH, TruePhiS, TrueY;
     int Spin_idx;
 
     tree.Branch("X", &X, "X/F");
@@ -27,13 +27,14 @@ int main() {
     tree.Branch("PhPerp", &PhPerp, "PhPerp/F");
     tree.Branch("PhiH", &PhiH, "PhiH/F");
     tree.Branch("PhiS", &PhiS, "PhiS/F");
-
+    tree.Branch("Y", &Y, "Y/F");
     tree.Branch("TrueX", &TrueX, "TrueX/F");
     tree.Branch("TrueQ2", &TrueQ2, "TrueQ2/F");
     tree.Branch("TrueZ", &TrueZ, "TrueZ/F");
     tree.Branch("TruePhPerp", &TruePhPerp, "TruePhPerp/F");
     tree.Branch("TruePhiH", &TruePhiH, "TruePhiH/F");
     tree.Branch("TruePhiS", &TruePhiS, "TruePhiS/F");
+    tree.Branch("TrueY", &TrueY, "TrueY/F");
     tree.Branch("Weight", &Weight, "Weight/F");
     tree.Branch("Spin_idx", &Spin_idx, "Spin_idx/I");
 
@@ -46,6 +47,7 @@ int main() {
         TruePhPerp = rng.Uniform(0.0, 5.0);
         TruePhiH = rng.Uniform(-TMath::Pi(), TMath::Pi());
         TruePhiS = rng.Uniform(-TMath::Pi(), TMath::Pi());
+        TrueY = rng.Uniform(0.0, 1.0);
 
         X = TrueX + rng.Gaus(0, 0.01);
         Q2 = TrueQ2 + rng.Gaus(0, 0.1);
@@ -53,6 +55,7 @@ int main() {
         PhPerp = TruePhPerp + rng.Gaus(0, 0.01);
         PhiH = TruePhiH + rng.Gaus(0, 0.01);
         PhiS = TruePhiS + rng.Gaus(0, 0.01);
+        Y = TrueY + rng.Gaus(0, 0.01);
 
         Weight = 1.0f;
         Spin_idx = 0;

@@ -13,10 +13,11 @@
 
 using namespace RooFit;
 
-Inject::Inject(TTree* tree, const Table* table, double scale)
+Inject::Inject(TTree* tree, const Table* table, double scale, double targetPolarization)
     : tree(tree)
     , table(table)
-    , m_scale(scale) {}
+    , m_scale(scale)
+    , targetPolarization(targetPolarization) {}
 Inject::~Inject() {}
 
 std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt) {
@@ -29,11 +30,12 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     const bool hasQ2 = (tree->GetBranch("Q2") != nullptr);
     const bool hasTrueQ = (tree->GetBranch("TrueQ") != nullptr);
     const bool hasTrueQ2 = (tree->GetBranch("TrueQ2") != nullptr);
-
+    RooRealVar Y("Y", "Y", 0.0, 1.0);
     RooRealVar PhiH("PhiH", "PhiH", -TMath::Pi(), TMath::Pi());
     RooRealVar PhiS("PhiS", "PhiS", -TMath::Pi(), TMath::Pi());
     RooRealVar X("X", "X", bin.getMin("X"), bin.getMax("X"));
-
+    // Create a Depolarization FormulaVar from Y
+    RooFormulaVar Depol1("Depol1", "(1 - Y)/(1 - Y + 0.5 * Y * Y)", RooArgList(Y));
     // Q handling: prefer Q, otherwise create a formula Q = sqrt(Q2)
     RooRealVar* Q_ptr = nullptr;
     RooRealVar* Q2_ptr = nullptr;
@@ -64,6 +66,8 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
 
     RooRealVar Z("Z", "Z", bin.getMin("Z"), bin.getMax("Z"));
     RooRealVar PhPerp("PhPerp", "PhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
+    RooRealVar TrueY("TrueY", "TrueY", 0.0, 1.0);
+    RooFormulaVar TrueDepol1("TrueDepol1", "(1 - TrueY)/(1 - TrueY + 0.5 * TrueY * TrueY)", RooArgList(TrueY));
     RooRealVar TruePhiH("TruePhiH", "TruePhiH", -TMath::Pi(), TMath::Pi());
     RooRealVar TruePhiS("TruePhiS", "TruePhiS", -TMath::Pi(), TMath::Pi());
 
@@ -90,15 +94,16 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         TrueQ_ptr = nullptr;
     } else {
         std::cerr << "Inject: neither 'TrueQ' nor 'TrueQ2' branch found in tree" << std::endl;
+        // Return default value if neither TrueQ nor TrueQ2 is present
+        return std::make_pair(0.0, 0.0);
     }
-
     RooRealVar TrueX("TrueX", "TrueX", bin.getMin("X"), bin.getMax("X"));
     RooRealVar TrueZ("TrueZ", "TrueZ", bin.getMin("Z"), bin.getMax("Z"));
     RooRealVar TruePhPerp("TruePhPerp", "TruePhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
-
     RooRealVar Spin_idx("Spin_idx", "Spin_idx", -1, 1);
     RooRealVar Weight("Weight", "Weight", 0, 1e9);
-
+    RooRealVar tPol("tPol", "Target Polarization", targetPolarization); 
+    tPol.setConstant(true);
     // Build the observable set. Use the RooFormulaVar objects if created.
     RooArgSet obs;
     obs.add(PhiH);
@@ -155,6 +160,8 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         const RooArgSet* row = data.get(i);
         TruePhiH.setVal(row->getRealValue("TruePhiH"));
         TruePhiS.setVal(row->getRealValue("TruePhiS"));
+        TrueY.setVal(row->getRealValue("TrueY"));
+        double true_depol1 = TrueDepol1.getVal();
         double trueq_val = 0.0;
         if (hasTrueQ) {
             trueq_val = row->getRealValue("TrueQ");
@@ -162,7 +169,6 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
             // TrueQ = sqrt(TrueQ2)
             trueq_val = std::sqrt(row->getRealValue("TrueQ2"));
         }
-        
         // Determine asymmetry to inject
         double asymmetry = 0.0;
         if(A_opt.has_value()) {
@@ -172,8 +178,12 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
             asymmetry = table->lookupAUT(row->getRealValue("TrueX"), trueq_val, row->getRealValue("TrueZ"),
                                         row->getRealValue("TruePhPerp"));
         }
-        double pPlus = 0.5 * (1 + asymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
+        double pPlus = 0.5 * (1 + true_depol1 * asymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
+        if(rng.Rndm() > targetPolarization){
+            // Set Spin_idx to -1 or 1 with 50/50 chance
+            Spin_idx.setVal(rng.Rndm() < 0.5 ? 1 : -1);
+        }
         X.setVal(row->getRealValue("X"));
         double q_val = 0.0;
         if (hasQ) {
@@ -199,13 +209,13 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     double val = 0.0;
     double error = 0.0;
     if (extract_with_true) {
-        RooGenericPdf model("model", "1 + Spin_idx * A * sin(TruePhiH+TruePhiS)", RooArgList(TruePhiH, TruePhiS, Spin_idx, A_fit));
+        RooGenericPdf model("model", "1 + TrueDepol1 * tPol * Spin_idx * A * sin(TruePhiH+TruePhiS)", RooArgList(TruePhiH, TruePhiS, TrueDepol1, tPol, Spin_idx, A_fit));
         RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
         val = A_fit.getVal();
         error = A_fit.getError();
         delete fitResult;
     } else {
-        RooGenericPdf model("model", "1 + Spin_idx * A * sin(PhiH+PhiS)", RooArgList(PhiH, PhiS, Spin_idx, A_fit));
+        RooGenericPdf model("model", "1 + Depol1 * tPol * Spin_idx * A * sin(PhiH+PhiS)", RooArgList(PhiH, PhiS, Depol1, tPol, Spin_idx, A_fit));
         RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
         val = A_fit.getVal();
         error = A_fit.getError();
