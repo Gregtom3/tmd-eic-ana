@@ -6,6 +6,10 @@
 #include <sstream>
 #include <stdexcept>
 
+Table::Table() {
+    createDefaultTable();
+}
+
 Table::Table(const std::string& energyConfig) {
     std::string filename = getFilename(energyConfig);
     readTable(filename);
@@ -22,6 +26,23 @@ std::string Table::getFilename(const std::string& energyConfig) const {
         return "tables/AUT_average_PV20_EPIC_piplus_sqrts=140.712.txt";
     LOG_ERROR(std::string("Unknown energy configuration: ") + energyConfig);
     return "";
+}
+
+void Table::createDefaultTable() {
+    // Use lower and upper bound from compiler
+    TableRow row{};
+    row.itar = 1;
+    row.ihad = 1;
+    row.X_min = -999999;
+    row.X_max = 999999;
+    row.Q_min = -999999;
+    row.Q_max = 999999;
+    row.Z_min = -999999;
+    row.Z_max = 999999;
+    row.PhPerp_min = -999999;
+    row.PhPerp_max = 999999;
+    row.AUT = 0.0;
+    rows.push_back(row);
 }
 
 void Table::readTable(const std::string& filename) {

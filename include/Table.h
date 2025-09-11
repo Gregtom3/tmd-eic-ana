@@ -18,6 +18,8 @@ struct TableRow {
 
 class Table {
 public:
+    Table();
+
     // energyConfig: "5x41", "10x100", "18x275"
     Table(const std::string& energyConfig);
 
@@ -33,6 +35,7 @@ private:
     std::vector<TableRow> rows;
     std::string getFilename(const std::string& energyConfig) const;
     void readTable(const std::string& filename);
+    void createDefaultTable();
 };
 
 #endif // TABLE_H
