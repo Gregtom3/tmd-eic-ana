@@ -31,7 +31,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 # ----------------
 # Tests
 # ----------------
-TESTS = $(BIN_DIR)/test_load_tables $(BIN_DIR)/test_grids
+TESTS = $(BIN_DIR)/test_load_tables $(BIN_DIR)/test_grids $(BIN_DIR)/test_generate_and_use_tree
 
 test: $(TESTS)
 	./$(BIN_DIR)/test_load_tables
@@ -44,6 +44,10 @@ $(BIN_DIR)/test_load_tables: tests/test_load_tables.cpp src/Table.cpp src/Grid.c
 $(BIN_DIR)/test_grids: tests/test_grids.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+
+$(BIN_DIR)/test_generate_and_use_tree: tests/test_generate_and_use_tree.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/TMD.cpp src/Hist.cpp src/Inject.cpp src/Plotter.cpp
+	mkdir -p $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -lRooFit -lRooFitCore
 
 # ----------------
 # Cleanup
