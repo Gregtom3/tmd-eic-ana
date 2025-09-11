@@ -8,9 +8,8 @@
 #include <vector>
 #include <iostream>
 
-int main() {
-
-    Args args = parseArgs(__argc, __argv);
+int main(int argc, char** argv) {
+    Args args = parseArgs(argc, argv);
 
     TMD tmd(args.filename, args.treename);
     if (!tmd.isLoaded()) {
