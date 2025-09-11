@@ -29,5 +29,10 @@ int main(int argc, char** argv) {
     tmd.fillHistograms("Z", args.outDir, args.overwrite);
     tmd.fillHistograms("PhPerp", args.outDir, args.overwrite);
 
+    // Save histograms
+    tmd.plot1DBin("X", 0, args.outDir + "/kinematic_X.png");
+    tmd.plot1DBin("Q", 0, args.outDir + "/kinematic_Q.png");
+    tmd.plot1DBin("Z", 0, args.outDir + "/kinematic_Z.png");
+    tmd.plot1DBin("PhPerp", 0, args.outDir + "/kinematic_PhPerp.png");
     return 0;
 }
