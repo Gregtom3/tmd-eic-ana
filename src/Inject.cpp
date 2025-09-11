@@ -13,9 +13,10 @@
 
 using namespace RooFit;
 
-Inject::Inject(TTree* tree, const Table* table)
+Inject::Inject(TTree* tree, const Table* table, double scale)
     : tree(tree)
-    , table(table) {}
+    , table(table)
+    , m_scale(scale) {}
 Inject::~Inject() {}
 
 std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) {
@@ -164,7 +165,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
         PhPerp.setVal(row->getRealValue("PhPerp"));
         PhiH.setVal(row->getRealValue("PhiH"));
         PhiS.setVal(row->getRealValue("PhiS"));
-        dataUpdate.add(obs, data.weight());
+        dataUpdate.add(obs, data.weight() * m_scale);
     }
 
     RooRealVar A_fit("A", "A", 0.0, -1.0, 1.0);

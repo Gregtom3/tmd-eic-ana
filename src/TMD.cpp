@@ -135,7 +135,7 @@ void TMD::inject_extract(int bin_index, double A) {
     auto it = bins.begin();
     std::advance(it, bin_index);
     const Bin& bin = it->second;
-    Inject injector(tree, table.get());
+    Inject injector(tree, table.get(), scale);
     std::pair<double, double> extracted_A = injector.injectExtractForBin(bin, A);
     LOG_INFO("Bin " + std::to_string(bin_index) + ": Injected A = " + std::to_string(A) +
              ", Extracted A = " + std::to_string(extracted_A.first) + " +/- " + std::to_string(extracted_A.second));
@@ -195,8 +195,8 @@ void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool
         }
     }
 
-    // Build histograms and save
-    hist->fillHistograms(var, binTCuts);
+    // Build histograms and save (apply MC scale)
+    hist->fillHistograms(var, binTCuts, scale);
     hist->saveHistCache(cachePath.string(), var);
     hist->saveMeanCache(cachePath.string(), var);
 }

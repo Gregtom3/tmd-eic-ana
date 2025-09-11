@@ -40,7 +40,7 @@ Hist::Hist(TTree* tree)
     }
 }
 
-void Hist::fillHistograms(const std::string& var, const std::map<std::string, TCut>& binTCuts) {
+void Hist::fillHistograms(const std::string& var, const std::map<std::string, TCut>& binTCuts, double scale) {
     // Prepare containers
     histMap[var].clear();
     binKeysMap[var].clear();
@@ -97,6 +97,7 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
 
         double v = varFormula->EvalInstance();
         double w = m_hasWeightBranch ? weightFormula->EvalInstance() : 1.0;
+        w *= scale;
         // evaluate mean vars once
         std::vector<double> mvals;
         mvals.reserve(meanFormulas.size());
@@ -169,25 +170,6 @@ bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) c
     f->Write();
     LOG_INFO("Saved histogram cache: " + cacheFile);
     return true;
-}
-
-// Compute means for a single bin using temporary 1D histograms
-void Hist::computeMeans(const std::string& binKey, const TCut& cut) {
-    std::vector<std::string> vars = {"X", "Q", "Z", "PhPerp"};
-    for (const auto& var : vars) {
-        std::string histName = "mean_tmp_" + var + "_" + binKey;
-        auto params = getParams(var, -1, -1, -1);
-        std::string drawCmd = var + ">>" + histName + "(" + std::to_string(params.nbins) + "," + std::to_string(params.xmin) + "," +
-                              std::to_string(params.xmax) + ")";
-        TCut weighted_cut = m_hasWeightBranch ? cut * "Weight" : cut;
-        tree->Draw(drawCmd.c_str(), weighted_cut, "goff");
-        TH1D* h = static_cast<TH1D*>(gDirectory->Get(histName.c_str()));
-        double mean = h ? h->GetMean() : 0.0;
-        meanMap[binKey][var] = mean;
-        if (h) {
-            h->Delete();
-        }
-    }
 }
 
 // Save meanMap to cache as a TTree

@@ -12,13 +12,14 @@
 
 class Inject {
 public:
-    Inject(TTree* tree, const Table* table);
+    Inject(TTree* tree, const Table* table, double scale = 1.0);
     ~Inject();
     std::pair<double, double> injectExtractForBin(const Bin& bin, double A);
 
 private:
     TTree* tree;
     const Table* table;
+    double m_scale{1.0};
 };
 
 #endif // INJECT_H

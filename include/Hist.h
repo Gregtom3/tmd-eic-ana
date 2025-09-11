@@ -18,7 +18,7 @@ struct HistParams {
 class Hist {
 public:
     Hist(TTree* tree);
-    void fillHistograms(const std::string& var, const std::map<std::string, TCut>& binTCuts);
+    void fillHistograms(const std::string& var, const std::map<std::string, TCut>& binTCuts, double scale = 1.0);
     HistParams getDefaultParams() const {
         return defaultParams;
     }
@@ -47,7 +47,6 @@ private:
     static const std::map<std::string, HistParams> varParams;
     static const HistParams defaultParams;
     HistParams getParams(const std::string& var, int nbins, double xmin, double xmax) const;
-    void computeMeans(const std::string& binKey, const TCut& cut);
     std::unordered_map<std::string, std::vector<TH1*>> histMap;                       // store generic TH1*
     std::unordered_map<std::string, std::vector<std::string>> binKeysMap;             // var -> list of bin keys
     std::unordered_map<std::string, std::vector<TCut>> binCutsMap;                    // var -> list of cuts

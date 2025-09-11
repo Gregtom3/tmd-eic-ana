@@ -88,8 +88,15 @@ inline double computeScale(long long totalEvents, double xsTotal, const std::str
     auto it = IntegratedLuminosities.find(energyConfig);
     if (it == IntegratedLuminosities.end()) {
         std::cerr << "computeScale: unknown energyConfig '" << energyConfig << "' - cannot compute scale.\n";
-        out_mc = 0.0;
-        out_exp = 0.0;
+        std::cerr << "Available configurations:";
+        for (const auto& kv : IntegratedLuminosities) {
+            std::cerr << " " << kv.first;
+        }
+        std::cerr << std::endl;
+        std::cerr << "Returning scale=1.0" << std::endl;
+
+        out_mc = 1.0;
+        out_exp = 1.0;
         return 1.0;
     }
     L = it->second;
