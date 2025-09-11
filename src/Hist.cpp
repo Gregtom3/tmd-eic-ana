@@ -89,26 +89,7 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
     std::cout << std::endl; // newline after progress bar
 }
 
-void Hist::plotBin(const std::string& var, size_t binIndex) {
-    if (histMap.find(var) == histMap.end() || binIndex >= histMap.at(var).size()) {
-        std::cerr << "Invalid bin index or variable: " << var << ", " << binIndex << std::endl;
-        return;
-    }
-    TApplication app("app", nullptr, nullptr);
-    TCanvas* c = new TCanvas("c","c",800,600);
-    ApplyGlobalStyle();
-    ApplyHistStyle(histMap[var][binIndex]);
-    histMap[var][binIndex]->Draw();
 
-    const std::string& binKey = binKeysMap[var][binIndex];
-    std::vector<std::string> meanVars = {"X", "Q", "Z", "PhPerp"};
-    int meanPrecision = 3;
-    DrawMeanTLatex(meanMap[binKey], meanVars, meanPrecision, 0.15, 0.92);
-
-    c->Update();
-    app.Run();
-    delete c; c=nullptr;
-}
 
 bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) const {
     auto it = histMap.find(var);

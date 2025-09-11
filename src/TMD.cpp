@@ -164,9 +164,9 @@ void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool
     hist->saveMeanCache(cachePath.string(), var);
 }
 
-void TMD::plotBin(const std::string& var, size_t binIndex) {
-    if (!hist) return;   
-    hist->plotBin(var, binIndex);  
+void TMD::plot1DBin(const std::string& var, size_t binIndex, const std::string& outpath) {
+    if (!hist || !plotter) return;
+    plotter->plot1DBin(var, hist.get(), binIndex, outpath);
 }
 
 void TMD::plot2DMap(const std::string& var, const std::string& outpath) {

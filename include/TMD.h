@@ -29,7 +29,7 @@ public:
     const Grid* getGrid() const;
     const std::map<std::string, TCut>& getBinTCuts() const;
     void fillHistograms(const std::string& var, const std::string& outDir = "out", bool overwrite = false);
-    void plotBin(const std::string& var, size_t binIndex);
+    void plot1DBin(const std::string& var, size_t binIndex, const std::string& outpath = "");
     void plot2DMap(const std::string& var, const std::string& outpath);
     void inject_extract(int bin_index, double A = 0.1);
 private:

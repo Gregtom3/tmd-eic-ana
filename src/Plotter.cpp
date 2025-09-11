@@ -7,6 +7,40 @@
 #include "TLatex.h"
 #include <limits>
 
+void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binIndex, const std::string& outpath) {
+    if (!hist) {
+        std::cerr << "Hist pointer is null." << std::endl;
+        return;
+    }
+    const auto& histMap = hist->getHistMap();
+    const auto& binKeysMap = hist->getBinKeysMap();
+    const auto& meanMap = hist->getMeans();
+
+    if (histMap.find(var) == histMap.end() || binIndex >= histMap.at(var).size()) {
+        std::cerr << "Invalid bin index or variable: " << var << ", " << binIndex << std::endl;
+        return;
+    }
+    const auto& hists = histMap.at(var);
+    
+    TCanvas* c = new TCanvas("c","c",800,600);
+    ApplyGlobalStyle();
+    ApplyHistStyle(hists[binIndex]);
+    hists[binIndex]->Draw();
+
+    const std::string& binKey = binKeysMap.at(var)[binIndex];
+    std::vector<std::string> meanVars = {"X", "Q", "Z", "PhPerp"};
+    int meanPrecision = 3;
+    DrawMeanTLatex(meanMap.at(binKey), meanVars, meanPrecision, 0.15, 0.92);
+
+    c->Update();
+    std::string filename = outpath;
+    if (filename.empty()) {
+        filename = "plot1D_" + var + "_" + binKey + ".png";
+    }
+    c->SaveAs(filename.c_str());
+    delete c; c=nullptr;
+}
+
 void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* grid, const std::string& outpath) {
     if (!hist || !grid) {
         LOG_ERROR("Hist or Grid is null in Plotter::plot2DMap");
