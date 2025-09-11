@@ -31,23 +31,12 @@ TMD::TMD(const std::string& filename, const std::string& treename)
         tree = nullptr;
         return;
     }
-    // Attempt to read metadata vectors XsTotal (vector<double>) and TotalEvents (vector<int>) from the tree
-    if (tree->GetBranch("XsTotal") && tree->GetBranch("TotalEvents")) {
+    // Attempt to read metadata vectors XsTotal (vector<double>) and TotalEvents (vector<int>) from the file
+    if (file->Get("XsTotal") && file->Get("TotalEvents")) {
         std::vector<double>* xsPtr = nullptr;
         std::vector<int>* evPtr = nullptr;
-        // Set branch addresses and read first entry
-        tree->SetBranchAddress("XsTotal", &xsPtr);
-        tree->SetBranchAddress("TotalEvents", &evPtr);
-        if (tree->GetEntries() < 1) {
-            throw std::runtime_error("TMD: tree has no entries to read XsTotal/TotalEvents");
-        }
-        tree->GetEntry(0);
-        if (!xsPtr || !evPtr) {
-            throw std::runtime_error("TMD: XsTotal or TotalEvents branch read returned null pointer");
-        }
-        if (xsPtr->size() != 1 || evPtr->size() != 1) {
-            throw std::runtime_error("TMD: Expected single-value vectors for XsTotal and TotalEvents");
-        }
+        file->GetObject("XsTotal", xsPtr);
+        file->GetObject("TotalEvents", evPtr);
         xsTotal = xsPtr->at(0);
         totalEvents = static_cast<long long>(evPtr->at(0));
         LOG_INFO("Loaded XsTotal=" + std::to_string(xsTotal) + ", TotalEvents=" + std::to_string(totalEvents));

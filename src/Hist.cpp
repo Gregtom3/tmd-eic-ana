@@ -94,6 +94,7 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
     util::ProgressBar pbar(static_cast<size_t>(nentries), 60, "Filling");
     for (Long64_t i = 0; i < nentries; ++i) {
         tree->GetEntry(i);
+
         double v = varFormula->EvalInstance();
         double w = m_hasWeightBranch ? weightFormula->EvalInstance() : 1.0;
         // evaluate mean vars once

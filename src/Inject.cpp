@@ -5,9 +5,11 @@
 #include <RooFitResult.h>
 #include <RooGenericPdf.h>
 #include <RooRealVar.h>
+#include <RooFormulaVar.h>
 #include <TMath.h>
 #include <TRandom3.h>
 #include <iostream>
+#include <limits>
 
 using namespace RooFit;
 
@@ -17,29 +19,112 @@ Inject::Inject(TTree* tree, const Table* table)
 Inject::~Inject() {}
 
 std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) {
+    if (!tree) {
+        std::cerr << "[Inject::injectExtractForBin] Error: TTree pointer is null." << std::endl;
+        return std::make_pair(0.0, 0.0);
+    }
+
+    // Decide whether the tree provides Q/TrueQ or Q2/TrueQ2.
+    const bool hasQ = (tree->GetBranch("Q") != nullptr);
+    const bool hasQ2 = (tree->GetBranch("Q2") != nullptr);
+    const bool hasTrueQ = (tree->GetBranch("TrueQ") != nullptr);
+    const bool hasTrueQ2 = (tree->GetBranch("TrueQ2") != nullptr);
+
     RooRealVar PhiH("PhiH", "PhiH", -TMath::Pi(), TMath::Pi());
     RooRealVar PhiS("PhiS", "PhiS", -TMath::Pi(), TMath::Pi());
     RooRealVar X("X", "X", bin.getMin("X"), bin.getMax("X"));
-    RooRealVar Q("Q", "Q", bin.getMin("Q"), bin.getMax("Q"));
+
+    // Q handling: prefer Q, otherwise create a formula Q = sqrt(Q2)
+    RooRealVar* Q_ptr = nullptr;
+    RooRealVar* Q2_ptr = nullptr;
+    RooFormulaVar* Q_formula = nullptr;
+    if (hasQ) {
+        Q_ptr = new RooRealVar("Q", "Q", bin.getMin("Q"), bin.getMax("Q"));
+    } else if (hasQ2) {
+        // create Q2 real var (will be filled from the tree) and a formula Q = sqrt(Q2)
+        double q2min = bin.getMin("Q") * bin.getMin("Q");
+        double q2max = bin.getMax("Q") * bin.getMax("Q");
+        Q2_ptr = new RooRealVar("Q2", "Q2", q2min, q2max);
+        Q_formula = new RooFormulaVar("Q", "sqrt(Q2)", RooArgList(*Q2_ptr));
+        Q_ptr = nullptr; // Q is represented by formula
+    } else {
+        std::cerr << "Inject: neither 'Q' nor 'Q2' branch found in tree" << std::endl;
+    }
+
     RooRealVar Z("Z", "Z", bin.getMin("Z"), bin.getMax("Z"));
     RooRealVar PhPerp("PhPerp", "PhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
     RooRealVar TruePhiH("TruePhiH", "TruePhiH", -TMath::Pi(), TMath::Pi());
     RooRealVar TruePhiS("TruePhiS", "TruePhiS", -TMath::Pi(), TMath::Pi());
+
+    // TrueQ handling analogous to Q
+    RooRealVar* TrueQ_ptr = nullptr;
+    RooRealVar* TrueQ2_ptr = nullptr;
+    RooFormulaVar* TrueQ_formula = nullptr;
+    if (hasTrueQ) {
+        TrueQ_ptr = new RooRealVar("TrueQ", "TrueQ", bin.getMin("Q"), bin.getMax("Q"));
+    } else if (hasTrueQ2) {
+        double tq2min = bin.getMin("Q") * bin.getMin("Q");
+        double tq2max = bin.getMax("Q") * bin.getMax("Q");
+        TrueQ2_ptr = new RooRealVar("TrueQ2", "TrueQ2", tq2min, tq2max);
+        TrueQ_formula = new RooFormulaVar("TrueQ", "sqrt(TrueQ2)", RooArgList(*TrueQ2_ptr));
+        TrueQ_ptr = nullptr;
+    } else {
+        std::cerr << "Inject: neither 'TrueQ' nor 'TrueQ2' branch found in tree" << std::endl;
+    }
+
     RooRealVar TrueX("TrueX", "TrueX", bin.getMin("X"), bin.getMax("X"));
-    RooRealVar TrueQ("TrueQ", "TrueQ", bin.getMin("Q"), bin.getMax("Q"));
     RooRealVar TrueZ("TrueZ", "TrueZ", bin.getMin("Z"), bin.getMax("Z"));
     RooRealVar TruePhPerp("TruePhPerp", "TruePhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
 
     RooRealVar Spin_idx("Spin_idx", "Spin_idx", -1, 1);
     RooRealVar Weight("Weight", "Weight", 0, 1e9);
-    RooArgSet obs(PhiH, PhiS, X, Q, Z, PhPerp, TruePhiH, TruePhiS, TrueX, TrueQ, TrueZ, TruePhPerp, Spin_idx, Weight);
+
+    // Build the observable set. Use the RooFormulaVar objects if created.
+    RooArgSet obs;
+    obs.add(PhiH);
+    obs.add(PhiS);
+    obs.add(X);
+    // RooDataSet cannot contain non-fundamental types (like RooFormulaVar).
+    // Add the underlying real variable (Q or Q2) to the observable set.
+    if (Q2_ptr) obs.add(*Q2_ptr); else if (Q_ptr) obs.add(*Q_ptr);
+    obs.add(Z);
+    obs.add(PhPerp);
+    obs.add(TruePhiH);
+    obs.add(TruePhiS);
+    obs.add(TrueX);
+    if (TrueQ2_ptr) obs.add(*TrueQ2_ptr); else if (TrueQ_ptr) obs.add(*TrueQ_ptr);
+    obs.add(TrueZ);
+    obs.add(TruePhPerp);
+    obs.add(Spin_idx);
+    obs.add(Weight);
 
     // Create a dataset from the tree, applying the bin cuts
-    std::string cut = "X >= " + std::to_string(bin.getMin("X")) + " && X <= " + std::to_string(bin.getMax("X")) +
-                      " && Q >= " + std::to_string(bin.getMin("Q")) + " && Q <= " + std::to_string(bin.getMax("Q")) +
-                      " && Z >= " + std::to_string(bin.getMin("Z")) + " && Z <= " + std::to_string(bin.getMax("Z")) +
-                      " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
-                      " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
+    // If the tree only has Q2, express the cut in Q2 (square the Q bounds) so
+    // RooFormula/TFormula doesn't attempt to compile a symbol 'Q' that isn't present.
+    std::string cut;
+    if (hasQ) {
+        cut = "X >= " + std::to_string(bin.getMin("X")) + " && X <= " + std::to_string(bin.getMax("X")) +
+              " && Q >= " + std::to_string(bin.getMin("Q")) + " && Q <= " + std::to_string(bin.getMax("Q")) +
+              " && Z >= " + std::to_string(bin.getMin("Z")) + " && Z <= " + std::to_string(bin.getMax("Z")) +
+              " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
+              " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
+    } else if (hasQ2) {
+        const double qmin = bin.getMin("Q");
+        const double qmax = bin.getMax("Q");
+        const double q2min = qmin * qmin;
+        const double q2max = qmax * qmax;
+        cut = "X >= " + std::to_string(bin.getMin("X")) + " && X <= " + std::to_string(bin.getMax("X")) +
+              " && Q2 >= " + std::to_string(q2min) + " && Q2 <= " + std::to_string(q2max) +
+              " && Z >= " + std::to_string(bin.getMin("Z")) + " && Z <= " + std::to_string(bin.getMax("Z")) +
+              " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
+              " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
+    } else {
+        // Fallback: build cut without Q (will select all Q)
+        cut = "X >= " + std::to_string(bin.getMin("X")) + " && X <= " + std::to_string(bin.getMax("X")) +
+              " && Z >= " + std::to_string(bin.getMin("Z")) + " && Z <= " + std::to_string(bin.getMax("Z")) +
+              " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
+              " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
+    }
 
     RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()), WeightVar("Weight"));
 
@@ -50,13 +135,31 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
         const RooArgSet* row = data.get(i);
         TruePhiH.setVal(row->getRealValue("TruePhiH"));
         TruePhiS.setVal(row->getRealValue("TruePhiS"));
-        double asymmetry = table->lookupAUT(row->getRealValue("TrueX"), row->getRealValue("TrueQ"), row->getRealValue("TrueZ"),
+        double trueq_val = 0.0;
+        if (hasTrueQ) {
+            trueq_val = row->getRealValue("TrueQ");
+        } else if (hasTrueQ2) {
+            // TrueQ = sqrt(TrueQ2)
+            trueq_val = std::sqrt(row->getRealValue("TrueQ2"));
+        }
+        double asymmetry = table->lookupAUT(row->getRealValue("TrueX"), trueq_val, row->getRealValue("TrueZ"),
                                             row->getRealValue("TruePhPerp"));
         asymmetry = 0.1;
         double pPlus = 0.5 * (1 + asymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
         X.setVal(row->getRealValue("X"));
-        Q.setVal(row->getRealValue("Q"));
+        double q_val = 0.0;
+        if (hasQ) {
+            q_val = row->getRealValue("Q");
+        } else if (hasQ2) {
+            q_val = std::sqrt(row->getRealValue("Q2"));
+        }
+        // Set underlying variables: if Q is formula from Q2, set Q2; otherwise set Q
+        if (Q_ptr) {
+            Q_ptr->setVal(q_val);
+        } else if (Q2_ptr) {
+            Q2_ptr->setVal(q_val * q_val);
+        }
         Z.setVal(row->getRealValue("Z"));
         PhPerp.setVal(row->getRealValue("PhPerp"));
         PhiH.setVal(row->getRealValue("PhiH"));
@@ -70,5 +173,12 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
     double val = A_fit.getVal();
     double error = A_fit.getError();
     delete fitResult;
+    // Clean up any heap-allocated Roo objects
+    if (Q_ptr) delete Q_ptr;
+    if (Q2_ptr) delete Q2_ptr;
+    if (Q_formula) delete Q_formula;
+    if (TrueQ_ptr) delete TrueQ_ptr;
+    if (TrueQ2_ptr) delete TrueQ2_ptr;
+    if (TrueQ_formula) delete TrueQ_formula;
     return std::make_pair(val, error);
 }
