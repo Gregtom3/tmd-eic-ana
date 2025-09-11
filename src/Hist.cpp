@@ -64,15 +64,11 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
             int nbins = params.nbins;
             double xmin = params.xmin > 0 ? params.xmin : 1e-3;
             double xmax = params.xmax;
-            // debug xmin, xmax
-            std::cout << "xmin = " << xmin << ", xmax = " << xmax << std::endl;
             std::vector<double> logEdges(nbins + 1);
             double logMin = std::log10(xmin);
             double logMax = std::log10(xmax);
             for (int i = 0; i <= nbins; ++i) {
                 logEdges[i] = std::pow(10, logMin + (logMax - logMin) * i / nbins);
-                // debug print edges
-                std::cout << "logEdge[" << i << "] = " << logEdges[i] << std::endl;
             }
             h = new TH1D(histName.c_str(), histName.c_str(), nbins, &logEdges[0]);
         } else {
