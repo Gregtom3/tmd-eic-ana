@@ -9,7 +9,8 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-test:
+    name: Build, generate data, and test
     runs-on: ubuntu-latest
 
     steps:
@@ -18,51 +19,41 @@ jobs:
 
     - name: Set up dependencies
       run: |
-        sudo apt-get update && sudo apt-get install -y build-essential wget
-        sudo apt-get install -y libtbb-dev
-    
-    - name: Install CERN ROOT
-      run: |
-        wget https://root.cern/download/root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
-        tar -xzvf root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+        sudo apt-get update
+        sudo apt-get install -y build-essential wget libtbb-dev
       shell: bash
 
-    - name: Setup ROOT environment
-      shell: bash
+    - name: Install CERN ROOT
       run: |
-        source /home/runner/work/tmd-eic-ana/tmd-eic-ana/root/bin/thisroot.sh
+        # download a prebuilt ROOT binary compatible with ubuntu-22.04
+        wget -q https://root.cern/download/root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+        tar -xzf root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+        ls -la root || true
+      shell: bash
+
+    - name: Show ROOT info
+      run: |
+        # Use GITHUB_WORKSPACE for a portable path to the checked-out repo
+        echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+        source "$GITHUB_WORKSPACE/root/bin/thisroot.sh"
         echo "ROOTSYS is $ROOTSYS"
+        root-config --version || true
+      shell: bash
 
     - name: Build the project
       run: |
-        source $PWD/root/bin/thisroot.sh
+        source "$GITHUB_WORKSPACE/root/bin/thisroot.sh"
         make
       shell: bash
 
-  generate-data:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
     - name: Generate pseudodata
       run: |
-        source $PWD/root/bin/thisroot.sh
+        source "$GITHUB_WORKSPACE/root/bin/thisroot.sh"
         ./bin/generate_pseudodata
       shell: bash
 
-  run-tests:
-    runs-on: ubuntu-latest
-    needs: generate-data
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
     - name: Run tests
       run: |
-        source $PWD/root/bin/thisroot.sh
+        source "$GITHUB_WORKSPACE/root/bin/thisroot.sh"
         make test
       shell: bash
