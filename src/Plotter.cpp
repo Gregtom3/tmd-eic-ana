@@ -1,10 +1,10 @@
 #include "Plotter.h"
-#include "Style.h"
 #include "Logger.h"
-#include "TCanvas.h"
-#include "TPad.h"
+#include "Style.h"
 #include "TArrow.h"
+#include "TCanvas.h"
 #include "TLatex.h"
+#include "TPad.h"
 #include <limits>
 
 void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binIndex, const std::string& outpath) {
@@ -21,8 +21,8 @@ void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binInde
         return;
     }
     const auto& hists = histMap.at(var);
-    
-    TCanvas* c = new TCanvas("c","c",800,600);
+
+    TCanvas* c = new TCanvas("c", "c", 800, 600);
     ApplyGlobalStyle();
     ApplyHistStyle(hists[binIndex]);
     hists[binIndex]->Draw();
@@ -38,7 +38,8 @@ void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binInde
         filename = "plot1D_" + var + "_" + binKey + ".png";
     }
     c->SaveAs(filename.c_str());
-    delete c; c=nullptr;
+    delete c;
+    c = nullptr;
 }
 
 void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* grid, const std::string& outpath) {

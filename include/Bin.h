@@ -1,8 +1,8 @@
 #ifndef BIN_H
 #define BIN_H
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 class Bin {
 public:
@@ -14,6 +14,7 @@ public:
     double getMax(const std::string& var) const;
     void updateMin(const std::string& var, double value);
     void updateMax(const std::string& var, double value);
+
 private:
     double X_min, X_max;
     double Q_min, Q_max;

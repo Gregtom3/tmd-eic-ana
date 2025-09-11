@@ -49,3 +49,17 @@ clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
 .PHONY: all clean test
+ 
+# Format sources using clang-format
+FORMAT_SRCS := $(shell git ls-files '*.cpp' '*.h' | tr '\n' ' ')
+
+.PHONY: format check-format
+format:
+	clang-format -i $(FORMAT_SRCS)
+
+check-format:
+	@EXIT=0; \
+	for f in $(FORMAT_SRCS); do \
+		clang-format --dry-run --Werror $$f || EXIT=1; \
+	done; \
+	exit $$EXIT

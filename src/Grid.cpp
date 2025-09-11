@@ -10,7 +10,7 @@ void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRan
     std::string mainKey = "";
     std::vector<double> mainBinLeft;
     std::vector<double> mainBinRight;
-    for (const auto& name : binNames) {  
+    for (const auto& name : binNames) {
         if (std::find(mainBinNames.begin(), mainBinNames.end(), name) != mainBinNames.end()) {
             auto it = binRanges.find(name);
             if (it != binRanges.end()) {
@@ -21,7 +21,7 @@ void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRan
         }
     }
     // The structure of mainKey is like "X[0.1,0.2]Q[1.0,2.0]"
-    // e.g. for mainBinNames = {"X", "Q"}  
+    // e.g. for mainBinNames = {"X", "Q"}
 
     // If mainKey not in map, initialize
     if (mainBins.find(mainKey) == mainBins.end()) {
@@ -62,11 +62,14 @@ void Grid::printGridSummary(int maxEntries) const {
     int totalBins = 0;
     for (const auto& bin : mainBins) {
         totalBins += bin.second.getCount();
-        if (maxEntries > 0 && count >= maxEntries) {continue;}
+        if (maxEntries > 0 && count >= maxEntries) {
+            continue;
+        }
         LOG_DEBUG(std::string("Main bin: ") + bin.first);
         LOG_DEBUG(std::string("  Count: ") + std::to_string(bin.second.getCount()));
         for (const auto& name : binNames) {
-            LOG_DEBUG(std::string("  ") + name + " range: [" + std::to_string(bin.second.getMin(name)) + ", " + std::to_string(bin.second.getMax(name)) + "]");
+            LOG_DEBUG(std::string("  ") + name + " range: [" + std::to_string(bin.second.getMin(name)) + ", " +
+                      std::to_string(bin.second.getMax(name)) + "]");
         }
         // Print mainBinIndices if available
         auto idxIt = mainBinIndices.find(bin.first);
@@ -74,7 +77,8 @@ void Grid::printGridSummary(int maxEntries) const {
             std::string idxStr = "  Indices: [";
             for (size_t i = 0; i < idxIt->second.size(); ++i) {
                 idxStr += std::to_string(idxIt->second[i]);
-                if (i + 1 < idxIt->second.size()) idxStr += ", ";
+                if (i + 1 < idxIt->second.size())
+                    idxStr += ", ";
             }
             idxStr += "]";
             LOG_DEBUG(idxStr);
@@ -85,23 +89,22 @@ void Grid::printGridSummary(int maxEntries) const {
     LOG_DEBUG(std::string("Total bins: ") + std::to_string(totalBins));
 }
 
-
 // Compute integer indices for each main bin using containment-aware intervals
 void Grid::computeMainBinIndices() {
     size_t ndim = mainBinNames.size();
 
     // Instead of storing just left edges, store full intervals [low, high]
-    std::map<std::string, std::vector<std::pair<double,double>>> uniqueByParent[ndim];
+    std::map<std::string, std::vector<std::pair<double, double>>> uniqueByParent[ndim];
 
     // Collect all intervals by parent key
     for (const auto& pair : mainBinLefts) {
-        const auto& key    = pair.first;
-        const auto& lefts  = pair.second;
+        const auto& key = pair.first;
+        const auto& lefts = pair.second;
         const auto& rights = mainBinRights.at(key);
 
         std::string parent = "";
         for (size_t d = 0; d < ndim; ++d) {
-            double low  = lefts[d];
+            double low = lefts[d];
             double high = rights[d];
 
             uniqueByParent[d][parent].push_back({low, high});
@@ -130,14 +133,14 @@ void Grid::computeMainBinIndices() {
             auto& vec = kv.second;
 
             // Sort by low edge, then by high edge
-            std::sort(vec.begin(), vec.end(),
-                      [](auto& a, auto& b) {
-                          if (a.first == b.first) return a.second < b.second;
-                          return a.first < b.first;
-                      });
+            std::sort(vec.begin(), vec.end(), [](auto& a, auto& b) {
+                if (a.first == b.first)
+                    return a.second < b.second;
+                return a.first < b.first;
+            });
 
             // Merge by containment
-            std::vector<std::pair<double,double>> merged;
+            std::vector<std::pair<double, double>> merged;
             if (!vec.empty()) {
                 auto current = vec[0];
                 for (size_t i = 1; i < vec.size(); ++i) {
@@ -173,15 +176,15 @@ void Grid::computeMainBinIndices() {
 
     // Assign indices for each bin
     for (const auto& pair : mainBinLefts) {
-        const auto& key    = pair.first;
-        const auto& lefts  = pair.second;
+        const auto& key = pair.first;
+        const auto& lefts = pair.second;
         const auto& rights = mainBinRights.at(key);
 
         std::vector<int> indices(ndim);
 
         std::string parent = "";
         for (size_t d = 0; d < ndim; ++d) {
-            double low  = lefts[d];
+            double low = lefts[d];
             double high = rights[d];
 
             const auto& vec = uniqueByParent[d][parent];
@@ -208,4 +211,3 @@ void Grid::computeMainBinIndices() {
         LOG_DEBUG("]");
     }
 }
-

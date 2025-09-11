@@ -1,17 +1,19 @@
 #include "Inject.h"
-#include <TRandom3.h>
-#include <TMath.h>
-#include <RooRealVar.h>
-#include <RooDataSet.h>
 #include <RooArgSet.h>
-#include <RooGenericPdf.h>
-#include <RooFitResult.h>
+#include <RooDataSet.h>
 #include <RooFit.h>
+#include <RooFitResult.h>
+#include <RooGenericPdf.h>
+#include <RooRealVar.h>
+#include <TMath.h>
+#include <TRandom3.h>
 #include <iostream>
 
 using namespace RooFit;
 
-Inject::Inject(TTree* tree, const Table* table) : tree(tree), table(table) {}
+Inject::Inject(TTree* tree, const Table* table)
+    : tree(tree)
+    , table(table) {}
 Inject::~Inject() {}
 
 std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) {
@@ -36,7 +38,8 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
     std::string cut = "X >= " + std::to_string(bin.getMin("X")) + " && X <= " + std::to_string(bin.getMax("X")) +
                       " && Q >= " + std::to_string(bin.getMin("Q")) + " && Q <= " + std::to_string(bin.getMax("Q")) +
                       " && Z >= " + std::to_string(bin.getMin("Z")) + " && Z <= " + std::to_string(bin.getMax("Z")) +
-                      " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) + " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
+                      " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
+                      " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
 
     RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()), WeightVar("Weight"));
 
@@ -47,9 +50,10 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
         const RooArgSet* row = data.get(i);
         TruePhiH.setVal(row->getRealValue("TruePhiH"));
         TruePhiS.setVal(row->getRealValue("TruePhiS"));
-        double asymmetry = table->lookupAUT(row->getRealValue("TrueX"), row->getRealValue("TrueQ"), row->getRealValue("TrueZ"), row->getRealValue("TruePhPerp"));
+        double asymmetry = table->lookupAUT(row->getRealValue("TrueX"), row->getRealValue("TrueQ"), row->getRealValue("TrueZ"),
+                                            row->getRealValue("TruePhPerp"));
         asymmetry = 0.1;
-        double pPlus = 0.5 * (1 + asymmetry * std::sin(TruePhiH.getVal()+TruePhiS.getVal()));
+        double pPlus = 0.5 * (1 + asymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
         X.setVal(row->getRealValue("X"));
         Q.setVal(row->getRealValue("Q"));

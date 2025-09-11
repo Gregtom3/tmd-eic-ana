@@ -1,18 +1,18 @@
 #ifndef TMD_H
 #define TMD_H
 
-#include "TFile.h"
-#include "TTree.h"
 #include "Grid.h"
-#include "TH1D.h"
-#include "TCut.h"
-#include "Table.h"
 #include "Hist.h"
 #include "Inject.h"
 #include "Plotter.h"
+#include "TCut.h"
+#include "TFile.h"
+#include "TH1D.h"
+#include "TTree.h"
+#include "Table.h"
 #include <map>
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 class TMD {
@@ -32,6 +32,7 @@ public:
     void plot1DBin(const std::string& var, size_t binIndex, const std::string& outpath = "");
     void plot2DMap(const std::string& var, const std::string& outpath);
     void inject_extract(int bin_index, double A = 0.1);
+
 private:
     TFile* file;
     TTree* tree;

@@ -1,5 +1,5 @@
-#include "Table.h"
 #include "Logger.h"
+#include "Table.h"
 #include <iostream>
 
 void testLoadTables() {

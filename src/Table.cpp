@@ -1,10 +1,10 @@
 #include "Table.h"
 #include <fstream>
-#include <sstream>
+#include <functional>
 #include <iostream>
 #include <set>
+#include <sstream>
 #include <stdexcept>
-#include <functional>
 
 Table::Table(const std::string& energyConfig) {
     std::string filename = getFilename(energyConfig);
@@ -34,7 +34,8 @@ void Table::readTable(const std::string& filename) {
     std::string line;
     std::getline(file, line); // Skip header
     while (std::getline(file, line)) {
-        if (line.empty()) continue;
+        if (line.empty())
+            continue;
 
         TableRow row{};
         std::stringstream ss(line);
@@ -56,17 +57,17 @@ void Table::readTable(const std::string& filename) {
         }
 
         try {
-            row.itar        = std::stoi(fields[0]);
-            row.ihad        = std::stoi(fields[1]);
-            row.X_min       = std::stod(fields[2]);
-            row.X_max       = std::stod(fields[3]);
-            row.Q_min       = std::stod(fields[4]);
-            row.Q_max       = std::stod(fields[5]);
-            row.Z_min       = std::stod(fields[6]);
-            row.Z_max       = std::stod(fields[7]);
-            row.PhPerp_min  = std::stod(fields[8]);
-            row.PhPerp_max  = std::stod(fields[9]);
-            row.AUT         = std::stod(fields[10]);
+            row.itar = std::stoi(fields[0]);
+            row.ihad = std::stoi(fields[1]);
+            row.X_min = std::stod(fields[2]);
+            row.X_max = std::stod(fields[3]);
+            row.Q_min = std::stod(fields[4]);
+            row.Q_max = std::stod(fields[5]);
+            row.Z_min = std::stod(fields[6]);
+            row.Z_max = std::stod(fields[7]);
+            row.PhPerp_min = std::stod(fields[8]);
+            row.PhPerp_max = std::stod(fields[9]);
+            row.AUT = std::stod(fields[10]);
         } catch (const std::exception& e) {
             LOG_ERROR(std::string("Conversion error: ") + e.what() + " in line: " + line);
             continue;
@@ -75,8 +76,6 @@ void Table::readTable(const std::string& filename) {
         rows.push_back(row);
     }
 }
-
-
 
 const std::vector<TableRow>& Table::getRows() const {
     return rows;
@@ -95,14 +94,18 @@ Grid Table::buildGrid(const std::vector<std::string>& binNames) const {
         }
     }
     Grid grid(binNames);
-    std::vector<std::string> allBinNames =  {"X", "Q", "Z", "PhPerp"};
+    std::vector<std::string> allBinNames = {"X", "Q", "Z", "PhPerp"};
     for (const auto& row : rows) {
         std::map<std::string, std::pair<double, double>> binRanges;
         for (const auto& name : allBinNames) {
-            if (name == "X") binRanges["X"] = {row.X_min, row.X_max};
-            else if (name == "Q") binRanges["Q"] = {row.Q_min, row.Q_max};
-            else if (name == "Z") binRanges["Z"] = {row.Z_min, row.Z_max};
-            else if (name == "PhPerp") binRanges["PhPerp"] = {row.PhPerp_min, row.PhPerp_max};
+            if (name == "X")
+                binRanges["X"] = {row.X_min, row.X_max};
+            else if (name == "Q")
+                binRanges["Q"] = {row.Q_min, row.Q_max};
+            else if (name == "Z")
+                binRanges["Z"] = {row.Z_min, row.Z_max};
+            else if (name == "PhPerp")
+                binRanges["PhPerp"] = {row.PhPerp_min, row.PhPerp_max};
         }
         grid.addBin(binRanges);
     }
@@ -113,22 +116,19 @@ Grid Table::buildGrid(const std::vector<std::string>& binNames) const {
 double Table::lookupAUT(double X, double Q, double Z, double PhPerp) const {
     std::function<double(const std::vector<TableRow>&, double, double, double, double, size_t, size_t)> binarySearch =
         [&](const std::vector<TableRow>& rows, double X, double Q, double Z, double PhPerp, size_t left, size_t right) -> double {
-            if (left > right) {
-                return 0.0; // Base case: no match found
-            }
+        if (left > right) {
+            return 0.0; // Base case: no match found
+        }
 
         size_t mid = left + (right - left) / 2;
         const auto& row = rows[mid];
 
-        if (X >= row.X_min && X <= row.X_max &&
-            Q >= row.Q_min && Q <= row.Q_max &&
-            Z >= row.Z_min && Z <= row.Z_max &&
+        if (X >= row.X_min && X <= row.X_max && Q >= row.Q_min && Q <= row.Q_max && Z >= row.Z_min && Z <= row.Z_max &&
             PhPerp >= row.PhPerp_min && PhPerp <= row.PhPerp_max) {
             return row.AUT; // Match found
         }
 
-        if (X < row.X_min || (X == row.X_min && Q < row.Q_min) ||
-            (X == row.X_min && Q == row.Q_min && Z < row.Z_min) ||
+        if (X < row.X_min || (X == row.X_min && Q < row.Q_min) || (X == row.X_min && Q == row.Q_min && Z < row.Z_min) ||
             (X == row.X_min && Q == row.Q_min && Z == row.Z_min && PhPerp < row.PhPerp_min)) {
             return binarySearch(rows, X, Q, Z, PhPerp, left, mid - 1);
         } else {

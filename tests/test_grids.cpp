@@ -1,5 +1,5 @@
-#include "Table.h"
 #include "Logger.h"
+#include "Table.h"
 #include <iostream>
 #include <vector>
 
@@ -11,9 +11,9 @@ int main() {
         Grid grid1 = table.buildGrid(binNames1);
         LOG_INFO("--- Grid 1 (X, Q) ---");
         grid1.printGridSummary();
-        //Grid grid2 = table.buildGrid(binNames2);
-        //LOG_INFO("--- Grid 2 (Z, PhPerp) ---");
-        //grid2.printGridSummary();
+        // Grid grid2 = table.buildGrid(binNames2);
+        // LOG_INFO("--- Grid 2 (Z, PhPerp) ---");
+        // grid2.printGridSummary();
     } catch (const std::exception& e) {
         LOG_ERROR(e.what());
         return 1;

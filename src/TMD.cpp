@@ -1,16 +1,21 @@
 #include "TMD.h"
-#include "Logger.h"
-#include "TCut.h"
 #include "Grid.h"
 #include "Hist.h"
+#include "Logger.h"
 #include "Plotter.h"
+#include "TCut.h"
 #include <TEntryList.h>
 #include <filesystem>
 #include <iostream>
 #include <map>
 
 TMD::TMD(const std::string& filename, const std::string& treename)
-    : file(nullptr), tree(nullptr), filename(filename), treename(treename), table(nullptr), grid(nullptr) {
+    : file(nullptr)
+    , tree(nullptr)
+    , filename(filename)
+    , treename(treename)
+    , table(nullptr)
+    , grid(nullptr) {
     file = TFile::Open(filename.c_str());
     if (!file || file->IsZombie()) {
         LOG_ERROR(std::string("Could not open file ") + filename);
@@ -21,7 +26,7 @@ TMD::TMD(const std::string& filename, const std::string& treename)
     if (!tree) {
         LOG_ERROR(std::string("Could not find tree ") + treename + " in file: " + filename);
         file->Close();
-        file = nullptr; 
+        file = nullptr;
         tree = nullptr;
         return;
     }
@@ -40,13 +45,14 @@ TMD::TMD(const std::string& filename, const std::string& treename)
 }
 
 TMD::~TMD() {
-    if (file) file->Close();
+    if (file)
+        file->Close();
     // unique_ptr handles table cleanup
 }
 
 void TMD::setMaxEntries(Long64_t maxEntries) {
     if (tree && maxEntries > 0) {
-        TEntryList *elist = new TEntryList("elist", "Max Entries");
+        TEntryList* elist = new TEntryList("elist", "Max Entries");
         for (Long64_t i = 0; i < std::min(tree->GetEntries(), maxEntries); i++)
             elist->Enter(i);
         tree->SetEntryList(elist);
@@ -102,8 +108,9 @@ void TMD::inject_extract(int bin_index, double A) {
     std::advance(it, bin_index);
     const Bin& bin = it->second;
     Inject injector(tree, table.get());
-    std::pair<double,double> extracted_A = injector.injectExtractForBin(bin, A);
-    LOG_INFO("Bin " + std::to_string(bin_index) + ": Injected A = " + std::to_string(A) + ", Extracted A = " + std::to_string(extracted_A.first) + " +/- " + std::to_string(extracted_A.second));
+    std::pair<double, double> extracted_A = injector.injectExtractForBin(bin, A);
+    LOG_INFO("Bin " + std::to_string(bin_index) + ": Injected A = " + std::to_string(A) +
+             ", Extracted A = " + std::to_string(extracted_A.first) + " +/- " + std::to_string(extracted_A.second));
 }
 
 std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
@@ -116,16 +123,16 @@ std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
         double X_max = bin.getMax("X");
         double Q_min = bin.getMin("Q");
         double Q_max = bin.getMax("Q");
-        std::string cutStr =
-            "X >= " + std::to_string(X_min) + " && X < " + std::to_string(X_max) +
-            " && Q >= " + std::to_string(Q_min) + " && Q < " + std::to_string(Q_max);
+        std::string cutStr = "X >= " + std::to_string(X_min) + " && X < " + std::to_string(X_max) +
+                             " && Q >= " + std::to_string(Q_min) + " && Q < " + std::to_string(Q_max);
         binTCuts[key] = TCut(cutStr.c_str());
     }
     return binTCuts;
 }
 
 void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool overwrite) {
-    if (!hist) return;
+    if (!hist)
+        return;
 
     // Ensure out directory exists
     std::filesystem::path dir(outDir);
@@ -137,14 +144,16 @@ void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool
     std::string binNamesStr = "___";
     for (size_t i = 0; i < binNames.size(); ++i) {
         binNamesStr += binNames[i];
-        if (i + 1 < binNames.size()) binNamesStr += ".";
+        if (i + 1 < binNames.size())
+            binNamesStr += ".";
     }
     binNamesStr += "___";
 
     // Compose cache filename: hists_<rootstem>__<treename>__<energyConfig>__<binNamesStr><var>__nbins<N>.root
     std::string rootStem = std::filesystem::path(filename).stem().string();
     size_t nBins = binTCuts.size();
-    std::string cacheName = "hists_" + rootStem + "__" + treename + "__" + energyConfig + binNamesStr + var + "__nbin" + std::to_string(nBins) + ".root";
+    std::string cacheName =
+        "hists_" + rootStem + "__" + treename + "__" + energyConfig + binNamesStr + var + "__nbin" + std::to_string(nBins) + ".root";
     std::filesystem::path cachePath = dir / cacheName;
 
     bool histLoaded = false;
@@ -165,15 +174,17 @@ void TMD::fillHistograms(const std::string& var, const std::string& outDir, bool
 }
 
 void TMD::plot1DBin(const std::string& var, size_t binIndex, const std::string& outpath) {
-    if (!hist || !plotter) return;
+    if (!hist || !plotter)
+        return;
     plotter->plot1DBin(var, hist.get(), binIndex, outpath);
 }
 
 void TMD::plot2DMap(const std::string& var, const std::string& outpath) {
-    if (binNames.size()!=2) {
+    if (binNames.size() != 2) {
         std::cerr << "plot2DMap requires exactly 2 bin names." << std::endl;
         return;
     }
-    if (!hist || !grid || !plotter) return;
+    if (!hist || !grid || !plotter)
+        return;
     plotter->plot2DMap(var, hist.get(), grid.get(), outpath);
 }

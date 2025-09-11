@@ -1,40 +1,39 @@
 #include "Hist.h"
 #include "Logger.h"
-#include "TH1D.h"
-#include "TTreeFormula.h"
-#include "TCanvas.h"
-#include "TApplication.h"
-#include "TDirectory.h"
-#include "TFile.h"
-#include "TKey.h"
-#include "TEntryList.h"
 #include "Style.h"
-#include "TLatex.h"
+#include "TApplication.h"
 #include "TArrow.h"
+#include "TCanvas.h"
+#include "TDirectory.h"
+#include "TEntryList.h"
+#include "TFile.h"
+#include "TH1D.h"
+#include "TKey.h"
+#include "TLatex.h"
+#include "TTreeFormula.h"
 #include "Utility.h"
-#include <memory>
 #include <iostream>
+#include <memory>
 
 // Pre-determined params for recognized variables
 const std::map<std::string, HistParams> Hist::varParams = {
-    {"X", {100, 0, 10}},
-    {"Q", {100, 1, 1000}},
-    {"Z", {100, 0, 1}},
-    {"PhPerp", {100, 0, 5}},
-    {"Phi", {100, 0, 2 * 3.14159}}
-};
+    {"X", {100, 0, 10}}, {"Q", {100, 1, 1000}}, {"Z", {100, 0, 1}}, {"PhPerp", {100, 0, 5}}, {"Phi", {100, 0, 2 * 3.14159}}};
 const HistParams Hist::defaultParams = {100, 0, 1};
 
 HistParams Hist::getParams(const std::string& var, int nbins, double xmin, double xmax) const {
     auto it = varParams.find(var);
     HistParams params = (it != varParams.end()) ? it->second : defaultParams;
-    if (nbins > 0) params.nbins = nbins;
-    if (xmin >= 0) params.xmin = xmin;
-    if (xmax >= 0) params.xmax = xmax;
+    if (nbins > 0)
+        params.nbins = nbins;
+    if (xmin >= 0)
+        params.xmin = xmin;
+    if (xmax >= 0)
+        params.xmax = xmax;
     return params;
 }
 
-Hist::Hist(TTree* tree) : tree(tree) {
+Hist::Hist(TTree* tree)
+    : tree(tree) {
     m_hasWeightBranch = tree->GetBranch("Weight") != nullptr;
     if (m_hasWeightBranch) {
         LOG_INFO("TTree has a 'Weight' branch. It will be used in histogram filling.");
@@ -71,12 +70,14 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
     }
 
     int totalBins = static_cast<int>(hists.size());
-    if (totalBins == 0) return;
+    if (totalBins == 0)
+        return;
 
     // Prepare formulas for variable, weight, and mean variables
     std::unique_ptr<TTreeFormula> varFormula = std::make_unique<TTreeFormula>("varFormula", var.c_str(), tree);
     std::unique_ptr<TTreeFormula> weightFormula;
-    if (m_hasWeightBranch) weightFormula = std::make_unique<TTreeFormula>("weightFormula", "Weight", tree);
+    if (m_hasWeightBranch)
+        weightFormula = std::make_unique<TTreeFormula>("weightFormula", "Weight", tree);
     std::vector<std::string> meanVars = {"X", "Q", "Z", "PhPerp"};
     std::vector<std::unique_ptr<TTreeFormula>> meanFormulas;
     for (const auto& mvar : meanVars) {
@@ -98,7 +99,8 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
         // evaluate mean vars once
         std::vector<double> mvals;
         mvals.reserve(meanFormulas.size());
-        for (auto& mf : meanFormulas) mvals.push_back(mf->EvalInstance());
+        for (auto& mf : meanFormulas)
+            mvals.push_back(mf->EvalInstance());
 
         // check each bin formula
         for (int b = 0; b < totalBins; ++b) {
@@ -112,7 +114,8 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
             }
         }
 
-        if ((i & 0x3FF) == 0) pbar.update(static_cast<size_t>(i));
+        if ((i & 0x3FF) == 0)
+            pbar.update(static_cast<size_t>(i));
     }
     pbar.finish();
 
@@ -129,23 +132,23 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
                 meanMap[binKey][meanVars[k]] = sumWV[b][k] / totalW;
             }
         } else {
-            for (const auto& mv : meanVars) meanMap[binKey][mv] = 0.0;
+            for (const auto& mv : meanVars)
+                meanMap[binKey][mv] = 0.0;
         }
     }
 
     std::cout << "Processed " << nentries << " entries; filled " << totalBins << " histograms." << std::endl;
 }
 
-
-
 bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) const {
     auto it = histMap.find(var);
-    if (it == histMap.end() || it->second.empty()) return false;
+    if (it == histMap.end() || it->second.empty())
+        return false;
 
     std::unique_ptr<TFile> f(TFile::Open(cacheFile.c_str(), "RECREATE"));
     if (!f || f->IsZombie()) {
         LOG_ERROR("Failed to create cache file: " + cacheFile);
-        return false; 
+        return false;
     }
 
     f->mkdir(var.c_str());
@@ -154,7 +157,8 @@ bool Hist::saveHistCache(const std::string& cacheFile, const std::string& var) c
     const auto& hists = it->second;
     for (size_t i = 0; i < hists.size(); ++i) {
         TH1* h = hists[i];
-        if (!h) continue;
+        if (!h)
+            continue;
         std::string binKey = binKeysMap.at(var)[i];
         std::string cutExpr = binCutsMap.at(var)[i].GetTitle();
         h->SetName(binKey.c_str());
@@ -172,23 +176,24 @@ void Hist::computeMeans(const std::string& binKey, const TCut& cut) {
     for (const auto& var : vars) {
         std::string histName = "mean_tmp_" + var + "_" + binKey;
         auto params = getParams(var, -1, -1, -1);
-        std::string drawCmd = var + ">>" + histName + "(" +
-            std::to_string(params.nbins) + "," +
-            std::to_string(params.xmin) + "," +
-            std::to_string(params.xmax) + ")";
+        std::string drawCmd = var + ">>" + histName + "(" + std::to_string(params.nbins) + "," + std::to_string(params.xmin) + "," +
+                              std::to_string(params.xmax) + ")";
         TCut weighted_cut = m_hasWeightBranch ? cut * "Weight" : cut;
         tree->Draw(drawCmd.c_str(), weighted_cut, "goff");
         TH1D* h = static_cast<TH1D*>(gDirectory->Get(histName.c_str()));
         double mean = h ? h->GetMean() : 0.0;
         meanMap[binKey][var] = mean;
-        if (h) { h->Delete(); }
+        if (h) {
+            h->Delete();
+        }
     }
 }
 
 // Save meanMap to cache as a TTree
 bool Hist::saveMeanCache(const std::string& cacheFile, const std::string& var) const {
     std::unique_ptr<TFile> f(TFile::Open(cacheFile.c_str(), "UPDATE"));
-    if (!f || f->IsZombie()) return false;
+    if (!f || f->IsZombie())
+        return false;
     std::string treeName = var + "_means";
     TTree* t = new TTree(treeName.c_str(), "Bin means");
     char binKey[256];
@@ -217,10 +222,12 @@ bool Hist::saveMeanCache(const std::string& cacheFile, const std::string& var) c
 // Load meanMap from cache TTree
 bool Hist::loadMeanCache(const std::string& cacheFile, const std::string& var) {
     std::unique_ptr<TFile> f(TFile::Open(cacheFile.c_str(), "READ"));
-    if (!f || f->IsZombie()) return false;
+    if (!f || f->IsZombie())
+        return false;
     std::string treeName = var + "_means";
     TTree* t = (TTree*)f->Get(treeName.c_str());
-    if (!t) return false;
+    if (!t)
+        return false;
     char binKey[256];
     double X, Q, Z, PhPerp;
     t->SetBranchAddress("binKey", binKey);
@@ -258,7 +265,8 @@ bool Hist::loadHistCache(const std::string& cacheFile, const std::string& var) {
     while ((key = (TKey*)next())) {
         TObject* obj = key->ReadObj();
         TH1* h = dynamic_cast<TH1*>(obj);
-        if (!h) continue;
+        if (!h)
+            continue;
         TH1* hc = (TH1*)h->Clone();
         hc->SetDirectory(nullptr); // detach from file
         histMap[var].push_back(hc);

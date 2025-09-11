@@ -1,11 +1,11 @@
 #ifndef PLOTTER_H
 #define PLOTTER_H
 
-#include "Hist.h"
 #include "Grid.h"
+#include "Hist.h"
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 class Plotter {
 public:

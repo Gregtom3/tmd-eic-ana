@@ -1,10 +1,10 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include "Grid.h"
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
-#include "Grid.h"
 
 struct TableRow {
     int itar;
