@@ -9,7 +9,7 @@
 
 int main() {
 
-    const std::string outpath = "out/output_generated.root";
+    const std::string outpath = "out/output.root";
 
     // Now attempt to use TMD on this file
     TMD tmd(outpath, "tree");
