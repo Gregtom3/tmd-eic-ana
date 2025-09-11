@@ -19,16 +19,20 @@ int main(int argc, char** argv) {
     tmd.setMaxEntries(args.maxEntries);
     if (args.maxEntries > 0)
         LOG_INFO("[main.cpp] Set max entries to: " + std::to_string(args.maxEntries));
-    tmd.setTargetPolarization(0.7);
-    LOG_INFO("[main.cpp] Set target polarization to 0.7");
-    tmd.loadTable();
-    
+    tmd.setTargetPolarization(args.targetPolarization);
+    LOG_INFO("[main.cpp] Set target polarization to " + std::to_string(args.targetPolarization));
+    tmd.setOutDir(args.outDir);
+    tmd.setOutFilename(args.outFilename);
+    tmd.loadTable(args.energyConfig);
+
     tmd.buildGrid({"X"});
-    
-    const int n_injections = 1000;
-    const int bin_index = 0;
-    const bool extract_with_true = true;
-    tmd.queueInjection({ .bin_index = bin_index, .n = n_injections, .extract_with_true = extract_with_true, .A_opt = 0.05,  });
+
+    tmd.queueInjection({
+        .bin_index = args.bin_index,
+        .n = args.n_injections,
+        .extract_with_true = args.extract_with_true,
+        .A_opt = args.A_opt
+    });
     tmd.runQueuedInjections();
     return 0;
 }

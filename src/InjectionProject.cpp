@@ -3,11 +3,15 @@
 #include <yaml-cpp/yaml.h>
 #include <iostream>
 
-InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization)
-    : filename(filename), tree(tree), table(table), scale(scale), grid(grid), targetPolarization(targetPolarization) {
+InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename)
+    : filename(filename), tree(tree), table(table), scale(scale), grid(grid), targetPolarization(targetPolarization), outDir(outDir), outFilename(outFilename) {
         // Create outprefix
         std::string rootStem = std::filesystem::path(filename).stem().string();
-        outPrefix = std::string("injection_") + rootStem + "_" + tree->GetName();
+        if (!outFilename.empty()) {
+            outPrefix = std::filesystem::path(outDir) / outFilename;
+        } else {
+            outPrefix = std::filesystem::path(outDir) / (std::string("injection_") + rootStem + "_" + tree->GetName() + ".yaml");
+        }
     }
 
 void InjectionProject::addJob(const InjectionProject::Job& job = {}) {

@@ -10,7 +10,13 @@ struct Args {
     std::string energyConfig;
     bool overwrite = false;
     std::string outDir = "out";
+    std::string outFilename = "";
     long long maxEntries = -1;
+    double targetPolarization = 1.0;
+    int n_injections = 1000;
+    int bin_index = 0;
+    bool extract_with_true = true;
+    std::optional<double> A_opt;
 };
 
 Args parseArgs(int argc, char** argv);

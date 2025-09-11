@@ -22,6 +22,8 @@ public:
     TMD(const std::string& filename, const std::string& treename);
     void setTargetPolarization(double pol) { targetPolarization = pol; }
     double getTargetPolarization() const { return targetPolarization; }
+    void setOutDir(const std::string& dir) { outDir = dir; }
+    void setOutFilename(const std::string& fname) { outFilename = fname; }
     ~TMD();
     bool isLoaded() const;
     void setMaxEntries(Long64_t maxEntries);
@@ -61,6 +63,8 @@ public:
 
     // Target polarization
     double targetPolarization{1.0};
+    std::string outDir{"out"};
+    std::string outFilename;
 };
 
 #endif // TMD_H
