@@ -49,7 +49,7 @@ inline void DrawMeanTLatex(const std::unordered_map<std::string, double>& meanMa
     for (size_t i = 0; i < vars.size(); ++i) {
         auto it = meanMap.find(vars[i]);
         double val = (it != meanMap.end()) ? it->second : 0.0;
-        snprintf(buf, sizeof(buf), "<%s>=%.*e", vars[i].c_str(), precision, val);
+        snprintf(buf, sizeof(buf), "<%s>=%.*f", vars[i].c_str(), precision, val);
         label += buf;
         if (i + 1 < vars.size()) label += "  ";
     }

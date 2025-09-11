@@ -9,12 +9,14 @@ void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRan
     // Main bin key: combo of mainBinNames
     std::string mainKey = "";
     std::vector<double> mainBinLeft;
+    std::vector<double> mainBinRight;
     for (const auto& name : binNames) {  
         if (std::find(mainBinNames.begin(), mainBinNames.end(), name) != mainBinNames.end()) {
             auto it = binRanges.find(name);
             if (it != binRanges.end()) {
                 mainKey += name + "[" + std::to_string(it->second.first) + "," + std::to_string(it->second.second) + "]";
                 mainBinLeft.push_back(it->second.first);
+                mainBinRight.push_back(it->second.second);
             }
         }
     }
@@ -25,6 +27,7 @@ void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRan
     if (mainBins.find(mainKey) == mainBins.end()) {
         mainBins[mainKey] = Bin();
         mainBinLefts[mainKey] = mainBinLeft;
+        mainBinRights[mainKey] = mainBinRight;
     }
     mainBins[mainKey].incrementCount();
 
@@ -83,43 +86,89 @@ void Grid::printGridSummary(int maxEntries) const {
 }
 
 
-// Compute integer indices for each main bin using sorted lefts (argsort-like)
+// Compute integer indices for each main bin using containment-aware intervals
 void Grid::computeMainBinIndices() {
-    // Hierarchical indexing for N dimensions
-    // Prepare a vector of maps for each dimension: parent_key -> sorted unique values
     size_t ndim = mainBinNames.size();
-    // For dim 0, parent_key is ""
-    std::map<std::string, std::vector<double>> uniqueByParent[ndim];
-    // First, collect all lefts by parent key for each dimension
+
+    // Instead of storing just left edges, store full intervals [low, high]
+    std::map<std::string, std::vector<std::pair<double,double>>> uniqueByParent[ndim];
+
+    // Collect all intervals by parent key
     for (const auto& pair : mainBinLefts) {
-        const auto& lefts = pair.second;
+        const auto& key    = pair.first;
+        const auto& lefts  = pair.second;
+        const auto& rights = mainBinRights.at(key);
+
         std::string parent = "";
         for (size_t d = 0; d < ndim; ++d) {
-            uniqueByParent[d][parent].push_back(lefts[d]);
-            // For next dim, parent is concatenation of previous lefts
-            parent += (d > 0 ? "," : "") + std::to_string(lefts[d]);
+            double low  = lefts[d];
+            double high = rights[d];
+
+            uniqueByParent[d][parent].push_back({low, high});
+
+            // Update parent string for the next dimension
+            parent += (d > 0 ? "," : "") + std::to_string(low);
         }
     }
-    // Sort and deduplicate
+    // Structure of uniqueByParent[d]:
+    //   key: parent string (e.g. "")
+    //   value: vector of (low, high) pairs for dimension d
+    
+    // Sort, deduplicate, and merge containment for each dimension
     for (size_t d = 0; d < ndim; ++d) {
         for (auto& kv : uniqueByParent[d]) {
             auto& vec = kv.second;
-            std::sort(vec.begin(), vec.end());
-            vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+
+            // Sort by low edge, then by high edge
+            std::sort(vec.begin(), vec.end(),
+                      [](auto& a, auto& b) {
+                          if (a.first == b.first) return a.second < b.second;
+                          return a.first < b.first;
+                      });
+            // Merge: keep only outer intervals, drop contained ones
+            std::vector<std::pair<double,double>> merged;
+            for (auto& intv : vec) {
+                bool contained = false;
+                for (auto& m : merged) {
+                    if (m.first <= intv.first && intv.second <= m.second) {
+                        contained = true;
+                        break;
+                    }
+                }
+                if (!contained) merged.push_back(intv);
+            }
+            vec = merged;
         }
     }
-    // Now assign indices
+
+    // Assign indices for each bin
     for (const auto& pair : mainBinLefts) {
-        const auto& key = pair.first;
-        const auto& lefts = pair.second;
+        const auto& key    = pair.first;
+        const auto& lefts  = pair.second;
+        const auto& rights = mainBinRights.at(key);
+
         std::vector<int> indices(ndim);
+
         std::string parent = "";
         for (size_t d = 0; d < ndim; ++d) {
+            double low  = lefts[d];
+            double high = rights[d];
+
             const auto& vec = uniqueByParent[d][parent];
-            auto it = std::find(vec.begin(), vec.end(), lefts[d]);
-            indices[d] = (it != vec.end()) ? std::distance(vec.begin(), it) : -1;
-            parent += (d > 0 ? "," : "") + std::to_string(lefts[d]);
+
+            int idx = -1;
+            for (size_t i = 0; i < vec.size(); ++i) {
+                // containment check
+                if (vec[i].first <= low && high <= vec[i].second) {
+                    idx = static_cast<int>(i);
+                    break;
+                }
+            }
+            indices[d] = idx;
+
+            parent += (d > 0 ? "," : "") + std::to_string(low);
         }
+
         mainBinIndices[key] = indices;
     }
 }

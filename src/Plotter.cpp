@@ -66,6 +66,7 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
     }
     int nCols = maxCol + 2;
     int nRows = maxRow + 2;
+    LOG_PRINT("Plotting 2D map with " + std::to_string(nCols) + " columns and " + std::to_string(nRows) + " rows.");
     int windowX = 400;
     int windowY = 400;
     TCanvas* c = new TCanvas("c2d", "2D Map", windowX * nCols, windowY * nRows);
