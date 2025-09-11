@@ -1,6 +1,7 @@
 #include "Hist.h"
 #include "Logger.h"
 #include "TH1D.h"
+#include "TTreeFormula.h"
 #include "TCanvas.h"
 #include "TApplication.h"
 #include "TDirectory.h"
@@ -9,6 +10,7 @@
 #include "Style.h"
 #include "TLatex.h"
 #include "TArrow.h"
+#include "Utility.h"
 #include <memory>
 #include <iostream>
 
@@ -39,54 +41,97 @@ Hist::Hist(TTree* tree) : tree(tree) {
 }
 
 void Hist::fillHistograms(const std::string& var, const std::map<std::string, TCut>& binTCuts) {
+    // Prepare containers
     histMap[var].clear();
     binKeysMap[var].clear();
     binCutsMap[var].clear();
 
     auto params = getParams(var, -1, -1, -1);
 
-    int totalBins = static_cast<int>(binTCuts.size());
+    // Pre-create histograms and compile TTreeFormulas for cuts
+    std::vector<std::unique_ptr<TTreeFormula>> binFormulas;
+    std::vector<TH1D*> hists;
+    std::vector<std::string> keys;
+    std::vector<TCut> cuts;
+
     int idx = 0;
-
     for (const auto& binPair : binTCuts) {
-        // Progress bar
-        static const int barWidth = 50;
-        float progressRatio = static_cast<float>(idx + 1) / totalBins;
-        int pos = static_cast<int>(barWidth * progressRatio);
-        std::cout << "[";
-        for (int i = 0; i < barWidth; ++i) {
-            if (i < pos) std::cout << "=";
-            else if (i == pos) std::cout << ">";
-            else std::cout << " ";
-        }
-        std::cout << "] " << int(progressRatio * 100.0) << "%\r";
-        std::cout.flush();
-
         const std::string& binKey = binPair.first;
         const TCut& cut = binPair.second;
         std::string histName = "hist_" + binKey;
-        std::string drawCmd = var + ">>" + histName + "(" +
-            std::to_string(params.nbins) + "," +
-            std::to_string(params.xmin) + "," +
-            std::to_string(params.xmax) + ")";
-        
-        TCut weighted_cut = m_hasWeightBranch ? cut * "Weight" : cut;
-        tree->Draw(drawCmd.c_str(), weighted_cut, "goff");
-
-        TH1D* h = static_cast<TH1D*>(gDirectory->Get(histName.c_str()));
-        if (!h) {
-            std::cerr << "Warning: Histogram " << histName << " not found after Draw.\n";
-            ++idx;
-            continue;
-        }
-        histMap[var].push_back(h);
-        binKeysMap[var].push_back(binKey);
-        binCutsMap[var].push_back(cut);
-        // Compute means for this bin only
-        computeMeans(binKey, cut);
+        TH1D* h = new TH1D(histName.c_str(), histName.c_str(), params.nbins, params.xmin, params.xmax);
+        h->SetDirectory(nullptr);
+        hists.push_back(h);
+        keys.push_back(binKey);
+        cuts.push_back(cut);
+        // compile formula for the bin cut
+        binFormulas.emplace_back(std::make_unique<TTreeFormula>(("cut_" + std::to_string(idx)).c_str(), cut.GetTitle(), tree));
         ++idx;
     }
-    std::cout << std::endl; // newline after progress bar
+
+    int totalBins = static_cast<int>(hists.size());
+    if (totalBins == 0) return;
+
+    // Prepare formulas for variable, weight, and mean variables
+    std::unique_ptr<TTreeFormula> varFormula = std::make_unique<TTreeFormula>("varFormula", var.c_str(), tree);
+    std::unique_ptr<TTreeFormula> weightFormula;
+    if (m_hasWeightBranch) weightFormula = std::make_unique<TTreeFormula>("weightFormula", "Weight", tree);
+    std::vector<std::string> meanVars = {"X", "Q", "Z", "PhPerp"};
+    std::vector<std::unique_ptr<TTreeFormula>> meanFormulas;
+    for (const auto& mvar : meanVars) {
+        meanFormulas.emplace_back(std::make_unique<TTreeFormula>(("mean_" + mvar).c_str(), mvar.c_str(), tree));
+    }
+
+    // Accumulators for means: per-bin per-meanVar
+    std::vector<std::vector<double>> sumW(totalBins, std::vector<double>(1, 0.0)); // total weight per bin
+    std::vector<std::vector<double>> sumWV(totalBins, std::vector<double>(meanVars.size(), 0.0));
+
+    // Single pass over entries with progress
+    Long64_t nentries = tree->GetEntries();
+    util::ProgressBar pbar(static_cast<size_t>(nentries), 60, "Filling");
+    for (Long64_t i = 0; i < nentries; ++i) {
+        tree->GetEntry(i);
+        double v = varFormula->EvalInstance();
+        double w = m_hasWeightBranch ? weightFormula->EvalInstance() : 1.0;
+        // evaluate mean vars once
+        std::vector<double> mvals;
+        mvals.reserve(meanFormulas.size());
+        for (auto& mf : meanFormulas) mvals.push_back(mf->EvalInstance());
+
+        // check each bin formula
+        for (int b = 0; b < totalBins; ++b) {
+            double pass = binFormulas[b]->EvalInstance();
+            if (pass) {
+                hists[b]->Fill(v, w);
+                sumW[b][0] += w;
+                for (size_t k = 0; k < meanVars.size(); ++k) {
+                    sumWV[b][k] += mvals[k] * w;
+                }
+            }
+        }
+
+        if ((i & 0x3FF) == 0) pbar.update(static_cast<size_t>(i));
+    }
+    pbar.finish();
+
+    // Move histograms and metadata into maps, compute means
+    for (int b = 0; b < totalBins; ++b) {
+        histMap[var].push_back(hists[b]);
+        binKeysMap[var].push_back(keys[b]);
+        binCutsMap[var].push_back(cuts[b]);
+        // compute means for stored vars
+        double totalW = sumW[b][0];
+        std::string binKey = keys[b];
+        if (totalW > 0.0) {
+            for (size_t k = 0; k < meanVars.size(); ++k) {
+                meanMap[binKey][meanVars[k]] = sumWV[b][k] / totalW;
+            }
+        } else {
+            for (const auto& mv : meanVars) meanMap[binKey][mv] = 0.0;
+        }
+    }
+
+    std::cout << "Processed " << nentries << " entries; filled " << totalBins << " histograms." << std::endl;
 }
 
 
