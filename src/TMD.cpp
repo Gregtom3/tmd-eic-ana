@@ -122,28 +122,25 @@ const Grid* TMD::getGrid() const {
     return grid.get();
 }
 
-void TMD::inject_extract(int bin_index, std::optional<double> A_opt, int n_injections) {
+void TMD::queueInjection(const InjectionProject::Job& job) {
     if (!grid) {
         LOG_ERROR("Grid not built. Cannot inject/extract.");
         return;
     }
-    const auto& bins = grid->getBins();
-    if (static_cast<long unsigned int>(bin_index) >= bins.size()) {
-        LOG_ERROR("Bin index out of range.");
+    if(proj == nullptr) {
+        proj = new InjectionProject(filename, tree, table.get(), scale, grid.get());
+    }
+    proj->addJob(job);
+}
+
+void TMD::runQueuedInjections() {
+    if(!proj) {
+        LOG_ERROR("No queued InjectionProject to run.");
         return;
     }
-    auto it = bins.begin();
-    std::advance(it, bin_index);
-    const Bin& bin = it->second;
-    // Use InjectionProject to run multiple injections and emit YAML summary + CSV of raw results
-    InjectionProject proj(tree, table.get(), scale, grid.get());
-    proj.addJob(bin_index,  n_injections , A_opt);
-    // output prefix derived from filename stem and bin index
-    std::string rootStem = std::filesystem::path(filename).stem().string();
-    std::string outPrefix = std::string("injection_") + rootStem + "_" + treename + "_bin" + std::to_string(bin_index);
-    bool ok = proj.run(outPrefix);
+    bool ok = proj->run();
     if (!ok) {
-        LOG_ERROR("InjectionProject failed for bin " + std::to_string(bin_index));
+        LOG_ERROR("InjectionProject failed");
     }
 }
 

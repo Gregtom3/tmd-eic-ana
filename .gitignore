@@ -47,3 +47,5 @@ out/*.png
 # .root files
 *.root
 
+# yaml
+*injection*yaml

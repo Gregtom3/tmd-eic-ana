@@ -33,6 +33,9 @@ int main(int argc, char** argv) {
     // tmd.plotBin("PhPerp", 0);
     tmd.plot2DMap("PhPerp", "playground/test.png");
 
-    tmd.inject_extract(0);
+    const int n_injections = 5;
+    const int bin_index = 0;
+    tmd.queueInjection({ .bin_index = bin_index, .n = n_injections, .A_opt = 0.05 });
+    tmd.runQueuedInjections();
     return 0;
 }

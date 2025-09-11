@@ -34,8 +34,8 @@ public:
     void fillHistograms(const std::string& var, const std::string& outDir = "out", bool overwrite = false);
     void plot1DBin(const std::string& var, size_t binIndex, const std::string& outpath = "");
     void plot2DMap(const std::string& var, const std::string& outpath);
-    // Run injection/extraction via InjectionProject. n_injections controls how many trials to run.
-    void inject_extract(int bin_index, std::optional<double> A_opt = std::nullopt, int n_injections = 100);
+    void queueInjection(const InjectionProject::Job& job);
+    void runQueuedInjections();
 
 private:
     TFile* file;
@@ -49,6 +49,8 @@ private:
     std::map<std::string, TCut> binTCuts;
     std::unique_ptr<Hist> hist;
     std::unique_ptr<Plotter> plotter;
+    InjectionProject* proj = nullptr;
+
     // MC and scaling information
     double xsTotal{0.0};     // total cross-section read from file
     long long totalEvents{0}; // total MC events read from file
