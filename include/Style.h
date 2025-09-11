@@ -15,7 +15,7 @@ inline void ApplyHistStyle(TH1* h) {
     int fillColor = TColor::GetColor(173, 216, 230); // RGB for light blue
     h->SetFillColor(fillColor);
     h->SetLineColor(kBlack);
-    h->SetLineWidth(3); // thick border
+    h->SetLineWidth(1);
     h->SetMarkerStyle(20);
     h->SetMarkerColor(kBlack);
     h->SetMarkerSize(1.2);
@@ -47,7 +47,7 @@ inline void DrawMeanTLatex(const std::unordered_map<std::string, double>& meanMa
     for (size_t i = 0; i < vars.size(); ++i) {
         auto it = meanMap.find(vars[i]);
         double val = (it != meanMap.end()) ? it->second : 0.0;
-        snprintf(buf, sizeof(buf), "<%s>=%.*f", vars[i].c_str(), precision, val);
+        snprintf(buf, sizeof(buf), "<%s>=%.*g", vars[i].c_str(), precision, val);
         label += buf;
         if (i + 1 < vars.size())
             label += "  ";

@@ -68,8 +68,8 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
     int nCols = maxCol + 2;
     int nRows = maxRow + 2;
     LOG_PRINT("Plotting 2D map with " + std::to_string(nCols) + " columns and " + std::to_string(nRows) + " rows.");
-    int windowX = 400;
-    int windowY = 400;
+    int windowX = 200;
+    int windowY = 200;
     TCanvas* c = new TCanvas("c2d", "2D Map", windowX * nCols, windowY * nRows);
     c->Divide(nCols, nRows, 0, 0);
     ApplyGlobalStyle();
@@ -102,10 +102,10 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
         int padIndex = col + flippedRow * nCols + 1;
         c->cd(padIndex);
         ApplyHistStyle(hists[binIndex]);
-        if (hists[binIndex]->GetEntries() > -10) {
+        if (hists[binIndex]->GetEntries() > 10) {
             hists[binIndex]->Draw();
             if (meanMap.count(binKey)) {
-                DrawMeanTLatex(meanMap.at(binKey), grid->getMainBinNames(), 6, 0.15, 0.92);
+                DrawMeanTLatex(meanMap.at(binKey), grid->getMainBinNames(), 2, 0.15, 0.92);
             }
         } else {
             continue;
