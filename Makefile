@@ -1,8 +1,8 @@
 CXX = g++
 # Dependency flags: only used when compiling .o files so .d files are not generated during link steps
 DEPFLAGS = -MMD -MP
-CXXFLAGS = -O2 -Wall -Iinclude -Wno-deprecated-declarations `root-config --cflags`
-LDFLAGS = `root-config --libs` -lyaml-cpp
+CXXFLAGS = -O2 -Wall -Iinclude -Wno-deprecated-declarations `root-config --cflags` -I$(HOME)/.local/include
+LDFLAGS = `root-config --libs` -L$(HOME)/.local/lib64 -lyaml-cpp
 
 SRC_DIR = src
 MACRO_DIR = macro
