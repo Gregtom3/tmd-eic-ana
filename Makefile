@@ -3,26 +3,29 @@ CXXFLAGS = -O2 -Wall -Iinclude -Wno-deprecated-declarations -MMD -MP `root-confi
 LDFLAGS = `root-config --libs`
 
 SRC_DIR = src
+MACRO_DIR = macro
 INC_DIR = include
 OBJ_DIR = obj
 BIN_DIR = bin
-BIN = $(BIN_DIR)/tmd
+
+MACRO_SOURCES := $(wildcard $(MACRO_DIR)/*.cpp)
+MACRO_BINS := $(MACRO_SOURCES:$(MACRO_DIR)/%.cpp=$(BIN_DIR)/%)
 
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 DEPS = $(OBJECTS:.o=.d)
 
 
-all: $(BIN)
+all: $(MACRO_BINS)
 
-$(BIN): $(OBJECTS)
+$(BIN_DIR)/%: $(MACRO_DIR)/%.cpp $(OBJECTS)
 	mkdir -p $(BIN_DIR)
-	$(CXX) -o $@ $^ $(LDFLAGS) -lRooFit -lRooFitCore
+	$(CXX) $(CXXFLAGS) $< $(OBJECTS) -o $@ $(LDFLAGS) -lRooFit -lRooFitCore -MF $(OBJ_DIR)/$*.d
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	mkdir -p $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -I$(INC_DIR) -c $< -o $@
-# Include dependency files if they exist
+
 -include $(DEPS)
 
 # ----------------
@@ -49,17 +52,3 @@ clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
 .PHONY: all clean test
- 
-# Format sources using clang-format
-FORMAT_SRCS := $(shell git ls-files '*.cpp' '*.h' | tr '\n' ' ')
-
-.PHONY: format check-format
-format:
-	clang-format -i $(FORMAT_SRCS)
-
-check-format:
-	@EXIT=0; \
-	for f in $(FORMAT_SRCS); do \
-		clang-format --dry-run --Werror $$f || EXIT=1; \
-	done; \
-	exit $$EXIT
