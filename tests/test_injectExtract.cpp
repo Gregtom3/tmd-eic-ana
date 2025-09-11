@@ -9,10 +9,9 @@
 
 int main() {
 
-    const std::string outpath = "out/output.root";
+    Args args = parseArgs(__argc, __argv);
 
-    // Now attempt to use TMD on this file
-    TMD tmd(outpath, "tree");
+    TMD tmd(args.filename, args.treename);
     if (!tmd.isLoaded()) {
         LOG_ERROR("TMD failed to load generated tree file");
         return 1;
@@ -20,16 +19,20 @@ int main() {
 
     LOG_INFO("TMD loaded generated file successfully");
 
-    // Load table (default) and build a simple grid
-    tmd.loadTable();
+    tmd.setTargetPolarization(args.targetPolarization);
+    tmd.setOutDir(args.outDir);
+    tmd.setOutFilename(args.outFilename);
+    tmd.loadTable(args.energyConfig);
     tmd.buildGrid({"X"});
     std::cout << "Grid summary:" << std::endl;
     tmd.getGrid()->printGridSummary();
 
-    // Run a simple inject/extract on bin 0
-    const int n_injections = 5;
-    const int bin_index = 0;
-    tmd.queueInjection({ .bin_index = bin_index, .n = n_injections, .A_opt = 0.3 });
+    tmd.queueInjection({
+        .bin_index = args.bin_index,
+        .n = args.n_injections,
+        .extract_with_true = args.extract_with_true,
+        .A_opt = args.A_opt
+    });
     tmd.runQueuedInjections();
     LOG_INFO("inject_extract completed");
 

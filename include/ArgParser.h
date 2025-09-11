@@ -3,7 +3,7 @@
 
 #include <string>
 #include <cstdint>
-
+#include <optional>
 struct Args {
     std::string filename;
     std::string treename;

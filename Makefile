@@ -39,7 +39,7 @@ test: $(TESTS)
 	./$(BIN_DIR)/test_load_tables
 	./$(BIN_DIR)/test_grids
 	./$(BIN_DIR)/test_fillHistograms
-	./$(BIN_DIR)/test_injectExtract
+	./$(BIN_DIR)/test_injectExtract out/output_generated.root tree default --n_injections 5 --bin_index 0 --A_opt 0.3 --out out --outFilename test_injectExtract.yaml
 
 $(BIN_DIR)/test_load_tables: tests/test_load_tables.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp
 	mkdir -p $(BIN_DIR)
