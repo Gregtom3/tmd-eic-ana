@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <iostream>
 #include <map>
+#include "Utility.h"
 
 TMD::TMD(const std::string& filename, const std::string& treename)
     : file(nullptr)
@@ -29,6 +30,29 @@ TMD::TMD(const std::string& filename, const std::string& treename)
         file = nullptr;
         tree = nullptr;
         return;
+    }
+    // Attempt to read metadata vectors XsTotal (vector<double>) and TotalEvents (vector<int>) from the tree
+    if (tree->GetBranch("XsTotal") && tree->GetBranch("TotalEvents")) {
+        std::vector<double>* xsPtr = nullptr;
+        std::vector<int>* evPtr = nullptr;
+        // Set branch addresses and read first entry
+        tree->SetBranchAddress("XsTotal", &xsPtr);
+        tree->SetBranchAddress("TotalEvents", &evPtr);
+        if (tree->GetEntries() < 1) {
+            throw std::runtime_error("TMD: tree has no entries to read XsTotal/TotalEvents");
+        }
+        tree->GetEntry(0);
+        if (!xsPtr || !evPtr) {
+            throw std::runtime_error("TMD: XsTotal or TotalEvents branch read returned null pointer");
+        }
+        if (xsPtr->size() != 1 || evPtr->size() != 1) {
+            throw std::runtime_error("TMD: Expected single-value vectors for XsTotal and TotalEvents");
+        }
+        xsTotal = xsPtr->at(0);
+        totalEvents = static_cast<long long>(evPtr->at(0));
+        LOG_INFO("Loaded XsTotal=" + std::to_string(xsTotal) + ", TotalEvents=" + std::to_string(totalEvents));
+    } else {
+        LOG_WARN("TMD: Could not find XsTotal and TotalEvents branches in tree; skipping mc scaling initialization.");
     }
     // Check for Q branch, if not present, check for Q2 and set alias
     if (!tree->GetBranch("Q")) {
@@ -70,11 +94,21 @@ TTree* TMD::getTree() const {
 void TMD::loadTable(){
     this->energyConfig = "default"; // store for cache naming
     table = std::make_unique<Table>();
+    // compute scale if we have the necessary mc info
+    if (totalEvents > 0 && xsTotal > 0.0) {
+        scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi);
+        LOG_INFO("Computed scale=" + std::to_string(scale));
+    }
 }
 
 void TMD::loadTable(const std::string& energyConfig) {
     this->energyConfig = energyConfig; // store for cache naming
     table = std::make_unique<Table>(energyConfig);
+    // compute scale if we have the necessary mc info
+    if (totalEvents > 0 && xsTotal > 0.0) {
+        scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi);
+        LOG_INFO("Computed scale=" + std::to_string(scale));
+    }
 }
 
 const Table* TMD::getTable() const {

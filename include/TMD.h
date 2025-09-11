@@ -46,6 +46,12 @@ private:
     std::map<std::string, TCut> binTCuts;
     std::unique_ptr<Hist> hist;
     std::unique_ptr<Plotter> plotter;
+    // MC and scaling information
+    double xsTotal{0.0};     // total cross-section read from file
+    long long totalEvents{0}; // total MC events read from file
+    double mc_lumi{0.0};     // computed mc luminosity (nb^-1)
+    double exp_lumi{0.0};    // computed expected luminosity (nb^-1)
+    double scale{1.0};       // scale = exp_lumi / mc_lumi
 };
 
 #endif // TMD_H

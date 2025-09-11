@@ -6,6 +6,8 @@
 #include <iostream>
 #include <mutex>
 #include <string>
+#include <map>
+#include "Constants.h"
 
 namespace util {
 
@@ -69,6 +71,52 @@ private:
     std::chrono::steady_clock::time_point start_;
     bool finished_;
 };
+
+} // namespace util
+
+namespace util {
+
+// Compute scale factor and log mc_lumi, exp_lumi, and scale.
+// totalEvents: number of MC events (integer)
+// xsTotal: total cross section value (same units as expected by formula)
+// energyConfig: key to look up integrated luminosity in IntegratedLuminosities
+// out_mc and out_exp are set to the computed mc and expected luminosities (nb^-1)
+inline double computeScale(long long totalEvents, double xsTotal, const std::string& energyConfig,
+                           double& out_mc, double& out_exp) {
+    // Find experimental integrated luminosity L
+    double L = 0.0;
+    auto it = IntegratedLuminosities.find(energyConfig);
+    if (it == IntegratedLuminosities.end()) {
+        std::cerr << "computeScale: unknown energyConfig '" << energyConfig << "' - cannot compute scale.\n";
+        out_mc = 0.0;
+        out_exp = 0.0;
+        return 1.0;
+    }
+    L = it->second;
+
+    // mc_lumi = TotalEvents / (XsTotal / 1e3)
+    // XsTotal is divided by 1e3 per spec (unit conversion); result is in nb^-1
+    double mc_lumi = 0.0;
+    if (xsTotal == 0.0) {
+        std::cerr << "computeScale: XsTotal is zero - cannot compute mc_lumi." << std::endl;
+        out_mc = 0.0;
+        out_exp = 0.0;
+        return 1.0;
+    }
+    mc_lumi = static_cast<double>(totalEvents) / (xsTotal / 1e3);
+
+    // exp_lumi = L * 10 * 1e6 / 1.54 (per user spec)
+    double exp_lumi = L * 10.0 * 1e6 / 1.54;
+
+    double scale = exp_lumi / mc_lumi;
+
+    std::cout << "computeScale: mc_lumi = " << mc_lumi << " nb^-1, exp_lumi = " << exp_lumi
+              << " nb^-1, scale = " << scale << std::endl;
+
+    out_mc = mc_lumi;
+    out_exp = exp_lumi;
+    return scale;
+}
 
 } // namespace util
 

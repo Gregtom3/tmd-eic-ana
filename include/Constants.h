@@ -12,4 +12,12 @@ inline const std::map<std::string, std::string> VarToLabel = {
 	{"PhPerp", "p_{T} [GeV]"}
 };
 
+// Integrated luminosities (units unspecified in file; treated as given constants)
+// Values provided by user: 5x41 -> 0.44, 10x100 -> 7.9, 18x275 -> 1.54
+inline const std::map<std::string, double> IntegratedLuminosities = {
+	{"5x41", 0.44},
+	{"10x100", 7.9},
+	{"18x275", 1.54},
+};
+
 #endif // TMD_CONSTANTS_H
