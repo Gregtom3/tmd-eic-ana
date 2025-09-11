@@ -25,12 +25,10 @@ jobs:
           source $GITHUB_WORKSPACE/root/bin/thisroot.sh
           make
 
-      - name: Generate pseudodata
+      - name: Generate pseudodata + run tests
         run: |
           source $GITHUB_WORKSPACE/root/bin/thisroot.sh
           ./bin/generate_pseudodata
-
-      - name: Run tests
-        run: |
-          source $GITHUB_WORKSPACE/root/bin/thisroot.sh
           make test
+
+          
