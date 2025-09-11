@@ -16,7 +16,7 @@ jobs:
 
       - name: Install deps + ROOT
         run: |
-          sudo apt-get update && sudo apt-get install -y build-essential wget libtbb-dev
+          sudo apt-get update && sudo apt-get install -y build-essential wget libtbb-dev libyaml-cpp-dev
           wget -q https://root.cern/download/root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
           tar -xzf root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
 
