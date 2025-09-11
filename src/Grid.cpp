@@ -110,10 +110,20 @@ void Grid::computeMainBinIndices() {
             parent += (d > 0 ? "," : "") + std::to_string(low);
         }
     }
-    // Structure of uniqueByParent[d]:
-    //   key: parent string (e.g. "")
-    //   value: vector of (low, high) pairs for dimension d
-    
+
+    // Debug: show collected intervals
+    LOG_DEBUG("=== Collected intervals ===");
+    for (size_t d = 0; d < ndim; ++d) {
+        LOG_DEBUG("Dim " + std::to_string(d) + " (" + mainBinNames[d] + "):");
+        for (auto& kv : uniqueByParent[d]) {
+            LOG_DEBUG("  Parent " + kv.first + ": ");
+            for (auto& iv : kv.second) {
+                LOG_DEBUG("[" + std::to_string(iv.first) + "," + std::to_string(iv.second) + "] ");
+            }
+            LOG_DEBUG("\n");
+        }
+    }
+
     // Sort, deduplicate, and merge containment for each dimension
     for (size_t d = 0; d < ndim; ++d) {
         for (auto& kv : uniqueByParent[d]) {
@@ -125,22 +135,19 @@ void Grid::computeMainBinIndices() {
                           if (a.first == b.first) return a.second < b.second;
                           return a.first < b.first;
                       });
-            // Merge overlapping or contained intervals into groups
+
+            // Merge by containment
             std::vector<std::pair<double,double>> merged;
             if (!vec.empty()) {
-                std::sort(vec.begin(), vec.end(),
-                        [](auto& a, auto& b) {
-                            if (a.first == b.first) return a.second < b.second;
-                            return a.first < b.first;
-                        });
-
                 auto current = vec[0];
                 for (size_t i = 1; i < vec.size(); ++i) {
                     if (vec[i].first >= current.first && vec[i].second <= current.second) {
                         // vec[i] is contained in current → skip it
                         continue;
+                    } else if (vec[i].first == current.first) {
+                        // same start → extend
+                        current.second = std::max(current.second, vec[i].second);
                     } else {
-                        // No overlap → push and start new
                         merged.push_back(current);
                         current = vec[i];
                     }
@@ -148,6 +155,19 @@ void Grid::computeMainBinIndices() {
                 merged.push_back(current);
             }
             vec = merged;
+        }
+    }
+
+    // Debug: show merged intervals
+    LOG_DEBUG("=== Merged intervals ===");
+    for (size_t d = 0; d < ndim; ++d) {
+        LOG_DEBUG("Dim " + std::to_string(d) + " (" + mainBinNames[d] + "):");
+        for (auto& kv : uniqueByParent[d]) {
+            LOG_DEBUG("  Parent " + kv.first + ": ");
+            for (auto& iv : kv.second) {
+                LOG_DEBUG("[" + std::to_string(iv.first) + "," + std::to_string(iv.second) + "] ");
+            }
+            LOG_DEBUG("\n");
         }
     }
 
@@ -168,7 +188,6 @@ void Grid::computeMainBinIndices() {
 
             int idx = -1;
             for (size_t i = 0; i < vec.size(); ++i) {
-                // containment check
                 if (vec[i].first <= low && high <= vec[i].second) {
                     idx = static_cast<int>(i);
                     break;
@@ -180,5 +199,13 @@ void Grid::computeMainBinIndices() {
         }
 
         mainBinIndices[key] = indices;
+
+        // Debug: show assignment
+        LOG_DEBUG(key + " → [");
+        for (size_t i = 0; i < indices.size(); ++i) {
+            LOG_DEBUG(std::to_string(indices[i]) + (i + 1 < indices.size() ? "," : ""));
+        }
+        LOG_DEBUG("]");
     }
 }
+
