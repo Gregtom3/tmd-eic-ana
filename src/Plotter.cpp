@@ -115,7 +115,7 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
         c->cd(padIndex);
         ApplyHistStyle(hists[binIndex]);
         if (hists[binIndex]->GetEntries() > 10) {
-            hists[binIndex]->Draw();
+            hists[binIndex]->Draw("hist");
             if (meanMap.count(binKey)) {
                 DrawMeanTLatex(meanMap.at(binKey), grid->getMainBinNames(), 2, 0.15, 0.92);
             }
