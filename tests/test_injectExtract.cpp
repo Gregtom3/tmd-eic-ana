@@ -26,9 +26,9 @@ int main() {
     std::cout << "Grid summary:" << std::endl;
     tmd.getGrid()->printGridSummary();
 
-    // Fill histograms for variable X into a temporary directory
-    tmd.fillHistograms("X", "tests/out", true);
-    LOG_INFO("fillHistograms completed");
+    // Run a simple inject/extract on bin 0
+    tmd.inject_extract(0, 0.2);
+    LOG_INFO("inject_extract completed");
 
     std::cout << "Test passed." << std::endl;
     return 0;

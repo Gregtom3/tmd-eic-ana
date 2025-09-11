@@ -1,59 +1,50 @@
-name: Pipeline
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
-  build-and-test:
-    name: Build, generate data, and test
-    runs-on: ubuntu-latest
-
+  build:
+    runs-on: ubuntu-22.04
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - name: Install deps + ROOT
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential wget libtbb-dev
+          wget -q https://root.cern/download/root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+          tar -xzf root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+      - name: Build
+        run: |
+          source $GITHUB_WORKSPACE/root/bin/thisroot.sh
+          make
+      - name: Upload root and bin
+        uses: actions/upload-artifact@v3
+        with:
+          name: root-and-bin
+          path: |
+            root
+            bin
 
-    - name: Set up dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential wget libtbb-dev
-      shell: bash
+  generate:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: root-and-bin
+      - name: Prep
+        run: |
+          chmod -R +x bin || true
+          source $GITHUB_WORKSPACE/root/bin/thisroot.sh
+      - name: Generate
+        run: ./bin/generate_pseudodata
 
-    - name: Install CERN ROOT
-      run: |
-        # download a prebuilt ROOT binary compatible with ubuntu-22.04
-        wget -q https://root.cern/download/root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
-        tar -xzf root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
-        ls -la root || true
-      shell: bash
-
-    - name: Show ROOT info
-      run: |
-        # Use GITHUB_WORKSPACE for a portable path to the checked-out repo
-        echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-        source "$GITHUB_WORKSPACE/root/bin/thisroot.sh"
-        echo "ROOTSYS is $ROOTSYS"
-        root-config --version || true
-      shell: bash
-
-    - name: Build the project
-      run: |
-        source "$GITHUB_WORKSPACE/root/bin/thisroot.sh"
-        make
-      shell: bash
-
-    - name: Generate pseudodata
-      run: |
-        source "$GITHUB_WORKSPACE/root/bin/thisroot.sh"
-        ./bin/generate_pseudodata
-      shell: bash
-
-    - name: Run tests
-      run: |
-        source "$GITHUB_WORKSPACE/root/bin/thisroot.sh"
-        make test
-      shell: bash
+  test:
+    runs-on: ubuntu-22.04
+    needs: generate
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: root-and-bin
+      - run: |
+          source $GITHUB_WORKSPACE/root/bin/thisroot.sh
+          make test

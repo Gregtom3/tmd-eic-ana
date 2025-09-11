@@ -36,7 +36,8 @@ TESTS = $(BIN_DIR)/test_load_tables $(BIN_DIR)/test_grids $(BIN_DIR)/test_genera
 test: $(TESTS)
 	./$(BIN_DIR)/test_load_tables
 	./$(BIN_DIR)/test_grids
-	./$(BIN_DIR)/test_generate_and_use_tree
+	./$(BIN_DIR)/test_fillHistograms
+	./$(BIN_DIR)/test_injectExtract
 
 $(BIN_DIR)/test_load_tables: tests/test_load_tables.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp
 	mkdir -p $(BIN_DIR)
@@ -46,7 +47,14 @@ $(BIN_DIR)/test_grids: tests/test_grids.cpp src/Table.cpp src/Grid.cpp src/Bin.c
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
+$(BIN_DIR)/test_fillHistograms: tests/test_fillHistograms.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp
+	mkdir -p $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -lRooFit -lRooFitCore
 
+$(BIN_DIR)/test_injectExtract: tests/test_injectExtract.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp
+	mkdir -p $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -lRooFit -lRooFitCore
+	
 # ----------------
 # Cleanup
 # ----------------
