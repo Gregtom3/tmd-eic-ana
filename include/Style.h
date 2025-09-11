@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-inline void ApplyHistStyle(TH1* h) {
+inline void ApplyHistStyle(TH1* h, float y_axis_max_factor = 1.1) {
     if (!h)
         return;
     // Fill color: light blue
@@ -20,10 +20,14 @@ inline void ApplyHistStyle(TH1* h) {
     h->SetMarkerColor(kBlack);
     h->SetMarkerSize(1.2);
     h->SetStats(0);                    // disables stats box for this hist
+    h->SetTitle("");                  // disable histogram title (handled by style)
     h->GetXaxis()->SetLabelSize(0.05); // larger axis labels
     h->GetYaxis()->SetLabelSize(0.05);
     h->GetXaxis()->SetTitleSize(0.06);
     h->GetYaxis()->SetTitleSize(0.06);
+    h->GetYaxis()->SetRangeUser(0, h->GetMaximum() * y_axis_max_factor); // Slightly increase Y axis range for better visuals
+    // Make sure the Y title has room
+    h->GetYaxis()->SetTitleOffset(1.2);
 }
 
 inline void ApplyGlobalStyle() {

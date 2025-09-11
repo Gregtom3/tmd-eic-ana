@@ -1,6 +1,7 @@
 #include "Plotter.h"
 #include "Logger.h"
 #include "Style.h"
+#include "Constants.h"
 #include "TArrow.h"
 #include "TCanvas.h"
 #include "TLatex.h"
@@ -14,7 +15,6 @@ void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binInde
     }
     const auto& histMap = hist->getHistMap();
     const auto& binKeysMap = hist->getBinKeysMap();
-    const auto& meanMap = hist->getMeans();
 
     if (histMap.find(var) == histMap.end() || binIndex >= histMap.at(var).size()) {
         std::cerr << "Invalid bin index or variable: " << var << ", " << binIndex << std::endl;
@@ -24,13 +24,19 @@ void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binInde
 
     TCanvas* c = new TCanvas("c", "c", 800, 600);
     ApplyGlobalStyle();
+    // Tuck margins in to make room for axis titles
+    c->SetLeftMargin(0.14);
+    c->SetBottomMargin(0.12);
     ApplyHistStyle(hists[binIndex]);
+    // Ensure histogram has no title and set sensible axis labels
+    hists[binIndex]->SetTitle("");
+    auto itLabel = VarToLabel.find(var);
+    std::string xLabel = (itLabel != VarToLabel.end()) ? itLabel->second : var;
+    hists[binIndex]->GetXaxis()->SetTitle(xLabel.c_str());
+    hists[binIndex]->GetYaxis()->SetTitle("Counts");
     hists[binIndex]->Draw();
 
     const std::string& binKey = binKeysMap.at(var)[binIndex];
-    std::vector<std::string> meanVars = {"X", "Q", "Z", "PhPerp"};
-    int meanPrecision = 3;
-    DrawMeanTLatex(meanMap.at(binKey), meanVars, meanPrecision, 0.15, 0.92);
 
     c->Update();
     std::string filename = outpath;
