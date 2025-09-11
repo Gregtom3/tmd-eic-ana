@@ -4,6 +4,7 @@
 #include "Grid.h"
 #include "Hist.h"
 #include "Inject.h"
+#include "InjectionProject.h"
 #include "Plotter.h"
 #include "TCut.h"
 #include "TFile.h"
@@ -33,7 +34,8 @@ public:
     void fillHistograms(const std::string& var, const std::string& outDir = "out", bool overwrite = false);
     void plot1DBin(const std::string& var, size_t binIndex, const std::string& outpath = "");
     void plot2DMap(const std::string& var, const std::string& outpath);
-    void inject_extract(int bin_index, std::optional<double> A_opt = std::nullopt);
+    // Run injection/extraction via InjectionProject. n_injections controls how many trials to run.
+    void inject_extract(int bin_index, std::optional<double> A_opt = std::nullopt, int n_injections = 100);
 
 private:
     TFile* file;

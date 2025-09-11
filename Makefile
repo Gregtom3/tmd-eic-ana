@@ -2,7 +2,7 @@ CXX = g++
 # Dependency flags: only used when compiling .o files so .d files are not generated during link steps
 DEPFLAGS = -MMD -MP
 CXXFLAGS = -O2 -Wall -Iinclude -Wno-deprecated-declarations `root-config --cflags`
-LDFLAGS = `root-config --libs`
+LDFLAGS = `root-config --libs` -lyaml-cpp
 
 SRC_DIR = src
 MACRO_DIR = macro
@@ -49,11 +49,11 @@ $(BIN_DIR)/test_grids: tests/test_grids.cpp src/Table.cpp src/Grid.cpp src/Bin.c
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(BIN_DIR)/test_fillHistograms: tests/test_fillHistograms.cpp src/Hist.cpp src/Plotter.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp
+$(BIN_DIR)/test_fillHistograms: tests/test_fillHistograms.cpp src/Hist.cpp src/Plotter.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp src/InjectionProject.cpp
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -lRooFit -lRooFitCore
 
-$(BIN_DIR)/test_injectExtract: tests/test_injectExtract.cpp src/Hist.cpp src/Plotter.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp
+$(BIN_DIR)/test_injectExtract: tests/test_injectExtract.cpp src/Hist.cpp src/Plotter.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp src/InjectionProject.cpp
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -lRooFit -lRooFitCore
 

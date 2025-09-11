@@ -122,7 +122,7 @@ const Grid* TMD::getGrid() const {
     return grid.get();
 }
 
-void TMD::inject_extract(int bin_index, std::optional<double> A_opt) {
+void TMD::inject_extract(int bin_index, std::optional<double> A_opt, int n_injections) {
     if (!grid) {
         LOG_ERROR("Grid not built. Cannot inject/extract.");
         return;
@@ -135,15 +135,16 @@ void TMD::inject_extract(int bin_index, std::optional<double> A_opt) {
     auto it = bins.begin();
     std::advance(it, bin_index);
     const Bin& bin = it->second;
-    Inject injector(tree, table.get(), scale);
-    std::pair<double, double> extracted_A = injector.injectExtractForBin(bin, A_opt);
-    // Log results
-    if(A_opt.has_value())
-        LOG_INFO("Bin " + std::to_string(bin_index) + ": Injected A = " + std::to_string(A_opt.value()) +
-             ", Extracted A = " + std::to_string(extracted_A.first) + " +/- " + std::to_string(extracted_A.second));
-    else
-        LOG_INFO("Bin " + std::to_string(bin_index) + ": Extracted A = " + std::to_string(extracted_A.first) +
-             " +/- " + std::to_string(extracted_A.second));
+    // Use InjectionProject to run multiple injections and emit YAML summary + CSV of raw results
+    InjectionProject proj(tree, table.get(), scale, grid.get());
+    proj.addJob(bin_index,  n_injections , A_opt);
+    // output prefix derived from filename stem and bin index
+    std::string rootStem = std::filesystem::path(filename).stem().string();
+    std::string outPrefix = std::string("injection_") + rootStem + "_" + treename + "_bin" + std::to_string(bin_index);
+    bool ok = proj.run(outPrefix);
+    if (!ok) {
+        LOG_ERROR("InjectionProject failed for bin " + std::to_string(bin_index));
+    }
 }
 
 std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
