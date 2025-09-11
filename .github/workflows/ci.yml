@@ -47,6 +47,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Generate pseudodata
+      run: |
+        source $PWD/root/bin/thisroot.sh
+        ./bin/generate_pseudodata
+      shell: bash
+
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: generate-data
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
     - name: Run tests
       run: |
         source $PWD/root/bin/thisroot.sh
