@@ -15,7 +15,7 @@ class Inject {
 public:
     Inject(TTree* tree, const Table* table, double scale = 1.0);
     ~Inject();
-    std::pair<double, double> injectExtractForBin(const Bin& bin, std::optional<double> A_opt = std::nullopt);
+    std::pair<double, double> injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt = std::nullopt);
 
 private:
     TTree* tree;

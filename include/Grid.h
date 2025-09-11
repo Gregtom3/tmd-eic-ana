@@ -20,6 +20,15 @@ public:
     const std::map<std::string, std::vector<int>>& getMainBinIndices() const {
         return mainBinIndices;
     }
+    Bin getBinByIndex(int index) const {
+        if (index < 0 || static_cast<size_t>(index) >= mainBins.size()) {
+            LOG_ERROR("Grid: getBinByIndex: index out of range: " + std::to_string(index));
+            return Bin();
+        }
+        auto it = mainBins.begin();
+        std::advance(it, index);
+        return it->second;
+    }
 
 private:
     const std::vector<std::string> binNames = {"X", "Q", "Z", "PhPerp"};

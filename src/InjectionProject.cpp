@@ -37,7 +37,7 @@ bool InjectionProject::run() {
         std::vector<double> extractedVals;
         std::vector<double> extractedErrs;
         for (int i = 0; i < job.n; ++i) {
-            auto res = injector.injectExtractForBin(bin, job.A_opt);
+            auto res = injector.injectExtractForBin(bin, job.extract_with_true, job.A_opt);
             extractedVals.push_back(res.first);
             extractedErrs.push_back(res.second);
         }
@@ -48,12 +48,21 @@ bool InjectionProject::run() {
         double var = 0.0;
         for (double v : extractedVals) var += (v - mean) * (v - mean);
         double stddev = extractedVals.size() > 1 ? std::sqrt(var / (extractedVals.size() - 1)) : 0.0;
-
+        
+        // Emit YAML for this job
         out << YAML::BeginMap;
         out << YAML::Key << "bin_index" << YAML::Value << job.bin_index;
+        out << YAML::Key << "X_min" << YAML::Value << bin.getMin("X");
+        out << YAML::Key << "X_max" << YAML::Value << bin.getMax("X");
+        out << YAML::Key << "Q_min" << YAML::Value << bin.getMin("Q");
+        out << YAML::Key << "Q_max" << YAML::Value << bin.getMax("Q");
+        out << YAML::Key << "Z_min" << YAML::Value << bin.getMin("Z");
+        out << YAML::Key << "Z_max" << YAML::Value << bin.getMax("Z");
+        out << YAML::Key << "PhPerp_min" << YAML::Value << bin.getMin("PhPerp");
+        out << YAML::Key << "PhPerp_max" << YAML::Value << bin.getMax("PhPerp");
+        out << YAML::Key << "used_reconstructed_kinematics" << YAML::Value << (!job.extract_with_true);
         out << YAML::Key << "n_injections" << YAML::Value << job.n;
         out << YAML::Key << "injected" << YAML::Value << (job.A_opt.has_value() ? job.A_opt.value() : 0.0);
-        // All values
         out << YAML::Key << "all_extracted" << YAML::Value << YAML::Flow << extractedVals;
         out << YAML::Key << "all_errors" << YAML::Value << YAML::Flow << extractedErrs;
         out << YAML::Key << "mean_extracted" << YAML::Value << mean;

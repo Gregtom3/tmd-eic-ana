@@ -19,7 +19,7 @@ Inject::Inject(TTree* tree, const Table* table, double scale)
     , m_scale(scale) {}
 Inject::~Inject() {}
 
-std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, std::optional<double> A_opt) {
+std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt) {
     if (!tree) {
         std::cerr << "[Inject::injectExtractForBin] Error: TTree pointer is null." << std::endl;
         return std::make_pair(0.0, 0.0);
@@ -195,11 +195,22 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, std::optio
     }
 
     RooRealVar A_fit("A", "A", 0.0, -1.0, 1.0);
-    RooGenericPdf model("model", "1 + Spin_idx * A * sin(PhiH+PhiS)", RooArgList(PhiH, PhiS, Spin_idx, A_fit));
-    RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
-    double val = A_fit.getVal();
-    double error = A_fit.getError();
-    delete fitResult;
+    // Determine which PhiH/PhiS to use for extraction
+    double val = 0.0;
+    double error = 0.0;
+    if (extract_with_true) {
+        RooGenericPdf model("model", "1 + Spin_idx * A * sin(TruePhiH+TruePhiS)", RooArgList(TruePhiH, TruePhiS, Spin_idx, A_fit));
+        RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
+        val = A_fit.getVal();
+        error = A_fit.getError();
+        delete fitResult;
+    } else {
+        RooGenericPdf model("model", "1 + Spin_idx * A * sin(PhiH+PhiS)", RooArgList(PhiH, PhiS, Spin_idx, A_fit));
+        RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
+        val = A_fit.getVal();
+        error = A_fit.getError();
+        delete fitResult;
+    }
     // Clean up any heap-allocated Roo objects
     if (Q_ptr) delete Q_ptr;
     if (Q2_ptr) delete Q2_ptr;
