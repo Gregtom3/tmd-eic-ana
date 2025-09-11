@@ -1,0 +1,17 @@
+jobs:
+  - bin_index: 0
+    X_min: 0
+    X_max: 999999
+    Q_min: 0
+    Q_max: 999999
+    Z_min: 0
+    Z_max: 999999
+    PhPerp_min: 0
+    PhPerp_max: 999999
+    used_reconstructed_kinematics: false
+    n_injections: 5
+    injected: 0.3
+    all_extracted: [0.2941085476508974, 0.299599098045001, 0.2924982434418659, 0.289905802960039, 0.2943129648513481]
+    all_errors: [0.1403048793507384, 0.1407022843176381, 0.140390981973784, 0.140489443221314, 0.1404093189298487]
+    mean_extracted: 0.2940849313898303
+    stddev_extracted: 0.003551101377222992

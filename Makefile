@@ -41,19 +41,19 @@ test: $(TESTS)
 	./$(BIN_DIR)/test_fillHistograms
 	./$(BIN_DIR)/test_injectExtract out/output_generated.root tree default --n_injections 5 --bin_index 0 --A_opt 0.3 --out out --outFilename test_injectExtract.yaml
 
-$(BIN_DIR)/test_load_tables: tests/test_load_tables.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp
+$(BIN_DIR)/test_load_tables: tests/test_load_tables.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/ArgParser.cpp
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -lRooFit -lRooFitCore
 
-$(BIN_DIR)/test_grids: tests/test_grids.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp
+$(BIN_DIR)/test_grids: tests/test_grids.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/ArgParser.cpp
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(BIN_DIR)/test_fillHistograms: tests/test_fillHistograms.cpp src/Hist.cpp src/Plotter.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp src/InjectionProject.cpp
+$(BIN_DIR)/test_fillHistograms: tests/test_fillHistograms.cpp src/Hist.cpp src/Plotter.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp src/InjectionProject.cpp src/ArgParser.cpp
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -lRooFit -lRooFitCore
 
-$(BIN_DIR)/test_injectExtract: tests/test_injectExtract.cpp src/Hist.cpp src/Plotter.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp src/InjectionProject.cpp
+$(BIN_DIR)/test_injectExtract: tests/test_injectExtract.cpp src/Hist.cpp src/Plotter.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp src/Inject.cpp src/TMD.cpp src/InjectionProject.cpp src/ArgParser.cpp
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) -lRooFit -lRooFitCore
 
