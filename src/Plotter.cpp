@@ -39,7 +39,7 @@ void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binInde
     std::string xLabel = (itLabel != VarToLabel.end()) ? itLabel->second : var;
     hists[binIndex]->GetXaxis()->SetTitle(xLabel.c_str());
     hists[binIndex]->GetYaxis()->SetTitle("Counts");
-    hists[binIndex]->Draw();
+    hists[binIndex]->Draw("hist");
 
     const std::string& binKey = binKeysMap.at(var)[binIndex];
 
