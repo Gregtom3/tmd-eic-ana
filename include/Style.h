@@ -25,7 +25,7 @@ inline void ApplyHistStyle(TH1* h, float y_axis_max_factor = 1.1) {
     h->GetYaxis()->SetLabelSize(0.05);
     h->GetXaxis()->SetTitleSize(0.06);
     h->GetYaxis()->SetTitleSize(0.06);
-    h->GetYaxis()->SetRangeUser(0, h->GetMaximum() * y_axis_max_factor); // Slightly increase Y axis range for better visuals
+    h->GetYaxis()->SetRangeUser(1, h->GetMaximum() * y_axis_max_factor); // Slightly increase Y axis range for better visuals
     // Make sure the Y title has room
     h->GetYaxis()->SetTitleOffset(1.2);
 }

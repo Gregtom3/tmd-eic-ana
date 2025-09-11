@@ -28,6 +28,11 @@ void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binInde
     c->SetLeftMargin(0.14);
     c->SetBottomMargin(0.12);
     ApplyHistStyle(hists[binIndex]);
+    // Log scale if 'X' or 'Q'
+    if (var == "X" || var == "Q") {
+        gPad->SetLogx();
+        gPad->SetLogy();
+    }
     // Ensure histogram has no title and set sensible axis labels
     hists[binIndex]->SetTitle("");
     auto itLabel = VarToLabel.find(var);

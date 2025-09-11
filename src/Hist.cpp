@@ -17,7 +17,7 @@
 
 // Pre-determined params for recognized variables
 const std::map<std::string, HistParams> Hist::varParams = {
-    {"X", {100, 0, 10}}, {"Q", {100, 1, 1000}}, {"Z", {100, 0, 1}}, {"PhPerp", {100, 0, 5}}, {"Phi", {100, 0, 2 * 3.14159}}};
+    {"X", {100, 0, 1}}, {"Q", {100, 1, 1000}}, {"Z", {100, 0, 1}}, {"PhPerp", {100, 0, 5}}, {"Phi", {100, 0, 2 * 3.14159}}};
 const HistParams Hist::defaultParams = {100, 0, 1};
 
 HistParams Hist::getParams(const std::string& var, int nbins, double xmin, double xmax) const {
@@ -59,12 +59,29 @@ void Hist::fillHistograms(const std::string& var, const std::map<std::string, TC
         const std::string& binKey = binPair.first;
         const TCut& cut = binPair.second;
         std::string histName = "hist_" + binKey;
-        TH1D* h = new TH1D(histName.c_str(), histName.c_str(), params.nbins, params.xmin, params.xmax);
+        TH1D* h = nullptr;
+        if (var == "X" || var == "Q") {
+            int nbins = params.nbins;
+            double xmin = params.xmin > 0 ? params.xmin : 1e-3;
+            double xmax = params.xmax;
+            // debug xmin, xmax
+            std::cout << "xmin = " << xmin << ", xmax = " << xmax << std::endl;
+            std::vector<double> logEdges(nbins + 1);
+            double logMin = std::log10(xmin);
+            double logMax = std::log10(xmax);
+            for (int i = 0; i <= nbins; ++i) {
+                logEdges[i] = std::pow(10, logMin + (logMax - logMin) * i / nbins);
+                // debug print edges
+                std::cout << "logEdge[" << i << "] = " << logEdges[i] << std::endl;
+            }
+            h = new TH1D(histName.c_str(), histName.c_str(), nbins, &logEdges[0]);
+        } else {
+            h = new TH1D(histName.c_str(), histName.c_str(), params.nbins, params.xmin, params.xmax);
+        }
         h->SetDirectory(nullptr);
         hists.push_back(h);
         keys.push_back(binKey);
         cuts.push_back(cut);
-        // compile formula for the bin cut
         binFormulas.emplace_back(std::make_unique<TTreeFormula>(("cut_" + std::to_string(idx)).c_str(), cut.GetTitle(), tree));
         ++idx;
     }

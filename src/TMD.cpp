@@ -91,6 +91,10 @@ void TMD::loadTable(){
 }
 
 void TMD::loadTable(const std::string& energyConfig) {
+    if(energyConfig=="default"){
+        loadTable();
+        return;
+    }
     this->energyConfig = energyConfig; // store for cache naming
     table = std::make_unique<Table>(energyConfig);
     // compute scale if we have the necessary mc info
