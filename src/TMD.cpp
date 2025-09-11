@@ -122,7 +122,7 @@ const Grid* TMD::getGrid() const {
     return grid.get();
 }
 
-void TMD::inject_extract(int bin_index, double A) {
+void TMD::inject_extract(int bin_index, std::optional<double> A_opt) {
     if (!grid) {
         LOG_ERROR("Grid not built. Cannot inject/extract.");
         return;
@@ -136,9 +136,14 @@ void TMD::inject_extract(int bin_index, double A) {
     std::advance(it, bin_index);
     const Bin& bin = it->second;
     Inject injector(tree, table.get(), scale);
-    std::pair<double, double> extracted_A = injector.injectExtractForBin(bin, A);
-    LOG_INFO("Bin " + std::to_string(bin_index) + ": Injected A = " + std::to_string(A) +
+    std::pair<double, double> extracted_A = injector.injectExtractForBin(bin, A_opt);
+    // Log results
+    if(A_opt.has_value())
+        LOG_INFO("Bin " + std::to_string(bin_index) + ": Injected A = " + std::to_string(A_opt.value()) +
              ", Extracted A = " + std::to_string(extracted_A.first) + " +/- " + std::to_string(extracted_A.second));
+    else
+        LOG_INFO("Bin " + std::to_string(bin_index) + ": Extracted A = " + std::to_string(extracted_A.first) +
+             " +/- " + std::to_string(extracted_A.second));
 }
 
 std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {

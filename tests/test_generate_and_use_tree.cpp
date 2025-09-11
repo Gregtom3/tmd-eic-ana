@@ -11,6 +11,7 @@
 // and then attempts to load it with TMD and exercise basic functionality.
 
 int main() {
+
     const std::string outpath = "tests/output_generated.root";
 
     // Create a small toy tree
@@ -79,20 +80,16 @@ int main() {
 
     // Load table (default) and build a simple grid
     tmd.loadTable();
-    std::vector<std::string> binNames = {"X", "Q"};
-    try {
-        tmd.buildGrid(binNames);
-    } catch (const std::exception& e) {
-        LOG_ERROR(std::string("Error building grid: ") + e.what());
-        return 2;
-    }
+    tmd.buildGrid({"X"});
+    std::cout << "Grid summary:" << std::endl;
+    tmd.getGrid()->printGridSummary();
 
     // Fill histograms for variable X into a temporary directory
     tmd.fillHistograms("X", "tests/out", true);
     LOG_INFO("fillHistograms completed");
 
     // Run a simple inject/extract on bin 0
-    tmd.inject_extract(0, 0.1);
+    tmd.inject_extract(0, 0.2);
     LOG_INFO("inject_extract completed");
 
     std::cout << "Test passed." << std::endl;

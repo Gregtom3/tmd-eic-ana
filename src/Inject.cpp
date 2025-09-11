@@ -19,12 +19,11 @@ Inject::Inject(TTree* tree, const Table* table, double scale)
     , m_scale(scale) {}
 Inject::~Inject() {}
 
-std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) {
+std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, std::optional<double> A_opt) {
     if (!tree) {
         std::cerr << "[Inject::injectExtractForBin] Error: TTree pointer is null." << std::endl;
         return std::make_pair(0.0, 0.0);
     }
-
     // Decide whether the tree provides Q/TrueQ or Q2/TrueQ2.
     const bool hasQ = (tree->GetBranch("Q") != nullptr);
     const bool hasQ2 = (tree->GetBranch("Q2") != nullptr);
@@ -43,8 +42,19 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
         Q_ptr = new RooRealVar("Q", "Q", bin.getMin("Q"), bin.getMax("Q"));
     } else if (hasQ2) {
         // create Q2 real var (will be filled from the tree) and a formula Q = sqrt(Q2)
-        double q2min = bin.getMin("Q") * bin.getMin("Q");
-        double q2max = bin.getMax("Q") * bin.getMax("Q");
+        // Compute Q2 bounds safely: if the Q interval spans zero, Q2 minimum is 0.
+        double qmin = bin.getMin("Q");
+        double qmax = bin.getMax("Q");
+        double q2min, q2max;
+        if (qmin < 0.0 && qmax > 0.0) {
+            q2min = 0.0;
+            q2max = std::max(qmin * qmin, qmax * qmax);
+        } else {
+            q2min = std::min(qmin * qmin, qmax * qmax);
+            q2max = std::max(qmin * qmin, qmax * qmax);
+        }
+        // Guard against degenerate range (shouldn't happen with above logic but be defensive)
+        if (q2max <= q2min) q2max = q2min + 1e-6;
         Q2_ptr = new RooRealVar("Q2", "Q2", q2min, q2max);
         Q_formula = new RooFormulaVar("Q", "sqrt(Q2)", RooArgList(*Q2_ptr));
         Q_ptr = nullptr; // Q is represented by formula
@@ -64,8 +74,17 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
     if (hasTrueQ) {
         TrueQ_ptr = new RooRealVar("TrueQ", "TrueQ", bin.getMin("Q"), bin.getMax("Q"));
     } else if (hasTrueQ2) {
-        double tq2min = bin.getMin("Q") * bin.getMin("Q");
-        double tq2max = bin.getMax("Q") * bin.getMax("Q");
+        double tqmin = bin.getMin("Q");
+        double tqmax = bin.getMax("Q");
+        double tq2min, tq2max;
+        if (tqmin < 0.0 && tqmax > 0.0) {
+            tq2min = 0.0;
+            tq2max = std::max(tqmin * tqmin, tqmax * tqmax);
+        } else {
+            tq2min = std::min(tqmin * tqmin, tqmax * tqmax);
+            tq2max = std::max(tqmin * tqmin, tqmax * tqmax);
+        }
+        if (tq2max <= tq2min) tq2max = tq2min + 1e-6;
         TrueQ2_ptr = new RooRealVar("TrueQ2", "TrueQ2", tq2min, tq2max);
         TrueQ_formula = new RooFormulaVar("TrueQ", "sqrt(TrueQ2)", RooArgList(*TrueQ2_ptr));
         TrueQ_ptr = nullptr;
@@ -143,9 +162,16 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, double A) 
             // TrueQ = sqrt(TrueQ2)
             trueq_val = std::sqrt(row->getRealValue("TrueQ2"));
         }
-        double asymmetry = table->lookupAUT(row->getRealValue("TrueX"), trueq_val, row->getRealValue("TrueZ"),
-                                            row->getRealValue("TruePhPerp"));
-        asymmetry = 0.1;
+        
+        // Determine asymmetry to inject
+        double asymmetry = 0.0;
+        if(A_opt.has_value()) {
+            asymmetry = A_opt.value();
+        }
+        else{
+            asymmetry = table->lookupAUT(row->getRealValue("TrueX"), trueq_val, row->getRealValue("TrueZ"),
+                                        row->getRealValue("TruePhPerp"));
+        }
         double pPlus = 0.5 * (1 + asymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
         X.setVal(row->getRealValue("X"));

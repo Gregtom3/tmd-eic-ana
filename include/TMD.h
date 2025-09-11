@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 
 class TMD {
 public:
@@ -32,7 +33,7 @@ public:
     void fillHistograms(const std::string& var, const std::string& outDir = "out", bool overwrite = false);
     void plot1DBin(const std::string& var, size_t binIndex, const std::string& outpath = "");
     void plot2DMap(const std::string& var, const std::string& outpath);
-    void inject_extract(int bin_index, double A = 0.1);
+    void inject_extract(int bin_index, std::optional<double> A_opt = std::nullopt);
 
 private:
     TFile* file;

@@ -36,6 +36,7 @@ TESTS = $(BIN_DIR)/test_load_tables $(BIN_DIR)/test_grids $(BIN_DIR)/test_genera
 test: $(TESTS)
 	./$(BIN_DIR)/test_load_tables
 	./$(BIN_DIR)/test_grids
+	./$(BIN_DIR)/test_generate_and_use_tree
 
 $(BIN_DIR)/test_load_tables: tests/test_load_tables.cpp src/Table.cpp src/Grid.cpp src/Bin.cpp
 	mkdir -p $(BIN_DIR)

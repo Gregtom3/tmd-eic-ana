@@ -33,13 +33,13 @@ void Table::createDefaultTable() {
     TableRow row{};
     row.itar = 1;
     row.ihad = 1;
-    row.X_min = -999999;
+    row.X_min = 0;
     row.X_max = 999999;
-    row.Q_min = -999999;
+    row.Q_min = 0;
     row.Q_max = 999999;
-    row.Z_min = -999999;
+    row.Z_min = 0;
     row.Z_max = 999999;
-    row.PhPerp_min = -999999;
+    row.PhPerp_min = 0;
     row.PhPerp_max = 999999;
     row.AUT = 0.0;
     rows.push_back(row);

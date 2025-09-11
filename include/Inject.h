@@ -9,12 +9,13 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 
 class Inject {
 public:
     Inject(TTree* tree, const Table* table, double scale = 1.0);
     ~Inject();
-    std::pair<double, double> injectExtractForBin(const Bin& bin, double A);
+    std::pair<double, double> injectExtractForBin(const Bin& bin, std::optional<double> A_opt = std::nullopt);
 
 private:
     TTree* tree;
