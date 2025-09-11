@@ -9,52 +9,28 @@ on:
       - main
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+
       - name: Install deps + ROOT
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential wget libtbb-dev
           wget -q https://root.cern/download/root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
           tar -xzf root_v6.36.04.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz
+
       - name: Build
         run: |
           source $GITHUB_WORKSPACE/root/bin/thisroot.sh
           make
-      - name: Upload root and bin
-        uses: actions/upload-artifact@v4
-        with:
-          name: root-and-bin
-          path: |
-            root
-            bin
 
-  generate:
-    runs-on: ubuntu-22.04
-    needs: build
-    steps:
-      - uses: actions/checkout@v3
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: root-and-bin
-      - name: Prep
+      - name: Generate pseudodata
         run: |
-          chmod -R +x bin || true
           source $GITHUB_WORKSPACE/root/bin/thisroot.sh
-      - name: Generate
-        run: ./bin/generate_pseudodata
+          ./bin/generate_pseudodata
 
-  test:
-    runs-on: ubuntu-22.04
-    needs: generate
-    steps:
-      - uses: actions/checkout@v3
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: root-and-bin
-      - run: |
+      - name: Run tests
+        run: |
           source $GITHUB_WORKSPACE/root/bin/thisroot.sh
           make test
