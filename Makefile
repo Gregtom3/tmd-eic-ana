@@ -27,7 +27,7 @@ TEST_BINS    := $(TEST_SOURCES:$(TEST_DIR)/%.cpp=$(BIN_DIR)/%)
 # ----------------
 # Default targets
 # ----------------
-all: $(MACRO_BINS)
+all: $(MACRO_BINS) $(TEST_BINS)
 
 tests: $(TEST_BINS)
 

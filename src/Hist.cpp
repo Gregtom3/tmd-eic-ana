@@ -17,7 +17,14 @@
 
 // Pre-determined params for recognized variables
 const std::map<std::string, HistParams> Hist::varParams = {
-    {"X", {100, 0, 1}}, {"Q", {100, 1, 1000}}, {"Z", {100, 0, 1}}, {"PhPerp", {100, 0, 3}}, {"Phi", {100, 0, 2 * 3.14159}}};
+    {"X", {100, 0, 1}},
+    {"Q", {100, 1, 1000}},
+    {"Z", {100, 0, 1}},
+    {"PhPerp", {100, 0, 3}},
+    {"PhiH", {100, -3.14159, 3.14159}}
+};
+
+
 const HistParams Hist::defaultParams = {100, 0, 1};
 
 HistParams Hist::getParams(const std::string& var, int nbins, double xmin, double xmax) const {

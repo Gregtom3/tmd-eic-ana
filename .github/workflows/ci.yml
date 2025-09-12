@@ -50,7 +50,10 @@ jobs:
           mkdir -p artifacts/
           ./bin/test_injectExtract --file out/output.root --tree tree --energy 0x0 --outDir artifacts/ --n_injections 25
   
-  
+      - name: Remove .root files from artifacts
+        run: |
+          echo "Removing .root files from artifacts before upload"
+          find artifacts/ -type f -name '*.root' -print -delete || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
