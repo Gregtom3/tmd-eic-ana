@@ -15,7 +15,7 @@ Args parseArgs(int argc, char** argv) {
             LOG_INFO("  --tree <TTree name>        Name of TTree inside the file");
             LOG_INFO("  --energy <energy config>   Energy configuration identifier");
             LOG_INFO("  --overwrite, -f            Overwrite outputs");
-            LOG_INFO("  --out <dir>                Output directory (default out)");
+            LOG_INFO("  --outDir <dir>             Output directory (default out)");
             LOG_INFO("  --maxEntries <N>           Max entries to process");
             LOG_INFO("  --outFilename <filename>   Output filename");
             LOG_INFO("  --targetPolarization <v>   Target polarization value");
@@ -39,7 +39,7 @@ Args parseArgs(int argc, char** argv) {
             args.energyConfig = argv[++i];
         } else if (arg == "--overwrite" || arg == "-f") {
             args.overwrite = true;
-        } else if (arg == "--out" && i + 1 < argc) {
+        } else if (arg == "--outDir" && i + 1 < argc) {
             args.outDir = argv[++i];
         } else if (arg == "--maxEntries" && i + 1 < argc) {
             args.maxEntries = std::stoll(argv[++i]);
@@ -81,7 +81,7 @@ Args parseArgs(int argc, char** argv) {
     if (args.filename.empty() || args.treename.empty() || args.energyConfig.empty()) {
         LOG_INFO("Missing required parameters. Use --help for usage.");
         LOG_INFO("All parameters (positional):");
-        LOG_INFO("  <ROOT file> <TTree name> <energy config> [--overwrite|-f] [--out <dir>] [--maxEntries <N>] [--outFilename <filename>] [--targetPolarization <value>] [--n_injections <N>] [--bin_index <N>] [--extract_with_true <true/false>] [--A_opt <value>]");
+        LOG_INFO("  <ROOT file> <TTree name> <energy config> [--overwrite|-f] [--outDir <dir>] [--maxEntries <N>] [--outFilename <filename>] [--targetPolarization <value>] [--n_injections <N>] [--bin_index <N>] [--extract_with_true <true/false>] [--A_opt <value>]");
         exit(1);
     }
 

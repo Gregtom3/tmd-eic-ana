@@ -94,7 +94,7 @@ end
         --energy #{options[:energy]} \\
         --n_injections #{options[:n_injections]} \\
         --bin_index #{bin_index} \\
-        --out #{slurm_subdir} \\
+        --outDir #{slurm_subdir} \\
         --outFilename #{yaml_out}"
     end
   end
