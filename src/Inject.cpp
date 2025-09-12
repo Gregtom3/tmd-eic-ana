@@ -150,7 +150,14 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
               " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
               " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
     }
-
+    // Print bin min and maxes
+    std::cout << "[Inject::injectExtractForBin] Bin ranges: "
+              << "X[" << bin.getMin("X") << ", " << bin.getMax("X") << "], "
+              << "Q[" << bin.getMin("Q") << ", " << bin.getMax("Q") << "], "
+              << "Z[" << bin.getMin("Z") << ", " << bin.getMax("Z") << "], "
+              << "PhPerp[" << bin.getMin("PhPerp") << ", " << bin.getMax("PhPerp") << "]"
+              << std::endl;
+    
     std::cout << "[Inject::injectExtractForBin] Applying cut: " << cut << std::endl;
     RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()), WeightVar("Weight"));
     std::cout << "[Inject::injectExtractForBin] Selected " << data.numEntries() << " events for injection." << std::endl;
