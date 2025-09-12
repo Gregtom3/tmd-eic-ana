@@ -106,7 +106,15 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
     double minPadY = std::numeric_limits<double>::max(), maxPadY = -std::numeric_limits<double>::max();
 
     const auto& meanMap = hist->getMeans();
-
+    
+    // Loop over histograms to determine global Y axis maximum
+    double globalYMax = 0.0;
+    for (const auto& h : hists) {
+        if (h->GetEntries() > 10) {
+            globalYMax = std::max(globalYMax, h->GetMaximum());
+        }
+    }
+    // Loop over all histograms and place them in the correct pad
     for (size_t binIndex = 0; binIndex < hists.size(); ++binIndex) {
         auto binKey = binKeys[binIndex];
         auto binPos = mainBinIndices.at(binKey);
@@ -128,6 +136,9 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
             continue;
         }
         hists[binIndex]->SetTitle("");
+        // Set common y axis range
+        hists[binIndex]->GetYaxis()->SetRangeUser(1, globalYMax * 1.1);
+        
         double x_left = gPad->GetXlowNDC(), x_right = x_left + gPad->GetWNDC();
         double y_low = gPad->GetYlowNDC(), y_high = y_low + gPad->GetHNDC();
         minPadX = std::min(minPadX, x_left);
