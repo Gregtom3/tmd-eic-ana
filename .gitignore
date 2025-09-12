@@ -49,3 +49,5 @@ out/*.png
 
 # yaml
 *injection*yaml
+
+deps/
