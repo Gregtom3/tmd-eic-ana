@@ -19,6 +19,12 @@ make
 make install
 ```
 
+If it does not already, point your `LD_LIBRARY_PATH` variable to the appropriate directory
+
+```bash
+export LD_LIBRARY_PATH=$HOME/.local/lib64:$LD_LIBRARY_PATH
+```
+
 ---
 
 ## 2. Build the project

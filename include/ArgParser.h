@@ -13,7 +13,7 @@ struct Args {
     std::string outFilename = "";
     long long maxEntries = -1;
     double targetPolarization = 1.0;
-    int n_injections = 1000;
+    int n_injections = 10;
     int bin_index = 0;
     bool extract_with_true = true;
     std::optional<double> A_opt;

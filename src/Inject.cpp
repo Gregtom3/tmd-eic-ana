@@ -204,6 +204,9 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         dataUpdate.add(obs, data.weight() * m_scale);
     }
 
+    // Print the number of data points in the dataset
+    std::cout << "[Inject::injectExtractForBin] Number of data points in the dataset: " << dataUpdate.numEntries() << std::endl;
+
     RooRealVar A_fit("A", "A", 0.0, -1.0, 1.0);
     // Determine which PhiH/PhiS to use for extraction
     double val = 0.0;
