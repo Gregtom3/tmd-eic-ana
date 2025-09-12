@@ -16,26 +16,27 @@ int main() {
     TFile fout(outpath.c_str(), "RECREATE");
     TTree tree("tree", "Toy Tree");
 
-    float X, Q2, Z, PhPerp, PhiH, PhiS, Y;
-    float Weight = 1.0f;
-    float TrueX, TrueQ2, TrueZ, TruePhPerp, TruePhiH, TruePhiS, TrueY;
+    double X, Q2, Z, PhPerp, PhiH, PhiS, Y;
+    double Weight = 1.0;
+    double TrueX, TrueQ2, TrueZ, TruePhPerp, TruePhiH, TruePhiS, TrueY;
     int Spin_idx;
 
-    tree.Branch("X", &X, "X/F");
-    tree.Branch("Q", &Q2, "Q/F");
-    tree.Branch("Z", &Z, "Z/F");
-    tree.Branch("PhPerp", &PhPerp, "PhPerp/F");
-    tree.Branch("PhiH", &PhiH, "PhiH/F");
-    tree.Branch("PhiS", &PhiS, "PhiS/F");
-    tree.Branch("Y", &Y, "Y/F");
-    tree.Branch("TrueX", &TrueX, "TrueX/F");
-    tree.Branch("TrueQ", &TrueQ2, "TrueQ/F");
-    tree.Branch("TrueZ", &TrueZ, "TrueZ/F");
-    tree.Branch("TruePhPerp", &TruePhPerp, "TruePhPerp/F");
-    tree.Branch("TruePhiH", &TruePhiH, "TruePhiH/F");
-    tree.Branch("TruePhiS", &TruePhiS, "TruePhiS/F");
-    tree.Branch("TrueY", &TrueY, "TrueY/F");
-    tree.Branch("Weight", &Weight, "Weight/F");
+    // Update branches to use 'D' for double precision
+    tree.Branch("X", &X, "X/D");
+    tree.Branch("Q", &Q2, "Q/D");
+    tree.Branch("Z", &Z, "Z/D");
+    tree.Branch("PhPerp", &PhPerp, "PhPerp/D");
+    tree.Branch("PhiH", &PhiH, "PhiH/D");
+    tree.Branch("PhiS", &PhiS, "PhiS/D");
+    tree.Branch("Y", &Y, "Y/D");
+    tree.Branch("TrueX", &TrueX, "TrueX/D");
+    tree.Branch("TrueQ", &TrueQ2, "TrueQ/D");
+    tree.Branch("TrueZ", &TrueZ, "TrueZ/D");
+    tree.Branch("TruePhPerp", &TruePhPerp, "TruePhPerp/D");
+    tree.Branch("TruePhiH", &TruePhiH, "TruePhiH/D");
+    tree.Branch("TruePhiS", &TruePhiS, "TruePhiS/D");
+    tree.Branch("TrueY", &TrueY, "TrueY/D");
+    tree.Branch("Weight", &Weight, "Weight/D");
     tree.Branch("Spin_idx", &Spin_idx, "Spin_idx/I");
 
     TRandom3 rng(516);
