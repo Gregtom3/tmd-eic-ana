@@ -48,7 +48,7 @@ jobs:
         run: |
           source $GITHUB_WORKSPACE/root/bin/thisroot.sh
           mkdir -p artifacts/
-          ./bin/test_injectExtract --file out/output.root --tree tree --energy 0x0 --outDir artifacts/ --n_injections 25
+          ./bin/test_injectExtract --file out/output.root --tree tree --energy 0x0 --outDir artifacts/ --n_injections 25 --A_opt 0.3
   
       - name: Remove .root files from artifacts
         run: |
