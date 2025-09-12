@@ -57,6 +57,7 @@ bool InjectionProject::run() {
         out << YAML::BeginMap;
         out << YAML::Key << "bin_index" << YAML::Value << job.bin_index;
         out << YAML::Key << "events" << YAML::Value << bin.getEvents();
+        out << YAML::Key << "expected_events" << YAML::Value << bin.getExpectedEvents();
         out << YAML::Key << "X_min" << YAML::Value << bin.getMin("X");
         out << YAML::Key << "X_max" << YAML::Value << bin.getMax("X");
         out << YAML::Key << "Q_min" << YAML::Value << bin.getMin("Q");

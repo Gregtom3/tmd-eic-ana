@@ -156,6 +156,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     // Add the helicity branch to the dataset
     RooDataSet dataUpdate("dataUpdate", "data with updated spin", obs, WeightVar("Weight"));
     TRandom3 rng(0);
+    double expected_events = 0.0;
     for (Long64_t i = 0; i < data.numEntries(); ++i) {
         const RooArgSet* row = data.get(i);
         TruePhiH.setVal(row->getRealValue("TruePhiH"));
@@ -202,11 +203,13 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         PhiH.setVal(row->getRealValue("PhiH"));
         PhiS.setVal(row->getRealValue("PhiS"));
         dataUpdate.add(obs, data.weight() * m_scale);
+        expected_events+= data.weight() * m_scale;
     }
 
     // Save number of injection data points to bin
     bin.setEvents(dataUpdate.numEntries());
-
+    bin.setExpectedEvents(static_cast<int>(std::round(expected_events)));
+    
     RooRealVar A_fit("A", "A", 0.0, -1.0, 1.0);
     // Determine which PhiH/PhiS to use for extraction
     double val = 0.0;

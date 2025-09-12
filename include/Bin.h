@@ -12,6 +12,8 @@ public:
     int getCount() const;
     int getEvents() const;
     void setEvents(int _events) const;
+    int getExpectedEvents() const;
+    void setExpectedEvents(int _expected_events) const;
     double getMin(const std::string& var) const;
     double getMax(const std::string& var) const;
     void updateMin(const std::string& var, double value);
@@ -24,6 +26,7 @@ private:
     double PhPerp_min, PhPerp_max;
     int count;  // Number of sub-bins within this bin
     mutable int events; // Number of events in this bin 
+    mutable int expected_events; // Expected number of events in this bin
 };
 
 #endif // BIN_H
