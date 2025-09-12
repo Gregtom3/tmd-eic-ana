@@ -33,8 +33,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     RooRealVar Y("Y", "Y", 0.0, 1.0);
     RooRealVar PhiH("PhiH", "PhiH", -TMath::Pi(), TMath::Pi());
     RooRealVar PhiS("PhiS", "PhiS", -TMath::Pi(), TMath::Pi());
-    //RooRealVar X("X", "X", bin.getMin("X"), bin.getMax("X"));
-    RooRealVar X("X", "X", 0.0,1.0);
+    RooRealVar X("X", "X", bin.getMin("X"), bin.getMax("X"));
     // Create a Depolarization FormulaVar from Y
     RooFormulaVar Depol1("Depol1", "(1 - Y)/(1 - Y + 0.5 * Y * Y)", RooArgList(Y));
     // Q handling: prefer Q, otherwise create a formula Q = sqrt(Q2)
@@ -69,7 +68,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     RooRealVar PhPerp("PhPerp", "PhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
     RooRealVar TrueY("TrueY", "TrueY", 0.0, 1.0);
     RooFormulaVar TrueDepol1("TrueDepol1", "(1 - TrueY)/(1 - TrueY + 0.5 * TrueY * TrueY)", RooArgList(TrueY));
-    RooRealVar TruePhiH("TruePhiH", "TruePhiH", -TMath::Pi(), -TMath::Pi()+1);
+    RooRealVar TruePhiH("TruePhiH", "TruePhiH", -TMath::Pi(), -TMath::Pi());
     RooRealVar TruePhiS("TruePhiS", "TruePhiS", -TMath::Pi(), TMath::Pi());
 
     // TrueQ handling analogous to Q
@@ -151,15 +150,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
               " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
               " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
     }
-    // Print bin min and maxes
-    std::cout << "[Inject::injectExtractForBin] Bin ranges: "
-              << "X[" << bin.getMin("X") << ", " << bin.getMax("X") << "], "
-              << "Q[" << bin.getMin("Q") << ", " << bin.getMax("Q") << "], "
-              << "Z[" << bin.getMin("Z") << ", " << bin.getMax("Z") << "], "
-              << "PhPerp[" << bin.getMin("PhPerp") << ", " << bin.getMax("PhPerp") << "]"
-              << std::endl;
-    
-    std::cout << "[Inject::injectExtractForBin] Applying cut: " << cut << std::endl;
+   
     RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()), WeightVar("Weight"));
     std::cout << "[Inject::injectExtractForBin] Selected " << data.numEntries() << " events for injection." << std::endl;
     // Add the helicity branch to the dataset
