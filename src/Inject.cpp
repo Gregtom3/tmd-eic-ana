@@ -33,7 +33,8 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     RooRealVar Y("Y", "Y", 0.0, 1.0);
     RooRealVar PhiH("PhiH", "PhiH", -TMath::Pi(), TMath::Pi());
     RooRealVar PhiS("PhiS", "PhiS", -TMath::Pi(), TMath::Pi());
-    RooRealVar X("X", "X", bin.getMin("X"), bin.getMax("X"));
+    //RooRealVar X("X", "X", bin.getMin("X"), bin.getMax("X"));
+    RooRealVar X("X", "X", 0.0,1.0);
     // Create a Depolarization FormulaVar from Y
     RooFormulaVar Depol1("Depol1", "(1 - Y)/(1 - Y + 0.5 * Y * Y)", RooArgList(Y));
     // Q handling: prefer Q, otherwise create a formula Q = sqrt(Q2)
