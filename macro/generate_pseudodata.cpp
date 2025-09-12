@@ -43,7 +43,7 @@ int main() {
     const int N = 20000;
     for (int i = 0; i < N; ++i) {
         TrueX = rng.Uniform(0.0, 1.0);
-        TrueQ2 = rng.Uniform(1.0, 10.0);
+        TrueQ2 = rng.Uniform(1.0, 100.0);
         TrueZ = rng.Uniform(0.0, 1.0);
         TruePhPerp = rng.Uniform(0.0, 5.0);
         TruePhiH = rng.Uniform(-TMath::Pi(), TMath::Pi());
