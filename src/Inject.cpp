@@ -159,7 +159,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
               << std::endl;
     
     std::cout << "[Inject::injectExtractForBin] Applying cut: " << cut << std::endl;
-    RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()), WeightVar("Weight"));
+    RooDataSet data("data", "injected data", obs, Import(*tree), Cut(""), WeightVar("Weight"));
     std::cout << "[Inject::injectExtractForBin] Selected " << data.numEntries() << " events for injection." << std::endl;
     // Add the helicity branch to the dataset
     RooDataSet dataUpdate("dataUpdate", "data with updated spin", obs, WeightVar("Weight"));
