@@ -6,8 +6,12 @@
 #include <TMath.h>
 #include <vector>
 #include <iostream>
+#include <filesystem> // For directory creation
 
 int main() {
+    const std::string artifactDir = "artifacts/plots";
+    // Ensure the artifacts directory exists
+    std::filesystem::create_directories(artifactDir);
 
     const std::string outpath = "out/output.root";
 
@@ -26,8 +30,8 @@ int main() {
     std::cout << "Grid summary:" << std::endl;
     tmd.getGrid()->printGridSummary();
 
-    // Fill histograms for variable X into a temporary directory
-    tmd.fillHistograms("X", "tests/out", true);
+    // Fill histograms for variable X into the artifacts directory
+    tmd.fillHistograms("X", artifactDir, true);
     LOG_INFO("fillHistograms completed");
 
     std::cout << "Test passed." << std::endl;

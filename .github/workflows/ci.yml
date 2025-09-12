@@ -31,4 +31,10 @@ jobs:
           ./bin/generate_pseudodata
           make test
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-plots
+          path: artifacts/plots/
+
           
