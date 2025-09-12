@@ -36,7 +36,7 @@ run-tests: $(TEST_BINS)
 	./$(BIN_DIR)/test_load_tables
 	./$(BIN_DIR)/test_grids
 	./$(BIN_DIR)/test_1D_plots --file out/output.root --tree tree --energy 0x0
-	./$(BIN_DIR)/test_injectExtract --file out/output.root --tree tree --energy default --n_injections 5 --bin_index 0 --A_opt 0.3 --out out --outFilename test_injectExtract.yaml
+	./$(BIN_DIR)/test_injectExtract --file out/output.root --tree tree --energy default --n_injections 5 --bin_index 0 --A_opt 0.3 --outDir out --outFilename test_injectExtract.yaml
 	./$(BIN_DIR)/test_2D_plots --file out/output.root --tree tree --energy 0x0
 
 # ----------------
