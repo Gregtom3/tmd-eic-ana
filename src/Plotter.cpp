@@ -32,6 +32,8 @@ void Plotter::plot1DBin(const std::string& var, const Hist* hist, size_t binInde
     if (var == "X" || var == "Q") {
         gPad->SetLogx();
         gPad->SetLogy();
+    } else if (var == "Z"){
+        gPad->SetLogy();
     }
     // Ensure histogram has no title and set sensible axis labels
     hists[binIndex]->SetTitle("");
@@ -116,6 +118,9 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
         ApplyHistStyle(hists[binIndex]);
         if (hists[binIndex]->GetEntries() > 10) {
             hists[binIndex]->Draw("hist");
+            if(var == "Z"){
+                gPad->SetLogy();
+            }
             if (meanMap.count(binKey)) {
                 DrawMeanTLatex(meanMap.at(binKey), grid->getMainBinNames(), 2, 0.15, 0.92);
             }
