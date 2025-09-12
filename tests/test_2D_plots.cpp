@@ -1,12 +1,21 @@
 #include "Logger.h"
+#include "ArgParser.h"
 #include "TMD.h"
 #include <filesystem>
 #include <iostream>
 
-int main() {
-    const std::string artifactDir = "artifacts/plots_2D";
+int main(int argc, char** argv) {
+    std::string outDir = "out/";
+    Args args = parseArgs(argc, argv);
+    // Parse output directory and create if needed
+    if(args.outDir != "out") {
+        LOG_INFO("Using output directory from args: " + args.outDir);
+        outDir = args.outDir;
+    } else {
+        LOG_INFO("Using default output directory: " + outDir);
+    }
     // Ensure the artifacts directory exists
-    std::filesystem::create_directories(artifactDir);
+    std::filesystem::create_directories(outDir);
 
     const std::string outpath = "out/output.root";
     TMD tmd(outpath, "tree");
@@ -21,14 +30,14 @@ int main() {
     tmd.buildGrid({"X", "Q"});
     LOG_INFO("Grid built successfully");
 
-    tmd.fillHistograms("PhPerp", artifactDir, true);
-    tmd.plot2DMap("PhPerp", artifactDir + "/PhPerp_2D_X_Q_10x100.png");
+    tmd.fillHistograms("PhPerp", outDir, true);
+    tmd.plot2DMap("PhPerp", outDir + "/PhPerp_2D_X_Q_10x100.png");
 
-    tmd.fillHistograms("Z", artifactDir, true);
-    tmd.plot2DMap("Z", artifactDir + "/Z_2D_X_Q_10x100.png");
+    tmd.fillHistograms("Z", outDir, true);
+    tmd.plot2DMap("Z", outDir + "/Z_2D_X_Q_10x100.png");
 
-    tmd.fillHistograms("PhiH", artifactDir, true);
-    tmd.plot2DMap("PhiH", artifactDir + "/PhiH_2D_X_Q_10x100.png");
+    tmd.fillHistograms("PhiH", outDir, true);
+    tmd.plot2DMap("PhiH", outDir + "/PhiH_2D_X_Q_10x100.png");
 
     LOG_INFO("2D plots generated successfully");
     return 0;

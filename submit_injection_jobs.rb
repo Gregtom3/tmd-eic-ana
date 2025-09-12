@@ -89,9 +89,9 @@ end
     f.puts ""
     bin_indices.each do |bin_index|
       f.puts "srun ./bin/inject \\
-        #{options[:root_file]} \\
-        #{options[:tree]} \\
-        #{options[:energy]} \\
+        --file #{options[:root_file]} \\
+        --tree #{options[:tree]} \\
+        --energy #{options[:energy]} \\
         --n_injections #{options[:n_injections]} \\
         --bin_index #{bin_index} \\
         --out #{slurm_subdir} \\

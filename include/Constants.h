@@ -9,7 +9,10 @@ inline const std::map<std::string, std::string> VarToLabel = {
 	{"X", "x_{B}"},
 	{"Q", "Q [GeV]"},
 	{"Z", "z"},
-	{"PhPerp", "p_{T} [GeV]"}
+	{"PhPerp", "p_{T} [GeV]"},
+	{"PhiH", "#phi_{h} [rad]"},
+	{"PhiS", "#phi_{S} [rad]"},
+	{"Y", "y"}
 };
 
 // Integrated luminosities (units unspecified in file; treated as given constants)
