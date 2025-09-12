@@ -31,8 +31,8 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     const bool hasTrueQ = (tree->GetBranch("TrueQ") != nullptr);
     const bool hasTrueQ2 = (tree->GetBranch("TrueQ2") != nullptr);
     RooRealVar Y("Y", "Y", 0.0, 1.0);
-    RooRealVar PhiH("PhiH", "PhiH", -TMath::Pi(), TMath::Pi());
-    RooRealVar PhiS("PhiS", "PhiS", -TMath::Pi(), TMath::Pi());
+    RooRealVar PhiH("PhiH", "PhiH", -2*TMath::Pi(), 2*TMath::Pi());
+    RooRealVar PhiS("PhiS", "PhiS", -2*TMath::Pi(), 2*TMath::Pi());
     RooRealVar X("X", "X", bin.getMin("X"), bin.getMax("X"));
     // Create a Depolarization FormulaVar from Y
     RooFormulaVar Depol1("Depol1", "(1 - Y)/(1 - Y + 0.5 * Y * Y)", RooArgList(Y));
@@ -66,17 +66,17 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
 
     RooRealVar Z("Z", "Z", bin.getMin("Z"), bin.getMax("Z"));
     RooRealVar PhPerp("PhPerp", "PhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
-    RooRealVar TrueY("TrueY", "TrueY", 0.0, 1.0);
+    RooRealVar TrueY("TrueY", "TrueY", -999, 999);
     RooFormulaVar TrueDepol1("TrueDepol1", "(1 - TrueY)/(1 - TrueY + 0.5 * TrueY * TrueY)", RooArgList(TrueY));
-    RooRealVar TruePhiH("TruePhiH", "TruePhiH", -TMath::Pi(), TMath::Pi());
-    RooRealVar TruePhiS("TruePhiS", "TruePhiS", -TMath::Pi(), TMath::Pi());
+    RooRealVar TruePhiH("TruePhiH", "TruePhiH", -2*TMath::Pi(), 2*TMath::Pi());
+    RooRealVar TruePhiS("TruePhiS", "TruePhiS", -2*TMath::Pi(), 2*TMath::Pi());
 
     // TrueQ handling analogous to Q
     RooRealVar* TrueQ_ptr = nullptr;
     RooRealVar* TrueQ2_ptr = nullptr;
     RooFormulaVar* TrueQ_formula = nullptr;
     if (hasTrueQ) {
-        TrueQ_ptr = new RooRealVar("TrueQ", "TrueQ", bin.getMin("Q"), bin.getMax("Q"));
+        TrueQ_ptr = new RooRealVar("TrueQ", "TrueQ", -999, 99999999); // wide range permissible in case of smearing
     } else if (hasTrueQ2) {
         double tqmin = bin.getMin("Q");
         double tqmax = bin.getMax("Q");
@@ -89,7 +89,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
             tq2max = std::max(tqmin * tqmin, tqmax * tqmax);
         }
         if (tq2max <= tq2min) tq2max = tq2min + 1e-6;
-        TrueQ2_ptr = new RooRealVar("TrueQ2", "TrueQ2", tq2min, tq2max);
+        TrueQ2_ptr = new RooRealVar("TrueQ2", "TrueQ2", -999, 99999999); // wide range permissible in case of smearing
         TrueQ_formula = new RooFormulaVar("TrueQ", "sqrt(TrueQ2)", RooArgList(*TrueQ2_ptr));
         TrueQ_ptr = nullptr;
     } else {
@@ -97,9 +97,9 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         // Return default value if neither TrueQ nor TrueQ2 is present
         return std::make_pair(0.0, 0.0);
     }
-    RooRealVar TrueX("TrueX", "TrueX", bin.getMin("X"), bin.getMax("X"));
-    RooRealVar TrueZ("TrueZ", "TrueZ", bin.getMin("Z"), bin.getMax("Z"));
-    RooRealVar TruePhPerp("TruePhPerp", "TruePhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
+    RooRealVar TrueX("TrueX", "TrueX", -999, 999); // wide range permissible in case of smearing
+    RooRealVar TrueZ("TrueZ", "TrueZ", -999, 999);
+    RooRealVar TruePhPerp("TruePhPerp", "TruePhPerp", -999, 999);
     RooRealVar Spin_idx("Spin_idx", "Spin_idx", -1, 1);
     RooRealVar Weight("Weight", "Weight", 0, 1e9);
     RooRealVar tPol("tPol", "Target Polarization", targetPolarization); 
