@@ -23,14 +23,14 @@ int main() {
 
     // Update branches to use 'D' for double precision
     tree.Branch("X", &X, "X/D");
-    tree.Branch("Q", &Q2, "Q/D");
+    tree.Branch("Q2", &Q2, "Q2/D");
     tree.Branch("Z", &Z, "Z/D");
     tree.Branch("PhPerp", &PhPerp, "PhPerp/D");
     tree.Branch("PhiH", &PhiH, "PhiH/D");
     tree.Branch("PhiS", &PhiS, "PhiS/D");
     tree.Branch("Y", &Y, "Y/D");
     tree.Branch("TrueX", &TrueX, "TrueX/D");
-    tree.Branch("TrueQ", &TrueQ2, "TrueQ/D");
+    tree.Branch("TrueQ2", &TrueQ2, "TrueQ2/D");
     tree.Branch("TrueZ", &TrueZ, "TrueZ/D");
     tree.Branch("TruePhPerp", &TruePhPerp, "TruePhPerp/D");
     tree.Branch("TruePhiH", &TruePhiH, "TruePhiH/D");
