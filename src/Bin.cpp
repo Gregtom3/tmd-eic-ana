@@ -9,7 +9,8 @@ Bin::Bin()
     , Z_max(-10000.0)
     , PhPerp_min(10000.0)
     , PhPerp_max(-10000.0)
-    , count(0) {}
+    , count(0)
+    , events(0) {}
 
 Bin::Bin(double Xmin, double Xmax, double Qmin, double Qmax, double Zmin, double Zmax, double PhPerpmin, double PhPerpmax)
     : X_min(Xmin)
@@ -20,14 +21,24 @@ Bin::Bin(double Xmin, double Xmax, double Qmin, double Qmax, double Zmin, double
     , Z_max(Zmax)
     , PhPerp_min(PhPerpmin)
     , PhPerp_max(PhPerpmax)
-    , count(0) {}
+    , count(0)
+    , events(0) {}
 
 void Bin::incrementCount() {
     ++count;
 }
 
+
 int Bin::getCount() const {
     return count;
+}
+
+int Bin::getEvents() const {
+    return events;
+}
+
+void Bin::setEvents(int _events) const {
+    events = _events;
 }
 
 void Bin::updateMin(const std::string& var, double value) {
