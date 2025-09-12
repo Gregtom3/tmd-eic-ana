@@ -41,8 +41,7 @@ bin/*
 # debug information files
 *.dwo
 playground/
-out/*.root
-out/*.png
+
 
 # .root files
 *.root
@@ -52,3 +51,9 @@ out/*.png
 
 deps/
 slurm/
+artifacts/
+
+# Misc
+out/*.root
+out/*.png
+out/*.yaml
