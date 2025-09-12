@@ -18,7 +18,7 @@ inline void ApplyHistStyle(TH1* h, float y_axis_max_factor = 1.1) {
     h->SetLineWidth(1);
     h->SetMarkerStyle(20);
     h->SetMarkerColor(kBlack);
-    h->SetMarkerSize(1.2);
+    h->SetMarkerSize(1.2); 
     h->SetStats(0);                    // disables stats box for this hist
     h->SetTitle("");                  // disable histogram title (handled by style)
     h->GetXaxis()->SetLabelSize(0.05); // larger axis labels
