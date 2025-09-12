@@ -209,7 +209,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     // Save number of injection data points to bin
     bin.setEvents(dataUpdate.numEntries());
     bin.setExpectedEvents(static_cast<int>(std::round(expected_events)));
-    
+
     RooRealVar A_fit("A", "A", 0.0, -1.0, 1.0);
     // Determine which PhiH/PhiS to use for extraction
     double val = 0.0;

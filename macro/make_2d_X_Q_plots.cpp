@@ -32,5 +32,11 @@ int main(int argc, char** argv) {
     tmd.fillHistograms("PhPerp", args.outDir, args.overwrite);
     tmd.plot2DMap("PhPerp", args.outDir + "/PhPerp_2D_X_Q.png");
 
+    tmd.fillHistograms("Z", args.outDir, args.overwrite);
+    tmd.plot2DMap("Z", args.outDir + "/Z_2D_X_Q.png");
+
+    tmd.fillHistograms("PhiH", args.outDir, args.overwrite);
+    tmd.plot2DMap("PhiH", args.outDir + "/PhiH_2D_X_Q.png");
+
     return 0;
 }
