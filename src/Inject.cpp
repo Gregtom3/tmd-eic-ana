@@ -151,6 +151,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
               " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
     }
 
+    std::cout << "[Inject::injectExtractForBin] Applying cut: " << cut << std::endl;
     RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()), WeightVar("Weight"));
     std::cout << "[Inject::injectExtractForBin] Selected " << data.numEntries() << " events for injection." << std::endl;
     // Add the helicity branch to the dataset
