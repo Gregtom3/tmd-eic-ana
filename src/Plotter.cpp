@@ -130,7 +130,7 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
                 gPad->SetLogy();
             }
             if (meanMap.count(binKey)) {
-                DrawMeanTLatex(meanMap.at(binKey), grid->getMainBinNames(), 2, 0.15, 0.92);
+                DrawMeanTLatex(meanMap.at(binKey), grid->getMainBinNames(), 3, 0.15, 0.92, 0.06);
             }
         } else {
             continue;
@@ -138,7 +138,17 @@ void Plotter::plot2DMap(const std::string& var, const Hist* hist, const Grid* gr
         hists[binIndex]->SetTitle("");
         // Set common y axis range
         hists[binIndex]->GetYaxis()->SetRangeUser(1, globalYMax * 1.1);
-        
+        // Set x axis label for bottom row
+        if (row == 1) {
+            auto itLabel = VarToLabel.find(var);
+            std::string xLabel = (itLabel != VarToLabel.end()) ?
+                itLabel->second : var;
+            hists[binIndex]->GetXaxis()->SetTitle(xLabel.c_str());
+            // Center title
+            hists[binIndex]->GetXaxis()->CenterTitle();
+        } else {
+            hists[binIndex]->GetXaxis()->SetTitle("");
+        }
         double x_left = gPad->GetXlowNDC(), x_right = x_left + gPad->GetWNDC();
         double y_low = gPad->GetYlowNDC(), y_high = y_low + gPad->GetHNDC();
         minPadX = std::min(minPadX, x_left);

@@ -41,9 +41,9 @@ inline void ApplyGlobalStyle() {
 }
 
 inline void DrawMeanTLatex(const std::unordered_map<std::string, double>& meanMap, const std::vector<std::string>& vars,
-                           int precision = 3, double x_ndc = 0.15, double y_ndc = 0.92) {
+                           int precision = 3, double x_ndc = 0.15, double y_ndc = 0.92, float textSize = 0.045) {
     TLatex latex;
-    latex.SetTextSize(0.045);
+    latex.SetTextSize(textSize);
     latex.SetTextColor(kBlack);
     latex.SetTextFont(42);
     std::string label;
