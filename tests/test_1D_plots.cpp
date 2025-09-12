@@ -1,5 +1,6 @@
 #include "Logger.h"
 #include "TMD.h"
+#include "ArgParser.h"
 #include <TFile.h>
 #include <TTree.h>
 #include <TRandom3.h>
@@ -8,15 +9,21 @@
 #include <iostream>
 #include <filesystem> // For directory creation
 
-int main() {
-    const std::string artifactDir = "artifacts/plots";
+int main(int argc, char** argv) {
+    std::string outDir = "out/";
+    Args args = parseArgs(argc, argv);
+    // Parse output directory and create if needed
+    if(args.outDir != "out") {
+        LOG_INFO("Using output directory from args: " + args.outDir);
+        outDir = args.outDir;
+    } else {
+        LOG_INFO("Using default output directory: " + outDir);
+    }
     // Ensure the artifacts directory exists
-    std::filesystem::create_directories(artifactDir);
-
-    const std::string outpath = "out/output.root";
+    std::filesystem::create_directories(outDir);
 
     // Now attempt to use TMD on this file
-    TMD tmd(outpath, "tree");
+    TMD tmd("out/output.root", "tree"); 
     if (!tmd.isLoaded()) {
         LOG_ERROR("TMD failed to load generated tree file");
         return 1;
@@ -31,7 +38,11 @@ int main() {
     tmd.getGrid()->printGridSummary();
 
     // Fill histograms for variable X into the artifacts directory
-    tmd.fillHistograms("X", artifactDir, true);
+    tmd.fillHistograms("X", outDir, true);
+    tmd.fillHistograms("Q", outDir, true);
+    tmd.fillHistograms("Z", outDir, true);
+    tmd.fillHistograms("PhPerp", outDir, true);
+    tmd.fillHistograms("PhiH", outDir, true);
     LOG_INFO("fillHistograms completed");
 
     std::cout << "Test passed." << std::endl;

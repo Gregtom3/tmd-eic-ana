@@ -31,7 +31,13 @@ jobs:
           ./bin/generate_pseudodata
           make tests
           make run-tests
-        
+
+      - name: Run 1D plotting test
+        run: |
+          source $GITHUB_WORKSPACE/root/bin/thisroot.sh
+          mkdir -p artifacts/plots
+          ./bin/test_1D_plots --file out/output.root --tree tree --energy 0x0 --out artifacts/plots/test_2D_plots.pdf
+  
       - name: Run 2D plotting test
         run: |
           source $GITHUB_WORKSPACE/root/bin/thisroot.sh

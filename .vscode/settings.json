@@ -71,6 +71,7 @@
         "forward_list": "cpp",
         "list": "cpp",
         "unordered_set": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "filesystem": "cpp"
     }
 }
