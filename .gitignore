@@ -51,3 +51,4 @@ out/*.png
 *injection*yaml
 
 deps/
+slurm/
