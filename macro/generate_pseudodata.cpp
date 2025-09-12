@@ -22,14 +22,14 @@ int main() {
     int Spin_idx;
 
     tree.Branch("X", &X, "X/F");
-    tree.Branch("Q2", &Q2, "Q2/F");
+    tree.Branch("Q", &Q2, "Q/F");
     tree.Branch("Z", &Z, "Z/F");
     tree.Branch("PhPerp", &PhPerp, "PhPerp/F");
     tree.Branch("PhiH", &PhiH, "PhiH/F");
     tree.Branch("PhiS", &PhiS, "PhiS/F");
     tree.Branch("Y", &Y, "Y/F");
     tree.Branch("TrueX", &TrueX, "TrueX/F");
-    tree.Branch("TrueQ2", &TrueQ2, "TrueQ2/F");
+    tree.Branch("TrueQ", &TrueQ2, "TrueQ/F");
     tree.Branch("TrueZ", &TrueZ, "TrueZ/F");
     tree.Branch("TruePhPerp", &TruePhPerp, "TruePhPerp/F");
     tree.Branch("TruePhiH", &TruePhiH, "TruePhiH/F");
