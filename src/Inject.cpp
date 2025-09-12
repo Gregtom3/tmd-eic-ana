@@ -69,7 +69,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     RooRealVar PhPerp("PhPerp", "PhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
     RooRealVar TrueY("TrueY", "TrueY", 0.0, 1.0);
     RooFormulaVar TrueDepol1("TrueDepol1", "(1 - TrueY)/(1 - TrueY + 0.5 * TrueY * TrueY)", RooArgList(TrueY));
-    RooRealVar TruePhiH("TruePhiH", "TruePhiH", -TMath::Pi(), TMath::Pi());
+    RooRealVar TruePhiH("TruePhiH", "TruePhiH", -TMath::Pi(), -TMath::Pi()+1);
     RooRealVar TruePhiS("TruePhiS", "TruePhiS", -TMath::Pi(), TMath::Pi());
 
     // TrueQ handling analogous to Q
