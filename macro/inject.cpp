@@ -25,22 +25,11 @@ int main(int argc, char** argv) {
     tmd.setOutFilename(args.outFilename);
     tmd.loadTable(args.energyConfig);
 
-    std::vector<std::string> gridVars;
-    // args.grid is a comma-separated list of variables, e.g. "X,Q"
-    if(args.grid != ""){
-        size_t start = 0;
-        size_t end = args.grid.find(',');
-        while (end != std::string::npos) {
-            gridVars.push_back(args.grid.substr(start, end - start));
-            start = end + 1;
-            end = args.grid.find(',', start);
-        }
-        gridVars.push_back(args.grid.substr(start));
-    } else {
+    if(args.grid.empty()) {
         LOG_FATAL("Grid variables not specified. Use --grid <var1,var2,...>");
         return 1;
     }
-    tmd.buildGrid(gridVars);
+    tmd.buildGrid( args.grid );
     // If bin_index_start and bin_index_end are set, queue that range of bins
     if (args.bin_index_end >= args.bin_index_start) {
         for (int bin_idx = args.bin_index_start; bin_idx <= args.bin_index_end; ++bin_idx) {

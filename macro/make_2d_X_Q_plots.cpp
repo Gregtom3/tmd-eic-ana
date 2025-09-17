@@ -23,8 +23,11 @@ int main(int argc, char** argv) {
     LOG_INFO("[make_2d_X_Q_plots] Set target polarization to " + std::to_string(args.targetPolarization));
     tmd.loadTable(args.energyConfig);
     LOG_INFO("[make_2d_X_Q_plots] Successfully loaded table for energy config: " + args.energyConfig);
-
-    tmd.buildGrid({"X", "Q"});
+    if(args.grid.empty()) {
+        LOG_FATAL("Grid variables not specified. Use --grid <var1,var2,...>");
+        return 1;
+    }
+    tmd.buildGrid( args.grid );
     const Grid* grid = tmd.getGrid();
     grid->printGridSummary(5); // Print summary of first 5 bins
     LOG_INFO("[make_2d_X_Q_plots] Successfully built grid based on table data.");
