@@ -84,7 +84,7 @@ Args parseArgs(int argc, char** argv) {
             args.bin_index_end = std::stoi(argv[++i]);
         } else if (arg == "--extract_with_true" && i + 1 < argc) {
             std::string val = argv[++i];
-            args.extract_with_true = (val == "1" || val == "true");
+            args.extract_with_true = (val == "1" || val == "true" || val == "True" || val == "TRUE" || val == "t" || val == "T" || val == "yes" || val == "Yes" || val == "YES");
         } else if (arg == "--A_opt" && i + 1 < argc) {
             args.A_opt = std::stod(argv[++i]);
         } else if (!arg.empty() && arg[0] != '-') {

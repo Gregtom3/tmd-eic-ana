@@ -43,14 +43,9 @@ TMD::TMD(const std::string& filename, const std::string& treename)
     } else {
         LOG_WARN("TMD: Could not find XsTotal and TotalEvents branches in tree; skipping mc scaling initialization.");
     }
-    // Check for Q branch, if not present, check for Q2 and set alias
-    if (!tree->GetBranch("Q")) {
-        if (tree->GetBranch("Q2")) {
-            tree->SetAlias("Q", "sqrt(Q2)");
-            LOG_INFO("Set alias Q as sqrt(Q2)");
-        } else {
-            LOG_WARN("Neither Q nor Q2 branch found in tree.");
-        }
+    // Require Q2 branch in the tree (we assume input trees provide Q2)
+    if (!tree->GetBranch("Q2")) {
+        LOG_ERROR("TMD: Required branch 'Q2' not found in tree.");
     }
     LOG_INFO(std::string("Successfully loaded TTree: ") + treename + " from file: " + filename);
     hist = std::make_unique<Hist>(tree);
@@ -158,8 +153,18 @@ std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
         double X_max = bin.getMax("X");
         double Q_min = bin.getMin("Q");
         double Q_max = bin.getMax("Q");
+        // Convert Q bounds to Q2 bounds for trees that only have Q2
+        double q2min, q2max;
+        if (Q_min < 0.0 && Q_max > 0.0) {
+            q2min = 0.0;
+            q2max = std::max(Q_min * Q_min, Q_max * Q_max);
+        } else {
+            q2min = std::min(Q_min * Q_min, Q_max * Q_max);
+            q2max = std::max(Q_min * Q_min, Q_max * Q_max);
+        }
+        if (q2max <= q2min) q2max = q2min + 1e-6;
         std::string cutStr = "X >= " + std::to_string(X_min) + " && X < " + std::to_string(X_max) +
-                             " && Q >= " + std::to_string(Q_min) + " && Q < " + std::to_string(Q_max);
+                             " && Q2 >= " + std::to_string(q2min) + " && Q2 < " + std::to_string(q2max);
         binTCuts[key] = TCut(cutStr.c_str());
     }
     return binTCuts;
