@@ -119,7 +119,4 @@ Run the `make_2d_X_Q_plots` binary to generate 2D X-Q plots:
   - If `--maxEntries` is provided and > 0, it will be passed through to the `inject` command in each job script.
   - The script exits with an error if the inferred ROOT file is missing or if table columns are malformed.
 
----
 
-## Contact
-For questions or issues, please contact the repository maintainer or open an issue on GitHub.
