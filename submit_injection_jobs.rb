@@ -14,11 +14,11 @@ options = {
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: submit_injection_jobs.rb [options]"
   opts.on("--energy STRING", "Energy config (required) e.g. 10x100") { |v| options[:energy] = v }
-  opts.on("--n_injections N", Integer, "Number of injections (required)") { |v| options[:n_injections] = v }
-  opts.on("--bins N", Integer, "Number of bins to run (required). If N <= 0, run ALL bins") { |v| options[:bins] = v }
-  opts.on("--bins_per_job N", Integer, "Number of bins per job (required)") { |v| options[:bins_per_job] = v }
+  opts.on("--n_injections INTEGER", Integer, "Number of injections (required)") { |v| options[:n_injections] = v }
+  opts.on("--bins INTEGER", Integer, "Number of bins to run (required). If N <= 0, run ALL bins") { |v| options[:bins] = v }
+  opts.on("--bins_per_job INTEGER", Integer, "Number of bins per job (required)") { |v| options[:bins_per_job] = v }
   opts.on("--grid STRING", "Grid string (required) e.g. \"X,Q\". Values must be one of: X, Q, Z, PhPerp") { |v| options[:grid] = v }
-  opts.on("--maxEntries", Integer, "Maximum entries to process from ROOT file (default: all)") { |v| options[:maxEntries] = v }
+  opts.on("--maxEntries INTEGER", Integer, "Maximum entries to process from ROOT file (default: all)") { |v| options[:maxEntries] = v }
   opts.on("--tree STRING", "Tree name (default: #{options[:tree]})") { |v| options[:tree] = v }
   opts.on("-h", "--help", "Show this message") { puts opts; exit }
 end
