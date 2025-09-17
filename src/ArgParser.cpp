@@ -20,6 +20,7 @@ Args parseArgs(int argc, char** argv) {
             LOG_INFO("  --outFilename <filename>   Output filename");
             LOG_INFO("  --targetPolarization <v>   Target polarization value");
             LOG_INFO("  --n_injections <N>         Number of injections (default 10)");
+            LOG_INFO("  --grid <X,Q,...>           Comma-separated list of grid variables (default X,Q)");
             LOG_INFO("  --bin_index <N>            Bin index to process");
             LOG_INFO("  --bin_index_start <N>  Start bin index (inclusive)");
             LOG_INFO("  --bin_index_end <N>    End bin index (inclusive)");
@@ -51,6 +52,8 @@ Args parseArgs(int argc, char** argv) {
             args.targetPolarization = std::stod(argv[++i]);
         } else if (arg == "--n_injections" && i + 1 < argc) {
             args.n_injections = std::stoi(argv[++i]);
+        } else if (arg == "--grid" && i + 1 < argc) {
+            args.grid = argv[++i];
         } else if (arg == "--bin_index" && i + 1 < argc) {
             args.bin_index = std::stoi(argv[++i]);
         } else if (arg == "--bin_index_start" && i + 1 < argc) {

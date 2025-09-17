@@ -6,23 +6,65 @@ require 'time'
 require 'csv'
 require 'set'
 
-# Default options
+# Default options (only provide a default for tree)
 options = {
-  energy: "10x100",
-  n_injections: 1,
-  bins: nil, # Default to nil to allow optional setting
-  bins_per_job: 4, # New parameter with default value
   tree: "tree"
 }
 
-OptionParser.new do |opts|
+parser = OptionParser.new do |opts|
   opts.banner = "Usage: submit_injection_jobs.rb [options]"
+  opts.on("--energy STRING", "Energy config (required) e.g. 10x100") { |v| options[:energy] = v }
+  opts.on("--n_injections N", Integer, "Number of injections (required)") { |v| options[:n_injections] = v }
+  opts.on("--bins N", Integer, "Number of bins to run (required). If N <= 0, run ALL bins") { |v| options[:bins] = v }
+  opts.on("--bins_per_job N", Integer, "Number of bins per job (required)") { |v| options[:bins_per_job] = v }
+  opts.on("--grid STRING", "Grid string (required) e.g. \"X,Q\". Values must be one of: X, Q, Z, PhPerp") { |v| options[:grid] = v }
+  opts.on("--tree STRING", "Tree name (default: #{options[:tree]})") { |v| options[:tree] = v }
+  opts.on("-h", "--help", "Show this message") { puts opts; exit }
+end
 
-  opts.on("--energy STRING", "Energy config (default: #{options[:energy]})") { |v| options[:energy] = v }
-  opts.on("--n_injections N", Integer, "Number of injections (default: #{options[:n_injections]})") { |v| options[:n_injections] = v }
-  opts.on("--bins N", Integer, "Number of bins to run (default: all unique pairs)") { |v| options[:bins] = v }
-  opts.on("--bins_per_job N", Integer, "Number of bins per job (default: #{options[:bins_per_job]})") { |v| options[:bins_per_job] = v }
-end.parse!
+begin
+  parser.parse!
+rescue OptionParser::InvalidOption, OptionParser::MissingArgument => e
+  puts "Error: #{e.message}\n\n"
+  puts parser
+  exit 1
+end
+
+# Validate required options
+required = [:energy, :n_injections, :bins, :bins_per_job, :grid]
+missing = required.select { |k| options[k].nil? }
+if missing.any?
+  puts "Error: Missing required options: #{missing.map(&:to_s).join(', ')}\n\n"
+  puts parser
+  exit 1
+end
+
+# Validate and normalize grid
+allowed_grids = %w[X Q Z PhPerp]
+grid_list = options[:grid].split(',').map(&:strip)
+if grid_list.empty? || grid_list.any?(&:empty?)
+  puts "Error: --grid must be a comma-separated list with at least one value (e.g. 'X,Q')"
+  exit 1
+end
+invalid = grid_list.reject { |g| allowed_grids.include?(g) }
+if invalid.any?
+  puts "Error: Invalid grid values: #{invalid.join(', ')}. Allowed values are: #{allowed_grids.join(', ')}"
+  exit 1
+end
+
+# If bins <= 0, we will run all bins (handled later after reading table). Use nil to indicate "all".
+if options[:bins] <= 0
+  bins_label = 'all'
+  options[:bins] = nil
+else
+  bins_label = options[:bins].to_s
+end
+
+# Validate bins_per_job
+if options[:bins_per_job] <= 0
+  puts "Error: --bins_per_job must be > 0"
+  exit 1
+end
 
 # Map energy configurations to table files
 table_files = {
@@ -38,30 +80,40 @@ if table_file.nil?
   exit 1
 end
 
-# Read the table file and parse unique (X_min, X_max, Q_min, Q_max) pairs
-unique_pairs = Set.new
+# Read the table file and parse unique bins based on the requested grid
+unique_bins = Set.new
 begin
   CSV.foreach(table_file, col_sep: ",", headers: true) do |row|
-    x_min = row["X_min"].to_f
-    x_max = row["X_max"].to_f
-    q_min = row["Q_min"].to_f
-    q_max = row["Q_max"].to_f
-    unique_pairs.add([x_min, x_max, q_min, q_max])
+    # Build a key composed of the min/max ranges for each requested grid dimension
+    key = []
+    grid_list.each do |g|
+      min_col = "#{g}_min"
+      max_col = "#{g}_max"
+      if !row.headers.include?(min_col) || !row.headers.include?(max_col)
+        puts "Error: Table file '#{table_file}' missing required columns: #{min_col} or #{max_col}"
+        exit 1
+      end
+      key << row[min_col].to_f
+      key << row[max_col].to_f
+    end
+    unique_bins.add(key)
   end
 rescue Errno::ENOENT
   puts "Error: Table file '#{table_file}' not found."
   exit 1
 end
 
-# Print the total number of unique pairs
-puts "Total [X,Q] bins: #{unique_pairs.size}"
+# Print the total number of unique bins for the requested grid
+puts "Total [#{grid_list.join(',')}] bins: #{unique_bins.size}"
 
 # Infer ROOT file based on energy config
 options[:root_file] = "../../out/Piplus.3.27.2025___epic.25.03.1_#{options[:energy]}/analysis.root"
 
 # Timestamped subdirectory under slurm/
 timestamp = Time.now.strftime("%Y%m%d_%H%M%S")
-slurm_subdir = File.join("slurm", "#{options[:energy]}_inj#{options[:n_injections]}_bins#{options[:bins]}_#{timestamp}")
+# make a safe grid label for directory names
+grid_label = options[:grid].gsub(/[^0-9A-Za-z_-]/, '_')
+slurm_subdir = File.join("slurm", "#{options[:energy]}_inj#{options[:n_injections]}_bins#{bins_label}_grid#{grid_label}_#{timestamp}")
 FileUtils.mkdir_p(slurm_subdir)
 
 # Keep track of created scripts
@@ -69,7 +121,7 @@ slurm_files = []
 
 # Calculate the total number of bins if not explicitly set
 if options[:bins].nil?
-  options[:bins] = unique_pairs.size
+  options[:bins] = unique_bins.size
 end
 
 # Loop over bin indices in chunks of bins_per_job and create jobs
@@ -86,16 +138,17 @@ end
     f.puts "#SBATCH --account=eic"
     f.puts "#SBATCH --partition=production"
     f.puts "#SBATCH --time=24:00:00"
-    f.puts "srun ./bin/inject \\
-      --file #{options[:root_file]} \\"
-      --tree #{options[:tree]} \\
-      --energy #{options[:energy]} \\
-      --n_injections #{options[:n_injections]} \\
-      --bin_index_start #{bin_indices.first} \\
-      --bin_index_end #{bin_indices.last} \\
-      --outFilename #{yaml_out} \\
-      --outDir #{slurm_subdir}"
-      f.puts ""
+    f.puts "srun ./bin/inject \\"
+    f.puts "  --file #{options[:root_file]} \\"
+    f.puts "  --tree #{options[:tree]} \\"
+    f.puts "  --energy #{options[:energy]} \\"
+    f.puts "  --grid '#{options[:grid]}' \\"
+    f.puts "  --n_injections #{options[:n_injections]} \\"
+    f.puts "  --bin_index_start #{bin_indices.first} \\"
+    f.puts "  --bin_index_end #{bin_indices.last} \\"
+    f.puts "  --outFilename #{yaml_out} \\"
+    f.puts "  --outDir #{slurm_subdir}"
+    f.puts ""
   end
 
   slurm_files << slurm_file

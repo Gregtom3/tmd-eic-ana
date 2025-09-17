@@ -14,6 +14,7 @@ struct Args {
     long long maxEntries = -1;
     double targetPolarization = 1.0;
     int n_injections = 10;
+    std::string grid = "";
     int bin_index = 0;
     int bin_index_start = 0;
     int bin_index_end = -1;
