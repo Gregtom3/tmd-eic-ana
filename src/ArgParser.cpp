@@ -81,7 +81,7 @@ Args parseArgs(int argc, char** argv) {
     if (args.filename.empty() || args.treename.empty() || args.energyConfig.empty()) {
         LOG_INFO("Missing required parameters. Use --help for usage.");
         LOG_INFO("All parameters (positional):");
-        LOG_INFO("  <ROOT file> <TTree name> <energy config> [--overwrite|-f] [--outDir <dir>] [--maxEntries <N>] [--outFilename <filename>] [--targetPolarization <value>] [--n_injections <N>] [--bin_index <N>] [--extract_with_true <true/false>] [--A_opt <value>]");
+        LOG_INFO("  --file <ROOT file> --tree <TTree name> --energy <energy config> [--overwrite|-f] [--outDir <dir>] [--maxEntries <N>] [--outFilename <filename>] [--targetPolarization <value>] [--n_injections <N>] [--bin_index <N>] [--extract_with_true <true/false>] [--A_opt <value>]");
         exit(1);
     }
 
