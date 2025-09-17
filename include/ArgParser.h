@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdint>
 #include <optional>
+#include <vector>
 struct Args {
     std::string filename;
     std::string treename;
