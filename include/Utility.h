@@ -112,8 +112,8 @@ inline double computeScale(long long totalEvents, double xsTotal, const std::str
     }
     mc_lumi = static_cast<double>(totalEvents) / (xsTotal / 1e3);
 
-    // exp_lumi = L * 10 * 1e6 / 1.54 (per user spec)
-    double exp_lumi = L * 10.0 * 1e6 / 1.54;
+    // exp_lumi = L * 1e6 (to convert from fb^-1 to nb^-1)
+    double exp_lumi = L  * 1e6;
 
     double scale = exp_lumi / mc_lumi;
 
