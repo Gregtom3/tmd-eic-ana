@@ -85,18 +85,17 @@ end
     f.puts "#SBATCH --error=#{slurm_subdir}/slurm_%j.err"
     f.puts "#SBATCH --account=eic"
     f.puts "#SBATCH --partition=production"
-    f.puts "#SBATCH --time=02:00:00"
-    f.puts ""
-    bin_indices.each do |bin_index|
-      f.puts "srun ./bin/inject \\
-        --file #{options[:root_file]} \\
-        --tree #{options[:tree]} \\
-        --energy #{options[:energy]} \\
-        --n_injections #{options[:n_injections]} \\
-        --bin_index #{bin_index} \\
-        --outDir #{slurm_subdir} \\
-        --outFilename #{yaml_out}"
-    end
+    f.puts "#SBATCH --time=24:00:00"
+    f.puts "srun ./bin/inject \\
+      --file #{options[:root_file]} \\"
+      --tree #{options[:tree]} \\
+      --energy #{options[:energy]} \\
+      --n_injections #{options[:n_injections]} \\
+      --bin_index_start #{bin_indices.first} \\
+      --bin_index_end #{bin_indices.last} \\
+      --outFilename #{yaml_out} \\
+      --outDir #{slurm_subdir}"
+      f.puts ""
   end
 
   slurm_files << slurm_file
