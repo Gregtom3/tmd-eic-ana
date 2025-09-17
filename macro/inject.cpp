@@ -25,14 +25,27 @@ int main(int argc, char** argv) {
     tmd.setOutFilename(args.outFilename);
     tmd.loadTable(args.energyConfig);
 
-    tmd.buildGrid({"X"});
-
-    tmd.queueInjection({
-        .bin_index = args.bin_index,
-        .n = args.n_injections,
-        .extract_with_true = args.extract_with_true,
-        .A_opt = args.A_opt
-    });
+    tmd.buildGrid({"X", "Q"});
+    // If bin_index_start and bin_index_end are set, queue that range of bins
+    if (args.bin_index_end >= args.bin_index_start) {
+        for (int bin_idx = args.bin_index_start; bin_idx <= args.bin_index_end; ++bin_idx) {
+            tmd.queueInjection({
+                .bin_index = bin_idx,
+                .n = args.n_injections,
+                .extract_with_true = args.extract_with_true,
+                .A_opt = args.A_opt
+            });
+        }
+    } else {
+        // Otherwise, queue the single specified bin_index
+        tmd.queueInjection({
+            .bin_index = args.bin_index,
+            .n = args.n_injections,
+            .extract_with_true = args.extract_with_true,
+            .A_opt = args.A_opt
+        });
+    }
+    // Run the queued injections
     tmd.runQueuedInjections();
     return 0;
 }

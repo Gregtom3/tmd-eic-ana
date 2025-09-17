@@ -15,6 +15,8 @@ struct Args {
     double targetPolarization = 1.0;
     int n_injections = 10;
     int bin_index = 0;
+    int bin_index_start = 0;
+    int bin_index_end = -1;
     bool extract_with_true = false;
     std::optional<double> A_opt;
 };

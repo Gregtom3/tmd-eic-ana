@@ -21,6 +21,8 @@ Args parseArgs(int argc, char** argv) {
             LOG_INFO("  --targetPolarization <v>   Target polarization value");
             LOG_INFO("  --n_injections <N>         Number of injections (default 10)");
             LOG_INFO("  --bin_index <N>            Bin index to process");
+            LOG_INFO("  --bin_index_start <N>  Start bin index (inclusive)");
+            LOG_INFO("  --bin_index_end <N>    End bin index (inclusive)");
             LOG_INFO("  --extract_with_true <t/f>  Extract with true");
             LOG_INFO("  --A_opt <value>            Optional A value");
             exit(0);
@@ -51,6 +53,10 @@ Args parseArgs(int argc, char** argv) {
             args.n_injections = std::stoi(argv[++i]);
         } else if (arg == "--bin_index" && i + 1 < argc) {
             args.bin_index = std::stoi(argv[++i]);
+        } else if (arg == "--bin_index_start" && i + 1 < argc) {
+            args.bin_index_start = std::stoi(argv[++i]);
+        } else if (arg == "--bin_index_end" && i + 1 < argc) {
+            args.bin_index_end = std::stoi(argv[++i]);
         } else if (arg == "--extract_with_true" && i + 1 < argc) {
             std::string val = argv[++i];
             args.extract_with_true = (val == "1" || val == "true");
@@ -80,8 +86,6 @@ Args parseArgs(int argc, char** argv) {
     // Require filename, treename, and energyConfig
     if (args.filename.empty() || args.treename.empty() || args.energyConfig.empty()) {
         LOG_INFO("Missing required parameters. Use --help for usage.");
-        LOG_INFO("All parameters (positional):");
-        LOG_INFO("  --file <ROOT file> --tree <TTree name> --energy <energy config> [--overwrite|-f] [--outDir <dir>] [--maxEntries <N>] [--outFilename <filename>] [--targetPolarization <value>] [--n_injections <N>] [--bin_index <N>] [--extract_with_true <true/false>] [--A_opt <value>]");
         exit(1);
     }
 
