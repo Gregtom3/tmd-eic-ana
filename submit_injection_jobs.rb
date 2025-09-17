@@ -110,6 +110,13 @@ puts "Total [#{grid_list.join(',')}] bins: #{unique_bins.size}"
 # Infer ROOT file based on energy config
 options[:root_file] = "../../out/Piplus.3.27.2025___epic.25.03.1_#{options[:energy]}/analysis.root"
 
+# Ensure the ROOT file exists
+unless File.exist?(options[:root_file])
+  puts "Error: ROOT file '#{options[:root_file]}' does not exist."
+  puts "Please check that the file was produced for energy '#{options[:energy]}' and the path is correct."
+  exit 1
+end
+
 # Timestamped subdirectory under slurm/
 timestamp = Time.now.strftime("%Y%m%d_%H%M%S")
 # make a safe grid label for directory names
