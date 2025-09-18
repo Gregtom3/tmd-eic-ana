@@ -68,6 +68,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     obs.add(PhPerp);
     obs.add(TruePhiH);
     obs.add(TruePhiS);
+    obs.add(Weight);
     obs.add(TrueX);
     obs.add(TrueQ2);
     obs.add(TrueY);
@@ -98,6 +99,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         TruePhiS.setVal(row->getRealValue("TruePhiS"));
         TrueY.setVal(row->getRealValue("TrueY"));
         TrueX.setVal(row->getRealValue("TrueX"));
+        Weight.setVal(row->getRealValue("Weight"));
         double true_depol1 = TrueDepol1.getVal();
         double trueq_val = std::sqrt(row->getRealValue("TrueQ2"));
         double gamma_val = Gamma.getVal();
