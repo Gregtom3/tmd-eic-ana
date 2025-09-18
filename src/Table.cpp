@@ -135,27 +135,39 @@ Grid Table::buildGrid(const std::vector<std::string>& binNames) const {
 }
 
 double Table::lookupAUT(double X, double Q, double Z, double PhPerp) const {
-    std::function<double(const std::vector<TableRow>&, double, double, double, double, size_t, size_t)> binarySearch =
-        [&](const std::vector<TableRow>& rows, double X, double Q, double Z, double PhPerp, size_t left, size_t right) -> double {
-        if (left > right) {
-            return 0.0; // Base case: no match found
-        }
+    if (rows.empty()) return 0.0;
 
-        size_t mid = left + (right - left) / 2;
-        const auto& row = rows[mid];
-
-        if (X >= row.X_min && X <= row.X_max && Q >= row.Q_min && Q <= row.Q_max && Z >= row.Z_min && Z <= row.Z_max &&
+    // First pass: exact containment
+    for (const auto& row : rows) {
+        if (X >= row.X_min && X <= row.X_max &&
+            Q >= row.Q_min && Q <= row.Q_max &&
+            Z >= row.Z_min && Z <= row.Z_max &&
             PhPerp >= row.PhPerp_min && PhPerp <= row.PhPerp_max) {
-            return row.AUT; // Match found
+            return row.AUT;
         }
+    }
 
-        if (X < row.X_min || (X == row.X_min && Q < row.Q_min) || (X == row.X_min && Q == row.Q_min && Z < row.Z_min) ||
-            (X == row.X_min && Q == row.Q_min && Z == row.Z_min && PhPerp < row.PhPerp_min)) {
-            return binarySearch(rows, X, Q, Z, PhPerp, left, mid - 1);
-        } else {
-            return binarySearch(rows, X, Q, Z, PhPerp, mid + 1, right);
+    // Second pass: fallback to nearest bin center
+    double bestDist = std::numeric_limits<double>::max();
+    double bestAUT  = 0.0;
+
+    for (const auto& row : rows) {
+        double Xc  = 0.5 * (row.X_min      + row.X_max);
+        double Qc  = 0.5 * (row.Q_min      + row.Q_max);
+        double Zc  = 0.5 * (row.Z_min      + row.Z_max);
+        double Pc  = 0.5 * (row.PhPerp_min + row.PhPerp_max);
+
+        double dX = X - Xc;
+        double dQ = Q - Qc;
+        double dZ = Z - Zc;
+        double dP = PhPerp - Pc;
+
+        double dist2 = dX*dX + dQ*dQ + dZ*dZ + dP*dP;  // squared distance
+        if (dist2 < bestDist) {
+            bestDist = dist2;
+            bestAUT  = row.AUT;
         }
-    };
+    }
 
-    return binarySearch(rows, X, Q, Z, PhPerp, 0, rows.size() - 1);
+    return bestAUT;
 }
