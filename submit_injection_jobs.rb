@@ -19,7 +19,7 @@ parser = OptionParser.new do |opts|
   opts.on("--bins_per_job INTEGER", Integer, "Number of bins per job (required)") { |v| options[:bins_per_job] = v }
   opts.on("--grid STRING", "Grid string (required) e.g. \"X,Q\". Values must be one of: X, Q, Z, PhPerp") { |v| options[:grid] = v }
   opts.on("--maxEntries INTEGER", Integer, "Maximum entries to process from ROOT file (default: all)") { |v| options[:maxEntries] = v }
-  opts.on("--extract_with_true BOOLEAN", "Whether to extract with true kinematics (default: false)") { |v| options[:extract_with_true] = v }
+  opts.on("--extract_with_true STRING", "Whether to extract with true kinematics (default: false)") { |v| options[:extract_with_true] = v }
   opts.on("--tree STRING", "Tree name (default: #{options[:tree]})") { |v| options[:tree] = v }
   opts.on("-h", "--help", "Show this message") { puts opts; exit }
 end
@@ -69,10 +69,14 @@ if options[:bins_per_job] <= 0
 end
 
 # Validate extract_with_true if set
-if options.key?(:extract_with_true) && ![true, false].include?(options[:extract_with_true])
-  puts "Error: --extract_with_true must be a boolean (true or false)"
-  exit 1
+if options[:extract_with_true]
+  unless ['true', 'false'].include?(options[:extract_with_true].downcase)
+    puts "Error: --extract_with_true must be 'true' or 'false' if provided"
+    exit 1
+  end
+  options[:extract_with_true] = options[:extract_with_true].downcase
 end
+
 
 # Map energy configurations to table files
 table_files = {
