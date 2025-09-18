@@ -5,6 +5,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <limits>
 
 Table::Table() {
     createDefaultTable();
