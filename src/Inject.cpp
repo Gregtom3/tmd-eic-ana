@@ -84,11 +84,11 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
         " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
 
-    RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()));
+    RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()), WeightVar(Weight));
     std::cout << "[Inject::injectExtractForBin] Selected " << data.numEntries() << " events for injection." << std::endl;
     obs.add(S_T);
     obs.add(TrueS_T);
-    RooDataSet dataUpdate("dataUpdate", "data with updated spin", obs);
+    RooDataSet dataUpdate("dataUpdate", "data with updated spin", obs, WeightVar(Weight));
     TRandom3 rng(0);
     double expected_events = 0.0;
 
