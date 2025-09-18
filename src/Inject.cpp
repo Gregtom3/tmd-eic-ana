@@ -22,7 +22,6 @@ Inject::~Inject() {}
 
 
 
-
 std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt) {
     if (!tree) {
         std::cerr << "[Inject::injectExtractForBin] Error: TTree pointer is null." << std::endl;
@@ -50,6 +49,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
 
     RooRealVar Spin_idx("Spin_idx", "Spin_idx", -1, 1);
     RooRealVar Weight("Weight", "Weight", 0, 1e9);
+    RooRealVar TotalWeight("TotalWeight", "TotalWeight", 0, 1e9);
     RooRealVar tPol("tPol", "Target Polarization", targetPolarization); 
     tPol.setConstant(true);
 
@@ -68,7 +68,6 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     obs.add(PhPerp);
     obs.add(TruePhiH);
     obs.add(TruePhiS);
-    obs.add(Weight);
     obs.add(TrueX);
     obs.add(TrueQ2);
     obs.add(TrueY);
@@ -85,13 +84,16 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
         " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
 
-    RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()), WeightVar(Weight));
+    RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()));
     std::cout << "[Inject::injectExtractForBin] Selected " << data.numEntries() << " events for injection." << std::endl;
     obs.add(S_T);
     obs.add(TrueS_T);
-    RooDataSet dataUpdate("dataUpdate", "data with updated spin", obs, WeightVar(Weight));
+    // obs.add(TotalWeight);
+    RooDataSet dataUpdate("dataUpdate", "data with updated spin", obs, WeightVar(TotalWeight));
     TRandom3 rng(0);
     double expected_events = 0.0;
+    double sumW = 0.0;
+    double sumW2 = 0.0;
 
     for (Long64_t i = 0; i < data.numEntries(); ++i) {
         const RooArgSet* row = data.get(i);
@@ -99,7 +101,13 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         TruePhiS.setVal(row->getRealValue("TruePhiS"));
         TrueY.setVal(row->getRealValue("TrueY"));
         TrueX.setVal(row->getRealValue("TrueX"));
+        X.setVal(row->getRealValue("X"));
+        Z.setVal(row->getRealValue("Z"));
+        PhPerp.setVal(row->getRealValue("PhPerp"));
+        PhiH.setVal(row->getRealValue("PhiH"));
+        PhiS.setVal(row->getRealValue("PhiS"));
         Weight.setVal(row->getRealValue("Weight"));
+        TotalWeight.setVal(Weight.getVal() * m_scale);
         double true_depol1 = TrueDepol1.getVal();
         double trueq_val = std::sqrt(row->getRealValue("TrueQ2"));
         double gamma_val = Gamma.getVal();
@@ -134,8 +142,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
             asymmetry = A_opt.value();
         }
         else{
-            asymmetry = table->lookupAUT(row->getRealValue("TrueX"), trueq_val, row->getRealValue("TrueZ"),
-                                        row->getRealValue("TruePhPerp"));
+            asymmetry = table->lookupAUT(TrueX.getVal(), trueq_val, TrueZ.getVal(), TruePhPerp.getVal());
         }
         double pPlus = 0.5 * (1 + TrueST_val * true_depol1 * asymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
@@ -143,14 +150,15 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
             // Set Spin_idx to -1 or 1 with 50/50 chance
             Spin_idx.setVal(rng.Rndm() < 0.5 ? 1 : -1);
         }
-        X.setVal(row->getRealValue("X"));
-        Z.setVal(row->getRealValue("Z"));
-        PhPerp.setVal(row->getRealValue("PhPerp"));
-        PhiH.setVal(row->getRealValue("PhiH"));
-        PhiS.setVal(row->getRealValue("PhiS"));
-        dataUpdate.add(obs, data.weight() * m_scale);
-        expected_events+= data.weight() * m_scale;
+
+        dataUpdate.add(obs);
+        expected_events+=TotalWeight.getVal();
+        sumW += Weight.getVal();
+        sumW2 += Weight.getVal()*Weight.getVal();
     }
+
+    // Get effective MC events
+    double n_eff_mc = (sumW*sumW)/sumW2;
     // Save number of injection data points to bin
     bin.setEvents(dataUpdate.numEntries());
     bin.setExpectedEvents(static_cast<int>(std::round(expected_events)));
@@ -163,13 +171,13 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         RooGenericPdf model("model", "1 + TrueS_T * TrueDepol1 * tPol * Spin_idx * A * sin(TruePhiH+TruePhiS)", RooArgList(TrueS_T, TruePhiH, TruePhiS, TrueDepol1, tPol, Spin_idx, A_fit));
         RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
         val = A_fit.getVal();
-        error = A_fit.getError();
+        error = A_fit.getError() * std::sqrt(n_eff_mc/expected_events);
         delete fitResult;
     } else {
         RooGenericPdf model("model", "1 + S_T * Depol1 * tPol * Spin_idx * A * sin(PhiH+PhiS)", RooArgList(S_T, PhiH, PhiS, Depol1, tPol, Spin_idx, A_fit));
         RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
         val = A_fit.getVal();
-        error = A_fit.getError();
+        error = A_fit.getError() * std::sqrt(n_eff_mc/expected_events);
         delete fitResult;
     }
     return std::make_pair(val, error);
