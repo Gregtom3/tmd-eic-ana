@@ -19,6 +19,7 @@ parser = OptionParser.new do |opts|
   opts.on("--bins_per_job INTEGER", Integer, "Number of bins per job (required)") { |v| options[:bins_per_job] = v }
   opts.on("--grid STRING", "Grid string (required) e.g. \"X,Q\". Values must be one of: X, Q, Z, PhPerp") { |v| options[:grid] = v }
   opts.on("--maxEntries INTEGER", Integer, "Maximum entries to process from ROOT file (default: all)") { |v| options[:maxEntries] = v }
+  opts.on("--extract_with_true BOOLEAN", "Whether to extract with true kinematics (default: false)") { |v| options[:extract_with_true] = v }
   opts.on("--tree STRING", "Tree name (default: #{options[:tree]})") { |v| options[:tree] = v }
   opts.on("-h", "--help", "Show this message") { puts opts; exit }
 end
@@ -64,6 +65,12 @@ end
 # Validate bins_per_job
 if options[:bins_per_job] <= 0
   puts "Error: --bins_per_job must be > 0"
+  exit 1
+end
+
+# Validate extract_with_true if set
+if options.key?(:extract_with_true) && ![true, false].include?(options[:extract_with_true])
+  puts "Error: --extract_with_true must be a boolean (true or false)"
   exit 1
 end
 
@@ -154,6 +161,9 @@ end
     f.puts "  --n_injections #{options[:n_injections]} \\"
     f.puts "  --bin_index_start #{bin_indices.first} \\"
     f.puts "  --bin_index_end #{bin_indices.last} \\"
+    if options[:extract_with_true]
+      f.puts "  --extract_with_true '#{options[:extract_with_true]}' \\"
+    end
     # If maxEntries is given and > 0, include it
     if options[:maxEntries] && options[:maxEntries] > 0
       f.puts "  --maxEntries #{options[:maxEntries]} \\"
