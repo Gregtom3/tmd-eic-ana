@@ -120,3 +120,86 @@ Run the `make_2d_X_Q_plots` binary to generate 2D X-Q plots:
   - The script exits with an error if the inferred ROOT file is missing or if table columns are malformed.
 
 
+## Output Format
+
+From the `./bin/inject` script we generate `.yaml` files summarizing (potentially multiple) injections. Here is a sample look at the output...
+
+```
+jobs:
+  - bin_index: 0
+    events: 78
+    expected_events: 78
+    X_min: 0
+    X_max: 0.125
+    Q_min: 1
+    Q_max: 2.125
+    Z_min: 0
+    Z_max: 1
+    PhPerp_min: 0
+    PhPerp_max: 5
+    used_reconstructed_kinematics: true
+    n_injections: 1
+    injected: 0
+    all_extracted: [-0.3886772893171366]
+    all_errors: [0.1708567543254759]
+    mean_extracted: -0.3886772893171366
+    stddev_extracted: 0
+  - bin_index: 1
+    events: 126
+    expected_events: 126
+    X_min: 0
+    X_max: 0.125
+    Q_min: 2.125
+    Q_max: 3.25
+    Z_min: 0
+    Z_max: 1
+    PhPerp_min: 0
+    PhPerp_max: 5
+    used_reconstructed_kinematics: true
+    n_injections: 1
+    injected: 0
+    all_extracted: [-0.1493078905389746]
+    all_errors: [0.1587550516849648]
+    mean_extracted: -0.1493078905389746
+    stddev_extracted: 0
+```
+
+For each `job`, we specify the following fields...
+
+- `bin_index`: The index of the bin in the grid being injected/analyzed.
+- `events`: The number of Monte Carlo events found in this bin.
+- `expected_events`: The scaled number of events expected at the EIC for this bin.
+- `X_min`, `X_max`, `Q_min`, `Q_max`, `Z_min`, `Z_max`, `PhPerp_min`, `PhPerp_max`: The kinematic boundaries of the bin.
+- `used_reconstructed_kinematics`: Boolean indicating if reconstructed kinematics were used (vs. true kinematics).
+- `n_injections`: Number of independent injections performed for this bin.
+- `injected`: If non-zero, sepcifies the artificial value of injected $A_{UT}$ for that bin. Otherwise, this value is determined by reading from `tables/`.
+- `all_extracted`: List of extracted asymmetry values for each injection.
+- `all_errors`: List of statistical errors for each injection.
+- `mean_extracted`: Mean of the extracted asymmetry values.
+- `stddev_extracted`: Standard deviation of the extracted asymmetry values.
+
+The $\mathrm{mean_extracted}\pm\mathrm{stddev_extracted}/\sqrt{n_injections}$ gives us an idea as to the precision with which the injection procedure can reproduce the underlying asymmetry in that bin, i.e. the statistical uncertainty on the average extracted value across repeated pseudo-experiments. In practice, to project EIC uncertainties, one should use the mean of the `all_errors`. These are scaled to experimental luminosities in the following way ...
+
+$$
+\sigma_{\mathrm{exp}}=\sigma_{\mathrm{MC}}\sqrt{\frac{N_{\mathrm{MC}}}{N_{\mathrm{exp}}}}
+$$
+
+... where ...
+
+$$
+N_{\mathrm{MC}}=\frac{(\sum w_i)^2}{\sum w_i^2}
+$$
+
+$$
+w_i = Q2\mathrm{weight}_i\mathrm{\,\,\,}
+$$
+
+... and ...
+
+$$
+N_{\mathrm{exp}} = \frac{\mathcal{L}_{\mathrm{exp}}}{\mathcal{L}_{\mathrm{MC}}}\sum w_i
+$$
+
+... where the $Q2\mathrm{weight}_i$ is a floating point number defined in `epic-analysis` which captures how the epic campaign's Monte Carlo is generated in million-event-batches of different $Q^2$ ranges. For instance, one can expect the epic campaign simulated an equal number of $Q^2\in[1,10] GeV^2$ data as $Q^2\in[10,100] GeV^2$ data. To account for this, both receive a tuned $Q^2$ weight per event to scale the data, so that merged datasets do not have jagged edges.
+
+
