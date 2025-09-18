@@ -161,7 +161,7 @@ end
     f.puts "  --file #{options[:root_file]} \\"
     f.puts "  --tree #{options[:tree]} \\"
     f.puts "  --energy #{options[:energy]} \\"
-    f.puts "  --grid '#{options[:grid]}' \\"
+    f.puts "  --grid \"#{options[:grid]}\" \\"
     f.puts "  --n_injections #{options[:n_injections]} \\"
     f.puts "  --bin_index_start #{bin_indices.first} \\"
     f.puts "  --bin_index_end #{bin_indices.last} \\"

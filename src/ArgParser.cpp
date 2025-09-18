@@ -53,19 +53,16 @@ Args parseArgs(int argc, char** argv) {
         } else if (arg == "--n_injections" && i + 1 < argc) {
             args.n_injections = std::stoi(argv[++i]);
         } else if (arg == "--grid" && i + 1 < argc) {
-            // Convert comma separate list to vector
+            // Convert comma separated list to vector
             std::string gridStr = argv[++i];
             size_t start = 0;
             size_t end = gridStr.find(',');
             while (end != std::string::npos) {
-                // Get element and add to vector
                 std::string gridVar = gridStr.substr(start, end - start);
-                // Ensure element is one of the allowed variables
                 if (gridVar != "X" && gridVar != "Q" && gridVar != "Z" && gridVar != "PhPerp") {
                     LOG_ERROR("Invalid grid variable: " + gridVar);
                     exit(1);
                 }
-                // Ensure element is not already in the list
                 for (const auto& existingVar : args.grid) {
                     if (existingVar == gridVar) {
                         LOG_ERROR("Duplicate grid variable: " + gridVar);
@@ -73,8 +70,25 @@ Args parseArgs(int argc, char** argv) {
                     }
                 }
                 args.grid.push_back(gridVar);
+
                 start = end + 1;
                 end = gridStr.find(',', start);
+            }
+
+            // Handle the last element
+            std::string gridVar = gridStr.substr(start);
+            if (!gridVar.empty()) {
+                if (gridVar != "X" && gridVar != "Q" && gridVar != "Z" && gridVar != "PhPerp") {
+                    LOG_ERROR("Invalid grid variable: " + gridVar);
+                    exit(1);
+                }
+                for (const auto& existingVar : args.grid) {
+                    if (existingVar == gridVar) {
+                        LOG_ERROR("Duplicate grid variable: " + gridVar);
+                        exit(1);
+                    }
+                }
+                args.grid.push_back(gridVar);
             }
         } else if (arg == "--bin_index" && i + 1 < argc) {
             args.bin_index = std::stoi(argv[++i]);
