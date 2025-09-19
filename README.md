@@ -191,7 +191,7 @@ N_{\mathrm{MC}}=\frac{(\sum w_i)^2}{\sum w_i^2}
 $$
 
 $$
-w_i = Q2\mathrm{weight}_i\mathrm{\,\,\,}
+w_i = Q2\mathrm{weight}_i
 $$
 
 ... and ...
