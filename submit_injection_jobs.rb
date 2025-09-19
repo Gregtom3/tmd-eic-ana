@@ -146,7 +146,7 @@ end
 # Loop over bin indices in chunks of bins_per_job and create jobs
 (0...options[:bins]).each_slice(options[:bins_per_job]) do |bin_indices|
   job_name   = "inject_bins#{bin_indices.first}_to_#{bin_indices.last}_#{options[:energy]}"
-  yaml_out   = "job_#{job_name}.yaml"
+  yaml_out   = "job_#{job_name}"
   slurm_file = File.join(slurm_subdir, "slurm_#{job_name}.sh")
 
   File.open(slurm_file, "w") do |f|
