@@ -7,6 +7,23 @@ The general idea is to connect ROOT TTree's containing Monte Carlo simulated SID
 
 Several ingredients beyond the kinematics outputted by the Monte Carlo simulation are required to project future uncertainties. First, a list of tables in $X,Q,Z,PhPerp$ are provided in `tables/` with their sqrt(s) specifying the $5\times41$, $10\times100$ and $18\times275$ configuration. A default $0\times0$ table is provided for testing.
 
+From the provided tables, here are the $(X,Q)$ binning for the 3 different energy configurations. 
+
+<img src="docs/5x41_X.Q.png" alt="5x41 table" width="400">
+
+*Binning for the 5x41 energy configuration.*
+
+<img src="docs/10x100_X.Q.png" alt="10x100 table" width="400">
+
+*Binning for the 10x100 energy configuration.*
+
+<img src="docs/18x275_X.Q.png" alt="18x275 table" width="400">
+
+*Binning for the 18x275 energy configuration.*
+
+> ⚠️ **NOTE:** The *5x41* binning scheme seems to cover very little of the EIC phase space. We are still determining if this is a bug.
+
+
 Additionally, the expected experimental integrated luminosity for each of the energy configurations is defined in `include/Constants.h`. The Monte Carlo simulation's TFile's provide a total number of generated events and total cross section, which is pulled by `include/Utility.h` to determine an effective Monte Carlo simulated integrated luminosity. A scale factor is defined to weigh the Monte Carlo events to the yields expected at the EIC. This, combined with the $Q^2$ dependent weight attributed to each event, folds into plotting codes and injection codes.
 
 
