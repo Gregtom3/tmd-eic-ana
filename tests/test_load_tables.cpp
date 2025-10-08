@@ -9,7 +9,7 @@ void testLoadTables() {
         std::string config = energyConfigs.at(i);
         std::string tablePath = tables.at(i);
         LOG_INFO(std::string("Testing energy configuration: ") + config);
-        Table table(tablePath,config);
+        Table table(tablePath);
         const auto& rows = table.getRows();
 
         if (rows.empty()) {
