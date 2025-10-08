@@ -159,6 +159,8 @@ end
     f.puts "#SBATCH --error=#{slurm_subdir}/slurm_%j.err"
     f.puts "#SBATCH --account=eic"
     f.puts "#SBATCH --partition=production"
+    f.puts "#SBATCH --cpus-per-task=2"
+    f.puts "#SBATCH --mem-per-cpu=4000"
     f.puts "#SBATCH --time=24:00:00"
     f.puts "srun ./bin/inject \\"
     f.puts "  --file #{options[:root_file]} \\"
