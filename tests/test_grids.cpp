@@ -6,7 +6,7 @@
 int main() {
     std::string tablePath = "tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=28.636.txt";
     std::string energyConfig = "5x41";
-    Table table(tablePath,energyConfig);
+    Table table(tablePath);
     std::vector<std::string> binNames1 = {"X", "Q"};
     std::vector<std::string> binNames2 = {"Z", "PhPerp"};
     try {
