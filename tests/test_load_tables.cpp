@@ -4,7 +4,7 @@
 
 void testLoadTables() {
     const std::vector<std::string> energyConfigs = {"5x41", "10x100", "18x275"};
-    const std::vector<std::string> tables = {"tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=28.636.txt","tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt","tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=140.712.txt"}
+    const std::vector<std::string> tables = {"tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=28.636.txt","tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt","tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=140.712.txt"};
     for (int i = 0; i < 3; i++) {
         std::string config = energyConfigs.at(i);
         std::string tablePath = tables.at(i);
