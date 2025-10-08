@@ -9,7 +9,6 @@ require 'set'
 # Default options (only provide a default for tree)
 options = {
   tree: "tree",
-  x_only: false # New from Filippo
 }
 
 parser = OptionParser.new do |opts|
