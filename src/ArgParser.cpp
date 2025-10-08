@@ -14,6 +14,7 @@ Args parseArgs(int argc, char** argv) {
             LOG_INFO("  --file <ROOT file>         Input ROOT file");
             LOG_INFO("  --tree <TTree name>        Name of TTree inside the file");
             LOG_INFO("  --energy <energy config>   Energy configuration identifier");
+            LOG_INFO("  --table <table path>       Path to the table .csv");
             LOG_INFO("  --overwrite, -f            Overwrite outputs");
             LOG_INFO("  --outDir <dir>             Output directory (default out)");
             LOG_INFO("  --maxEntries <N>           Max entries to process");
@@ -40,6 +41,8 @@ Args parseArgs(int argc, char** argv) {
             args.treename = argv[++i];
         } else if (arg == "--energy" && i + 1 < argc) {
             args.energyConfig = argv[++i];
+        } else if (arg == "--table" && i + 1 < argc) {
+            args.table = argv[++i];
         } else if (arg == "--overwrite" || arg == "-f") {
             args.overwrite = true;
         } else if (arg == "--outDir" && i + 1 < argc) {

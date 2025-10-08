@@ -9,6 +9,7 @@ struct Args {
     std::string filename;
     std::string treename;
     std::string energyConfig;
+    std::string table;
     bool overwrite = false;
     std::string outDir = "out";
     std::string outFilename = "";

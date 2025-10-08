@@ -26,7 +26,8 @@ int main(int argc, char** argv) {
 
     LOG_INFO("TMD loaded generated file successfully");
 
-    tmd.loadTable("0x0");
+
+    tmd.loadTable(args.table,args.energyConfig);
     tmd.buildGrid({"X", "Q"});
     LOG_INFO("Grid built successfully");
 

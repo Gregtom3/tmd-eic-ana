@@ -23,7 +23,10 @@ int main(int argc, char** argv) {
     LOG_INFO("[main.cpp] Set target polarization to " + std::to_string(args.targetPolarization));
     tmd.setOutDir(args.outDir);
     tmd.setOutFilename(args.outFilename);
-    tmd.loadTable(args.energyConfig);
+    if(args.table.empty()){
+        LOG_FATAL("Table not specified. Use --table </path/to/table.csv>");
+    }
+    tmd.loadTable(args.table,args.energyConfig);
 
     if(args.grid.empty()) {
         LOG_FATAL("Grid variables not specified. Use --grid <var1,var2,...>");

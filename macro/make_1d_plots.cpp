@@ -20,7 +20,11 @@ int main(int argc, char** argv) {
     if (args.maxEntries > 0)
         LOG_INFO("[make_1d_plots] Set max entries to: " + std::to_string(args.maxEntries));
 
-    tmd.loadTable(args.energyConfig);
+    if(args.table.empty()){
+        LOG_FATAL("Table not specified. Use --table </path/to/table.csv>");
+    }
+    tmd.loadTable(args.table,args.energyConfig);
+
     tmd.buildGrid({"X","Q","Z","PhPerp"});
 
     tmd.fillHistograms("X", args.outDir, args.overwrite);

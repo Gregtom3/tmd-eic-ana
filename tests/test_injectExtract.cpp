@@ -22,7 +22,10 @@ int main(int argc, char** argv) {
     tmd.setTargetPolarization(args.targetPolarization);
     tmd.setOutDir(args.outDir);
     tmd.setOutFilename(args.outFilename);
-    tmd.loadTable(args.energyConfig);
+    if(args.table.empty()){
+        LOG_FATAL("Table not specified. Use --table </path/to/table.csv>");
+    }
+    tmd.loadTable(args.table,args.energyConfig);
     tmd.buildGrid({"X"});
     std::cout << "Grid summary:" << std::endl;
     tmd.getGrid()->printGridSummary();

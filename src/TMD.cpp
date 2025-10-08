@@ -85,13 +85,13 @@ void TMD::loadTable(){
     }
 }
 
-void TMD::loadTable(const std::string& energyConfig) {
+void TMD::loadTable(const std::string& tablePath, const std::string& energyConfig) {
     if(energyConfig=="default"){
         loadTable();
         return;
     }
     this->energyConfig = energyConfig; // store for cache naming
-    table = std::make_unique<Table>(energyConfig);
+    table = std::make_unique<Table>(tablePath);
     // compute scale if we have the necessary mc info
     if (totalEvents > 0 && xsTotal > 0.0) {
         scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi);

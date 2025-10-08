@@ -99,7 +99,7 @@ This will create a ROOT TFile at `out/output.root` from which the remaining bina
 ### Injecting Data
 Use the `inject` binary to inject pseudodata into the analysis:
 ```bash
-./bin/inject --file out/output.root --tree tree --energy 10x100 --grid "X,Q"
+./bin/inject --file out/output.root --tree tree --energy 10x100 --grid "X,Q" --table "tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt"
 ```
 Some useful options include...
 
@@ -111,13 +111,13 @@ Some useful options include...
 ### Creating 1D Plots
 Run the `make_1d_plots` binary to generate 1D plots:
 ```bash
-./bin/make_1d_plots --file out/output.root --tree tree --energy 10x100 --maxEntries 10000
+./bin/make_1d_plots --file out/output.root --tree tree --energy 10x100 --maxEntries 10000 --table "tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt"
 ```
 
 ### Creating 2D X-Q Plots
 Run the `make_2d_X_Q_plots` binary to generate 2D X-Q plots:
 ```bash
-./bin/make_2d_X_Q_plots --file out/output.root --tree tree --energy 10x100 --maxEntries 10000
+./bin/make_2d_X_Q_plots --file out/output.root --tree tree --energy 10x100 --maxEntries 10000 --table "tables/xQZPhPerp_v0/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt"
 ```
 
 ### Batch submission with `submit_injection_jobs.rb`

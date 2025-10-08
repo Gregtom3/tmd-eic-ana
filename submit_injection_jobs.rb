@@ -8,12 +8,14 @@ require 'set'
 
 # Default options (only provide a default for tree)
 options = {
-  tree: "tree"
+  tree: "tree",
+  x_only: false # New from Filippo
 }
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: submit_injection_jobs.rb [options]"
   opts.on("--energy STRING", "Energy config (required) e.g. 10x100") { |v| options[:energy] = v }
+  opts.on("--tableDir STRING", "Path to tables (required) e.g. tables/xQZPhPerp_v0") { |v| options[:tableDir] = v }
   opts.on("--n_injections INTEGER", Integer, "Number of injections (required)") { |v| options[:n_injections] = v }
   opts.on("--bins INTEGER", Integer, "Number of bins to run (required). If N <= 0, run ALL bins") { |v| options[:bins] = v }
   opts.on("--bins_per_job INTEGER", Integer, "Number of bins per job (required)") { |v| options[:bins_per_job] = v }
@@ -33,7 +35,7 @@ rescue OptionParser::InvalidOption, OptionParser::MissingArgument => e
 end
 
 # Validate required options
-required = [:energy, :n_injections, :bins, :bins_per_job, :grid]
+required = [:energy, :n_injections, :bins, :bins_per_job, :grid, :tableDir]
 missing = required.select { |k| options[k].nil? }
 if missing.any?
   puts "Error: Missing required options: #{missing.map(&:to_s).join(', ')}\n\n"
@@ -79,10 +81,11 @@ end
 
 
 # Map energy configurations to table files
+base_dir = options[:tableDir]
 table_files = {
-  "5x41" => "tables/AUT_average_PV20_EPIC_piplus_sqrts=28.636.txt",
-  "10x100" => "tables/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt",
-  "18x275" => "tables/AUT_average_PV20_EPIC_piplus_sqrts=140.712.txt"
+  "5x41"   => "#{base_dir}/AUT_average_PV20_EPIC_piplus_sqrts=28.636.txt",
+  "10x100" => "#{base_dir}/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt",
+  "18x275" => "#{base_dir}/AUT_average_PV20_EPIC_piplus_sqrts=140.712.txt"
 }
 
 # Get the table file based on the energy option
@@ -161,6 +164,7 @@ end
     f.puts "  --file #{options[:root_file]} \\"
     f.puts "  --tree #{options[:tree]} \\"
     f.puts "  --energy #{options[:energy]} \\"
+    f.puts "  --table #{table_file} \\"
     f.puts "  --grid \"#{options[:grid]}\" \\"
     f.puts "  --n_injections #{options[:n_injections]} \\"
     f.puts "  --bin_index_start #{bin_indices.first} \\"

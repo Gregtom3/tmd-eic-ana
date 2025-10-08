@@ -6,27 +6,14 @@
 #include <sstream>
 #include <stdexcept>
 #include <limits>
+#include <filesystem>
 
 Table::Table() {
     createDefaultTable();
 }
 
-Table::Table(const std::string& energyConfig) {
-    std::string filename = getFilename(energyConfig);
-    readTable(filename);
-}
-
-std::string Table::getFilename(const std::string& energyConfig) const {
-    if (energyConfig == "0x0")
-        return "tables/AUT_0x0_XQZPhPerp.txt"; // Debug, to remove eventually
-    if (energyConfig == "5x41")
-        return "tables/AUT_average_PV20_EPIC_piplus_sqrts=28.636.txt";
-    if (energyConfig == "10x100")
-        return "tables/AUT_average_PV20_EPIC_piplus_sqrts=63.246.txt";
-    if (energyConfig == "18x275")
-        return "tables/AUT_average_PV20_EPIC_piplus_sqrts=140.712.txt";
-    LOG_ERROR(std::string("Unknown energy configuration: ") + energyConfig);
-    return "";
+Table::Table(const std::string& tablePath) {
+    readTable(tablePath);
 }
 
 void Table::createDefaultTable() {

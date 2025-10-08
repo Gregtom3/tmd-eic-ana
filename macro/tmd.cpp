@@ -21,7 +21,11 @@ int main(int argc, char** argv) {
         LOG_INFO("[main.cpp] Set max entries to: " + std::to_string(args.maxEntries));
     tmd.setTargetPolarization(0.7);
     LOG_INFO("[main.cpp] Set target polarization to 0.7");
-    tmd.loadTable(args.energyConfig);
+    if(args.table.empty()){
+        LOG_FATAL("Table not specified. Use --table </path/to/table.csv>");
+    }
+    tmd.loadTable(args.table,args.energyConfig);
+
     LOG_INFO("[main.cpp] Successfully loaded table for energy config: " + args.energyConfig);
 
     tmd.buildGrid({"X", "Q"});

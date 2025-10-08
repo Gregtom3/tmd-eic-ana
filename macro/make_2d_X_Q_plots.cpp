@@ -21,7 +21,11 @@ int main(int argc, char** argv) {
         LOG_INFO("[make_2d_X_Q_plots] Set max entries to: " + std::to_string(args.maxEntries));
     tmd.setTargetPolarization(args.targetPolarization);
     LOG_INFO("[make_2d_X_Q_plots] Set target polarization to " + std::to_string(args.targetPolarization));
-    tmd.loadTable(args.energyConfig);
+    if(args.table.empty()){
+        LOG_FATAL("Table not specified. Use --table </path/to/table.csv>");
+    }
+    tmd.loadTable(args.table,args.energyConfig);
+
     LOG_INFO("[make_2d_X_Q_plots] Successfully loaded table for energy config: " + args.energyConfig);
 
     tmd.buildGrid( {"X", "Q"} );
