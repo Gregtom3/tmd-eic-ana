@@ -96,11 +96,29 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
     }
     
-    RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()));
-    std::cout << "[Inject::injectExtractForBin] Selected " << data.numEntries() << " events for injection." << std::endl;
+    // Set up branch variables
+    double b_PhiH=0, b_PhiS=0, b_X=0, b_Q2=0, b_Z=0, b_PhPerp=0;
+    double b_TruePhiH=0, b_TruePhiS=0, b_TrueX=0, b_TrueQ2=0, b_TrueY=0, b_TrueZ=0, b_TruePhPerp=0;
+    double b_Weight=0, b_Y=0;
+
+    tree->SetBranchAddress("PhiH", &b_PhiH);
+    tree->SetBranchAddress("PhiS", &b_PhiS);
+    tree->SetBranchAddress("X", &b_X);
+    tree->SetBranchAddress("Q2", &b_Q2);
+    tree->SetBranchAddress("Z", &b_Z);
+    tree->SetBranchAddress("PhPerp", &b_PhPerp);
+    tree->SetBranchAddress("TruePhiH", &b_TruePhiH);
+    tree->SetBranchAddress("TruePhiS", &b_TruePhiS);
+    tree->SetBranchAddress("TrueX", &b_TrueX);
+    tree->SetBranchAddress("TrueQ2", &b_TrueQ2);
+    tree->SetBranchAddress("TrueY", &b_TrueY);
+    tree->SetBranchAddress("TrueZ", &b_TrueZ);
+    tree->SetBranchAddress("TruePhPerp", &b_TruePhPerp);
+    tree->SetBranchAddress("Weight", &b_Weight);
+    tree->SetBranchAddress("Y", &b_Y);
+
     obs.add(S_T);
     obs.add(TrueS_T);
-    // obs.add(TotalWeight);
     RooDataSet dataUpdate("dataUpdate", "data with updated spin", obs, WeightVar(TotalWeight));
     TRandom3 rng(0);
     double expected_events = 0.0;
@@ -108,23 +126,58 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     double sumW2 = 0.0;
     double sumTrueAsymW = 0.0;
     double sumRecoAsymW = 0.0;
-    
-    for (Long64_t i = 0; i < data.numEntries(); ++i) {
-        const RooArgSet* row = data.get(i);
-        TruePhiH.setVal(row->getRealValue("TruePhiH"));
-        TruePhiS.setVal(row->getRealValue("TruePhiS"));
-        TrueY.setVal(row->getRealValue("TrueY"));
-        TrueX.setVal(row->getRealValue("TrueX"));
-        X.setVal(row->getRealValue("X"));
-        Z.setVal(row->getRealValue("Z"));
-        PhPerp.setVal(row->getRealValue("PhPerp"));
-        PhiH.setVal(row->getRealValue("PhiH"));
-        PhiS.setVal(row->getRealValue("PhiS"));
-        Weight.setVal(row->getRealValue("Weight"));
+
+    // Precompute selection bounds for speed
+    const double minX = bin.getMin("X");
+    const double maxX = bin.getMax("X");
+    const double minQ2 = bin.getMin("Q") * bin.getMin("Q");
+    const double maxQ2 = bin.getMax("Q") * bin.getMax("Q");
+    const double minZ = bin.getMin("Z");
+    const double maxZ = bin.getMax("Z");
+    const double minPhPerp = bin.getMin("PhPerp");
+    const double maxPhPerp = bin.getMax("PhPerp");
+
+    Long64_t nentries = tree->GetEntries();
+    Long64_t selected_count = 0;
+    for (Long64_t i = 0; i < nentries; ++i) {
+        tree->GetEntry(i);
+        // Apply selection cuts using either true or reconstructed variables
+        if (extract_with_true) {
+            if (!(b_TrueX >= minX && b_TrueX <= maxX && b_TrueQ2 >= minQ2 && b_TrueQ2 <= maxQ2 && b_TrueZ >= minZ && b_TrueZ <= maxZ && b_TruePhPerp >= minPhPerp && b_TruePhPerp <= maxPhPerp)) continue;
+        } else {
+            if (!(b_X >= minX && b_X <= maxX && b_Q2 >= minQ2 && b_Q2 <= maxQ2 && b_Z >= minZ && b_Z <= maxZ && b_PhPerp >= minPhPerp && b_PhPerp <= maxPhPerp)) continue;
+        }
+        ++selected_count;
+
+        // Populate RooRealVars from branch values
+        TruePhiH.setVal(b_TruePhiH);
+        TruePhiS.setVal(b_TruePhiS);
+        TrueY.setVal(b_TrueY);
+        TrueX.setVal(b_TrueX);
+        X.setVal(b_X);
+        Z.setVal(b_Z);
+        PhPerp.setVal(b_PhPerp);
+        PhiH.setVal(b_PhiH);
+        PhiS.setVal(b_PhiS);
+        Y.setVal(b_Y);
+        Weight.setVal(b_Weight);
         TotalWeight.setVal(Weight.getVal() * m_scale);
+
+        // Compute gammas from X and Q2 (protect against non-positive Q2)
+        if (b_Q2 > 0) {
+            Gamma.setVal(2.0 * X.getVal() * 0.938272 / std::sqrt(b_Q2));
+        } else {
+            Gamma.setVal(0.0);
+        }
+        if (b_TrueQ2 > 0) {
+            TrueGamma.setVal(2.0 * TrueX.getVal() * 0.938272 / std::sqrt(b_TrueQ2));
+        } else {
+            TrueGamma.setVal(0.0);
+        }
+
         double true_depol1 = TrueDepol1.getVal();
-        double q_val     = std::sqrt(row->getRealValue("Q2"));
-        double trueq_val = std::sqrt(row->getRealValue("TrueQ2"));
+        double q_val     = std::sqrt(std::max(0.0, b_Q2));
+        double trueq_val = std::sqrt(std::max(0.0, b_TrueQ2));
         double gamma_val = Gamma.getVal();
         double y_val = Y.getVal();
         double inner = (1.0 - y_val - 0.25 * y_val * y_val * gamma_val * gamma_val) / (1.0 + gamma_val * gamma_val);
@@ -177,6 +230,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         sumTrueAsymW += Weight.getVal()*trueAsymmetry;
         sumRecoAsymW += Weight.getVal()*recoAsymmetry;
     }
+    std::cout << "[Inject::injectExtractForBin] Selected " << selected_count << " events for injection (after tree loop)." << std::endl;
 
     // Get effective MC events
     double n_eff_mc = (sumW*sumW)/sumW2;
