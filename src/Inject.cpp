@@ -76,14 +76,26 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     obs.add(Spin_idx);
     obs.add(Weight);
 
-    std::string cut =
+    std::string cut = "";
+    if(extract_with_true){
+        cut =
+            "TrueX >= " + std::to_string(bin.getMin("X")) + " && TrueX <= " + std::to_string(bin.getMax("X")) +
+            " && TrueQ2 >= " + std::to_string(bin.getMin("Q")*bin.getMin("Q")) +
+            " && TrueQ2 <= " + std::to_string(bin.getMax("Q")*bin.getMax("Q")) +
+            " && TrueZ >= " + std::to_string(bin.getMin("Z")) + " && TrueZ <= " + std::to_string(bin.getMax("Z")) +
+            " && TruePhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
+            " && TruePhPerp <= " + std::to_string(bin.getMax("PhPerp"));
+    }
+    else{
+        cut =
         "X >= " + std::to_string(bin.getMin("X")) + " && X <= " + std::to_string(bin.getMax("X")) +
         " && Q2 >= " + std::to_string(bin.getMin("Q")*bin.getMin("Q")) +
         " && Q2 <= " + std::to_string(bin.getMax("Q")*bin.getMax("Q")) +
         " && Z >= " + std::to_string(bin.getMin("Z")) + " && Z <= " + std::to_string(bin.getMax("Z")) +
         " && PhPerp >= " + std::to_string(bin.getMin("PhPerp")) +
         " && PhPerp <= " + std::to_string(bin.getMax("PhPerp"));
-
+    }
+    
     RooDataSet data("data", "injected data", obs, Import(*tree), Cut(cut.c_str()));
     std::cout << "[Inject::injectExtractForBin] Selected " << data.numEntries() << " events for injection." << std::endl;
     obs.add(S_T);
@@ -94,7 +106,9 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     double expected_events = 0.0;
     double sumW = 0.0;
     double sumW2 = 0.0;
-
+    double sumTrueAsymW = 0.0;
+    double sumRecoAsymW = 0.0;
+    
     for (Long64_t i = 0; i < data.numEntries(); ++i) {
         const RooArgSet* row = data.get(i);
         TruePhiH.setVal(row->getRealValue("TruePhiH"));
@@ -109,6 +123,7 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         Weight.setVal(row->getRealValue("Weight"));
         TotalWeight.setVal(Weight.getVal() * m_scale);
         double true_depol1 = TrueDepol1.getVal();
+        double q_val     = std::sqrt(row->getRealValue("Q2"));
         double trueq_val = std::sqrt(row->getRealValue("TrueQ2"));
         double gamma_val = Gamma.getVal();
         double y_val = Y.getVal();
@@ -137,14 +152,18 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         TrueS_T.setVal(TrueST_val);
         if(TrueST_val<0) LOG_DEBUG("Warning: TrueS_T < 0: " + std::to_string(TrueST_val) + " (cosTheta_true=" + std::to_string(cosTheta_true) + ", denom_TrueST=" + std::to_string(denom_TrueST) + ", sinTheta_true=" + std::to_string(sinTheta_true) + ", truePhiS_val=" + std::to_string(truePhiS_val) + ")");
         // Determine asymmetry to inject
-        double asymmetry = 0.0;
+        double trueAsymmetry = 0.0; // asymmetry corresponding to the actual physics process
+        double recoAsymmetry = 0.0; // asymmetry expected if we believed the reconstructed event to be true
+                                    // with more smearing, these two values are expected to differ
         if(A_opt.has_value()) {
-            asymmetry = A_opt.value();
+            trueAsymmetry = A_opt.value();
+            recoAsymmetry = A_opt.value();
         }
         else{
-            asymmetry = table->lookupAUT(TrueX.getVal(), trueq_val, TrueZ.getVal(), TruePhPerp.getVal());
+            trueAsymmetry = table->lookupAUT(TrueX.getVal(), trueq_val, TrueZ.getVal(), TruePhPerp.getVal());
+            recoAsymmetry = table->lookupAUT(X.getVal(), q_val, Z.getVal(), PhPerp.getVal());
         }
-        double pPlus = 0.5 * (1 + TrueST_val * true_depol1 * asymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
+        double pPlus = 0.5 * (1 + TrueST_val * true_depol1 * trueAsymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
         if(rng.Rndm() > targetPolarization){
             // Set Spin_idx to -1 or 1 with 50/50 chance
@@ -155,6 +174,8 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         expected_events+=TotalWeight.getVal();
         sumW += Weight.getVal();
         sumW2 += Weight.getVal()*Weight.getVal();
+        sumTrueAsymW += Weight.getVal()*trueAsymmetry;
+        sumRecoAsymW += Weight.getVal()*recoAsymmetry;
     }
 
     // Get effective MC events
@@ -180,5 +201,19 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
         error = A_fit.getError() * std::sqrt(n_eff_mc/expected_events);
         delete fitResult;
     }
+    // Get effective true injected asymmetry
+    double eff_inj_tasym = sumTrueAsymW/sumW;
+    // Get effective reco asymmetry
+    double eff_inj_rasym = sumRecoAsymW/sumW;
+
+    std::cout << "======================== Asymmetry Results ========================\n" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << " bool extract_with_true = " << extract_with_true << std::endl;
+    std::cout << " ------------------------------------------------------------------" << std::endl;
+    std::cout << " Asymmetry Extracted = " << val << " +/- " << A_fit.getError() << std::endl;
+    std::cout << " Asymmetry Extracted (w/ scaled EIC errors) = " << val << " +/- " << error << std::endl;
+    std::cout << " Effective Truth Injected Asymmetry = " << eff_inj_tasym << std::endl;
+    std::cout << " Effective Reco Injected Asymmetry = " << eff_inj_rasym << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
     return std::make_pair(val, error);
 }
