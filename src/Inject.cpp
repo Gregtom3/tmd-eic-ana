@@ -139,8 +139,18 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
 
     Long64_t nentries = tree->GetEntries();
     Long64_t selected_count = 0;
+    // Prepare progress bar printing
+    const Long64_t progress_steps = std::min<Long64_t>(100, std::max<Long64_t>(1, nentries/100));
+    Long64_t next_progress = progress_steps;
     for (Long64_t i = 0; i < nentries; ++i) {
         tree->GetEntry(i);
+        // Update progress bar occasionally
+        if (i >= next_progress || i == 0 || i == nentries-1) {
+            int percent = static_cast<int>(100.0 * (i+1) / std::max<Long64_t>(1, nentries));
+            std::cout << "\r[" << percent << "%] Processing entry " << (i+1) << " / " << nentries << std::flush;
+            next_progress = i + progress_steps;
+            if (i == nentries-1) std::cout << std::endl;
+        }
         // Apply selection cuts using either true or reconstructed variables
         if (extract_with_true) {
             if (!(b_TrueX >= minX && b_TrueX <= maxX && b_TrueQ2 >= minQ2 && b_TrueQ2 <= maxQ2 && b_TrueZ >= minZ && b_TrueZ <= maxZ && b_TruePhPerp >= minPhPerp && b_TruePhPerp <= maxPhPerp)) continue;
