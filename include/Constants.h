@@ -22,4 +22,9 @@ inline const std::map<std::string, double> IntegratedLuminosities = {
 	{"18x275", 10.0}, // in fb^-1
 };
 
+enum class channel_type {
+    Hadron,
+    Dihadron
+};
+
 #endif // TMD_CONSTANTS_H

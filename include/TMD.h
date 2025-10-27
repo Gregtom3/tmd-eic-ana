@@ -1,6 +1,7 @@
 #ifndef TMD_H
 #define TMD_H
 
+#include "Constants.h"
 #include "Grid.h"
 #include "Hist.h"
 #include "Inject.h"
@@ -19,7 +20,7 @@
 
 class TMD {
 public:
-    TMD(const std::string& filename, const std::string& treename);
+    TMD(const std::string& filename, const std::string& treename, channel_type channel = channel_type::Hadron);
     void setTargetPolarization(double pol) { targetPolarization = pol; }
     double getTargetPolarization() const { return targetPolarization; }
     void setOutDir(const std::string& dir) { outDir = dir; }
@@ -53,6 +54,7 @@ public:
     std::unique_ptr<Hist> hist;
     std::unique_ptr<Plotter> plotter;
     InjectionProject* proj = nullptr;
+    channel_type channel;
 
     // MC and scaling information
     double xsTotal{0.0};     // total cross-section read from file

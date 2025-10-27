@@ -10,13 +10,14 @@
 #include <map>
 #include "Utility.h"
 
-TMD::TMD(const std::string& filename, const std::string& treename)
+TMD::TMD(const std::string& filename, const std::string& treename, channel_type channel)
     : file(nullptr)
     , tree(nullptr)
     , filename(filename)
     , treename(treename)
     , table(nullptr)
-    , grid(nullptr) {
+    , grid(nullptr)
+    , channel(channel) {
     file = TFile::Open(filename.c_str());
     if (!file || file->IsZombie()) {
         LOG_ERROR(std::string("Could not open file ") + filename);
@@ -127,7 +128,7 @@ void TMD::queueInjection(const InjectionProject::Job& job) {
         return;
     }
     if(proj == nullptr) {
-        proj = new InjectionProject(filename, tree, table.get(), scale, grid.get(), targetPolarization, outDir, outFilename);
+        proj = new InjectionProject(filename, tree, table.get(), scale, grid.get(), targetPolarization, outDir, outFilename, channel);
     }
     proj->addJob(job);
 }

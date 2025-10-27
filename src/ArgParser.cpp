@@ -27,6 +27,7 @@ Args parseArgs(int argc, char** argv) {
             LOG_INFO("  --bin_index_end <N>    End bin index (inclusive)");
             LOG_INFO("  --extract_with_true <t/f>  Extract with true");
             LOG_INFO("  --A_opt <value>            Optional A value");
+            LOG_INFO("  --channel <type>           Channel type (Hadron or Dihadron)");
             exit(0);
         }
     }
@@ -104,6 +105,16 @@ Args parseArgs(int argc, char** argv) {
             args.extract_with_true = (val == "1" || val == "true" || val == "True" || val == "TRUE" || val == "t" || val == "T" || val == "yes" || val == "Yes" || val == "YES");
         } else if (arg == "--A_opt" && i + 1 < argc) {
             args.A_opt = std::stod(argv[++i]);
+        } else if (arg == "--channel" && i + 1 < argc) {
+            std::string channelStr = argv[++i];
+            if (channelStr == "Hadron") {
+                args.channel = channel_type::Hadron;
+            } else if (channelStr == "Dihadron") {
+                args.channel = channel_type::Dihadron;
+            } else {
+                LOG_ERROR("Invalid channel type: " + channelStr);
+                exit(1);
+            }
         } else if (!arg.empty() && arg[0] != '-') {
             // treat as positional argument if not a flag
             if (args.filename.empty()) {

@@ -1,10 +1,12 @@
 #ifndef ARG_PARSER_H
 #define ARG_PARSER_H
 
+#include "Constants.h"
 #include <string>
 #include <cstdint>
 #include <optional>
 #include <vector>
+
 struct Args {
     std::string filename;
     std::string treename;
@@ -22,6 +24,7 @@ struct Args {
     int bin_index_end = -1;
     bool extract_with_true = false;
     std::optional<double> A_opt;
+    channel_type channel = channel_type::Hadron; // Default to Hadron
 };
 
 Args parseArgs(int argc, char** argv);

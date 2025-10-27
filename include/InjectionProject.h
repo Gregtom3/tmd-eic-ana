@@ -8,6 +8,7 @@
 #include "Table.h"
 #include "Inject.h"
 #include "Logger.h"
+#include "Constants.h"
 #include <optional>
 #include <string>
 #include <vector>
@@ -23,9 +24,10 @@ public:
         int n = 1;
         bool extract_with_true = false;
         std::optional<double> A_opt;
+        channel_type channel = channel_type::Hadron;
     };
 
-    InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename);
+    InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename, channel_type channel);
     void addJob(const Job& job);
     bool run();
 
@@ -41,6 +43,7 @@ private:
     std::string outDir;
     std::string outFilename;
     std::vector<Job> jobs;
+    channel_type channel;
 };
 
 #endif // INJECTION_PROJECT_H

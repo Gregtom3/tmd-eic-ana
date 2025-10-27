@@ -2,9 +2,11 @@
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 #include <iostream>
+#include "Inject.h"
 
-InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename)
-    : filename(filename), tree(tree), table(table), scale(scale), grid(grid), targetPolarization(targetPolarization), outDir(outDir), outFilename(outFilename) {
+
+InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename, channel_type channel)
+    : filename(filename), tree(tree), table(table), scale(scale), grid(grid), targetPolarization(targetPolarization), outDir(outDir), outFilename(outFilename), channel(channel) {
         // Create outprefix
         std::string rootStem = std::filesystem::path(filename).stem().string();
         if (!outFilename.empty()) {
@@ -37,11 +39,17 @@ bool InjectionProject::run() {
         auto it = bins.begin();
         std::advance(it, job.bin_index);
         const Bin& bin = it->second;
-        Inject injector(tree, table, scale, targetPolarization);
+        std::unique_ptr<Inject> injector;
+        if (channel == channel_type::Hadron) {
+            injector = std::make_unique<InjectHadron>(tree, table, scale, targetPolarization);
+        } else if (channel == channel_type::Dihadron) {
+            injector = std::make_unique<InjectDihadron>(tree, table, scale, targetPolarization);
+        }
+
         std::vector<double> extractedVals;
         std::vector<double> extractedErrs;
         for (int i = 0; i < job.n; ++i) {
-            auto res = injector.injectExtractForBin(bin, job.extract_with_true, job.A_opt);
+            auto res = injector->injectExtractForBin(bin, job.extract_with_true, job.A_opt);
             extractedVals.push_back(res.first);
             extractedErrs.push_back(res.second);
         }

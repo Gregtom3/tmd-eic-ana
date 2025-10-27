@@ -13,34 +13,39 @@
 
 using namespace RooFit;
 
-Inject::Inject(TTree* tree, const Table* table, double scale, double targetPolarization)
-    : tree(tree)
-    , table(table)
-    , m_scale(scale)
-    , targetPolarization(targetPolarization) {}
-Inject::~Inject() {}
+InjectDihadron::InjectDihadron(TTree* tree, const Table* table, double scale, double targetPolarization)
+    : Inject(tree, table, scale, targetPolarization) {}
+InjectDihadron::~InjectDihadron() {}
 
 
 
-std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt) {
+std::pair<double, double> InjectDihadron::injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt) {
     if (!tree) {
-        std::cerr << "[Inject::injectExtractForBin] Error: TTree pointer is null." << std::endl;
+        std::cerr << "[InjectDihadron::injectExtractForBin] Error: TTree pointer is null." << std::endl;
         return std::make_pair(0.0, 0.0);
     }
 
     RooRealVar Y("Y", "Y", 0.0, 1.0);
     RooRealVar PhiH("PhiH", "PhiH", -2*TMath::Pi(), 2*TMath::Pi());
+    RooRealVar PhiRperp("PhiRperp", "PhiRperp", -2*TMath::Pi(), 2*TMath::Pi());
     RooRealVar PhiS("PhiS", "PhiS", -2*TMath::Pi(), 2*TMath::Pi());
     RooRealVar X("X", "X", bin.getMin("X"), bin.getMax("X"));
-    RooFormulaVar Depol1("Depol1", "(1 - Y)/(1 - Y + 0.5 * Y * Y)", RooArgList(Y));
+    RooRealVar Depol1("Depol1", "Depol1", 0.0, 1.0);
+    RooRealVar Depol2("Depol2", "Depol2", 0.0, 1.0);
+    RooRealVar Depol3("Depol3", "Depol3", 0.0, 1.0);
+    RooRealVar Depol4("Depol4", "Depol4", 0.0, 1.0);
 
     RooRealVar Q2("Q2", "Q2", bin.getMin("Q")*bin.getMin("Q"), bin.getMax("Q")*bin.getMax("Q"));
     RooRealVar Z("Z", "Z", bin.getMin("Z"), bin.getMax("Z"));
     RooRealVar PhPerp("PhPerp", "PhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"));
 
     RooRealVar TrueY("TrueY", "TrueY", -999, 999);
-    RooFormulaVar TrueDepol1("TrueDepol1", "(1 - TrueY)/(1 - TrueY + 0.5 * TrueY * TrueY)", RooArgList(TrueY));
+    RooRealVar TrueDepol1("TrueDepol1", "TrueDepol1", 0.0, 1.0);
+    RooRealVar TrueDepol2("TrueDepol2", "TrueDepol2", 0.0, 1.0);
+    RooRealVar TrueDepol3("TrueDepol3", "TrueDepol3", 0.0, 1.0);
+    RooRealVar TrueDepol4("TrueDepol4", "TrueDepol4", 0.0, 1.0);
     RooRealVar TruePhiH("TruePhiH", "TruePhiH", -2*TMath::Pi(), 2*TMath::Pi());
+    RooRealVar TruePhiRperp("TruePhiRperp", "TruePhiRperp", -2*TMath::Pi(), 2*TMath::Pi());
     RooRealVar TruePhiS("TruePhiS", "TruePhiS", -2*TMath::Pi(), 2*TMath::Pi());
     RooRealVar TrueQ2("TrueQ2", "TrueQ2", -999, 99999999);
     RooRealVar TrueX("TrueX", "TrueX", -999, 999);
@@ -60,18 +65,28 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
 
     RooArgSet obs;
     obs.add(PhiH);
+    obs.add(PhiRperp);
     obs.add(PhiS);
     obs.add(X);
     obs.add(Q2);
     obs.add(Z);
     obs.add(Y);
+    obs.add(Depol1);
+    obs.add(Depol2);
+    obs.add(Depol3);
+    obs.add(Depol4);
     obs.add(PhPerp);
     obs.add(TruePhiH);
+    obs.add(TruePhiRperp);
     obs.add(TruePhiS);
     obs.add(TrueX);
     obs.add(TrueQ2);
     obs.add(TrueY);
     obs.add(TrueZ);
+    obs.add(TrueDepol1);
+    obs.add(TrueDepol2);
+    obs.add(TrueDepol3);
+    obs.add(TrueDepol4);
     obs.add(TruePhPerp);
     obs.add(Spin_idx);
     obs.add(Weight);
@@ -97,25 +112,36 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     }
     
     // Set up branch variables
-    double b_PhiH=0, b_PhiS=0, b_X=0, b_Q2=0, b_Z=0, b_PhPerp=0;
-    double b_TruePhiH=0, b_TruePhiS=0, b_TrueX=0, b_TrueQ2=0, b_TrueY=0, b_TrueZ=0, b_TruePhPerp=0;
+    double b_PhiH=0, b_PhiRperp=0, b_PhiS=0, b_X=0, b_Q2=0, b_Z=0, b_PhPerp=0, b_Depol1=0, b_Depol2=0, b_Depol3=0, b_Depol4=0;
+    double b_TruePhiH=0, b_TruePhiRperp=0, b_TruePhiS=0, b_TrueX=0, b_TrueQ2=0, b_TrueY=0, b_TrueZ=0, b_TruePhPerp=0, b_TrueDepol1=0, b_TrueDepol2=0, b_TrueDepol3=0, b_TrueDepol4=0;
     double b_Weight=0, b_Y=0;
 
     tree->SetBranchAddress("PhiH", &b_PhiH);
+    tree->SetBranchAddress("PhiRperp", &b_PhiRperp);
     tree->SetBranchAddress("PhiS", &b_PhiS);
     tree->SetBranchAddress("X", &b_X);
+    tree->SetBranchAddress("Y", &b_Y);
     tree->SetBranchAddress("Q2", &b_Q2);
     tree->SetBranchAddress("Z", &b_Z);
     tree->SetBranchAddress("PhPerp", &b_PhPerp);
+    tree->SetBranchAddress("Depol1", &b_Depol1);
+    tree->SetBranchAddress("Depol2", &b_Depol2);
+    tree->SetBranchAddress("Depol3", &b_Depol3);
+    tree->SetBranchAddress("Depol4", &b_Depol4);
     tree->SetBranchAddress("TruePhiH", &b_TruePhiH);
+    tree->SetBranchAddress("TruePhiRperp", &b_TruePhiRperp);
     tree->SetBranchAddress("TruePhiS", &b_TruePhiS);
     tree->SetBranchAddress("TrueX", &b_TrueX);
     tree->SetBranchAddress("TrueQ2", &b_TrueQ2);
     tree->SetBranchAddress("TrueY", &b_TrueY);
     tree->SetBranchAddress("TrueZ", &b_TrueZ);
     tree->SetBranchAddress("TruePhPerp", &b_TruePhPerp);
+    tree->SetBranchAddress("TrueDepol1", &b_TrueDepol1);
+    tree->SetBranchAddress("TrueDepol2", &b_TrueDepol2);
+    tree->SetBranchAddress("TrueDepol3", &b_TrueDepol3);
+    tree->SetBranchAddress("TrueDepol4", &b_TrueDepol4);
     tree->SetBranchAddress("Weight", &b_Weight);
-    tree->SetBranchAddress("Y", &b_Y);
+
 
     obs.add(S_T);
     obs.add(TrueS_T);
@@ -161,15 +187,26 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
 
         // Populate RooRealVars from branch values
         TruePhiH.setVal(b_TruePhiH);
+        TruePhiRperp.setVal(b_TruePhiRperp);
         TruePhiS.setVal(b_TruePhiS);
         TrueY.setVal(b_TrueY);
         TrueX.setVal(b_TrueX);
+        TrueDepol1.setVal(b_TrueDepol1);
+        TrueDepol2.setVal(b_TrueDepol2);
+        TrueDepol3.setVal(b_TrueDepol3);
+        TrueDepol4.setVal(b_TrueDepol4);
         X.setVal(b_X);
+        Y.setVal(b_Y);
         Z.setVal(b_Z);
+        Depol1.setVal(b_Depol1);
+        Depol2.setVal(b_Depol2);
+        Depol3.setVal(b_Depol3);
+        Depol4.setVal(b_Depol4);
         PhPerp.setVal(b_PhPerp);
         PhiH.setVal(b_PhiH);
+        PhiRperp.setVal(b_PhiRperp);
         PhiS.setVal(b_PhiS);
-        Y.setVal(b_Y);
+
         Weight.setVal(b_Weight);
         TotalWeight.setVal(Weight.getVal() * m_scale);
 
@@ -185,7 +222,6 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
             TrueGamma.setVal(0.0);
         }
 
-        double true_depol1 = TrueDepol1.getVal();
         double q_val     = std::sqrt(std::max(0.0, b_Q2));
         double trueq_val = std::sqrt(std::max(0.0, b_TrueQ2));
         double gamma_val = Gamma.getVal();
@@ -226,7 +262,14 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
             trueAsymmetry = table->lookupAUT(TrueX.getVal(), trueq_val, TrueZ.getVal(), TruePhPerp.getVal());
             recoAsymmetry = table->lookupAUT(X.getVal(), q_val, Z.getVal(), PhPerp.getVal());
         }
-        double pPlus = 0.5 * (1 + TrueST_val * true_depol1 * trueAsymmetry * std::sin(TruePhiH.getVal() + TruePhiS.getVal()));
+
+        
+        double true_depol1 = TrueDepol1.getVal();
+        double true_depol2 = TrueDepol2.getVal();
+        double true_depol3 = TrueDepol3.getVal();
+        double true_depol4 = TrueDepol4.getVal();
+
+        double pPlus = 0.5 * (1 + TrueST_val * true_depol2/true_depol1 * trueAsymmetry * std::sin(TruePhiRperp.getVal() + TruePhiS.getVal()));
         Spin_idx.setVal(rng.Rndm() < pPlus ? 1 : -1);
         if(rng.Rndm() > targetPolarization){
             // Set Spin_idx to -1 or 1 with 50/50 chance
@@ -253,13 +296,13 @@ std::pair<double, double> Inject::injectExtractForBin(const Bin& bin, bool extra
     double val = 0.0;
     double error = 0.0;
     if (extract_with_true) {
-        RooGenericPdf model("model", "1 + TrueS_T * TrueDepol1 * tPol * Spin_idx * A * sin(TruePhiH+TruePhiS)", RooArgList(TrueS_T, TruePhiH, TruePhiS, TrueDepol1, tPol, Spin_idx, A_fit));
+        RooGenericPdf model("model", "1 + TrueS_T * TrueDepol2 * (1/TrueDepol1) * tPol * Spin_idx * A * sin(TruePhiRperp+TruePhiS)", RooArgList(TrueS_T, TruePhiH, TruePhiS, TrueDepol1, TrueDepol2, tPol, Spin_idx, A_fit));
         RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
         val = A_fit.getVal();
         error = A_fit.getError() * std::sqrt(n_eff_mc/expected_events);
         delete fitResult;
     } else {
-        RooGenericPdf model("model", "1 + S_T * Depol1 * tPol * Spin_idx * A * sin(PhiH+PhiS)", RooArgList(S_T, PhiH, PhiS, Depol1, tPol, Spin_idx, A_fit));
+        RooGenericPdf model("model", "1 + S_T * Depol2 * (1/Depol1) * tPol * Spin_idx * A * sin(PhiRperp+PhiS)", RooArgList(S_T, PhiRperp, PhiS, Depol1, Depol2, tPol, Spin_idx, A_fit));
         RooFitResult* fitResult = model.fitTo(dataUpdate, Save(), PrintLevel(-1), SumW2Error(kTRUE));
         val = A_fit.getVal();
         error = A_fit.getError() * std::sqrt(n_eff_mc/expected_events);
