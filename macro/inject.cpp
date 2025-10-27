@@ -40,7 +40,8 @@ int main(int argc, char** argv) {
                 .bin_index = bin_idx,
                 .n = args.n_injections,
                 .extract_with_true = args.extract_with_true,
-                .A_opt = args.A_opt
+                .A_opt = args.A_opt,
+                .channel = args.channel
             });
         }
     } else {
@@ -49,7 +50,8 @@ int main(int argc, char** argv) {
             .bin_index = args.bin_index,
             .n = args.n_injections,
             .extract_with_true = args.extract_with_true,
-            .A_opt = args.A_opt
+            .A_opt = args.A_opt,
+            .channel = args.channel
         });
     }
     // Run the queued injections
