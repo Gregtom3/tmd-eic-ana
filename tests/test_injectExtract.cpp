@@ -11,7 +11,7 @@
 int main(int argc, char** argv) {
     Args args = parseArgs(argc, argv);
 
-    TMD tmd(args.filename, args.treename);
+    TMD tmd(args.filename, args.treename, args.channel, args.timeline, args.target);
     if (!tmd.isLoaded()) {
         LOG_ERROR("TMD failed to load generated tree file");
         return 1;
@@ -34,8 +34,7 @@ int main(int argc, char** argv) {
         .bin_index = args.bin_index,
         .n = args.n_injections,
         .extract_with_true = args.extract_with_true,
-        .A_opt = args.A_opt,
-        .channel = args.channel
+        .A_opt = args.A_opt
     });
     tmd.runQueuedInjections();
     LOG_INFO("inject_extract completed");

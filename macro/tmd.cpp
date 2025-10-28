@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     Logger::setLevel(Logger::Level::Info);
     Args args = parseArgs(argc, argv);
 
-    TMD tmd(args.filename, args.treename);
+    TMD tmd(args.filename, args.treename, args.channel, args.timeline, args.target);
     if (!tmd.isLoaded()) {
         LOG_FATAL("Failed to load ROOT file or TTree.");
         return 1;
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     const int n_injections = 100;
     const int bin_index = 0;
     const bool extract_with_true = true;
-    tmd.queueInjection({ .bin_index = bin_index, .n = n_injections, .extract_with_true = extract_with_true, .A_opt = 0.05,  });
+    tmd.queueInjection({ .bin_index = bin_index, .n = n_injections, .extract_with_true = extract_with_true, .A_opt = 0.05});
     tmd.runQueuedInjections();
     return 0;
 }

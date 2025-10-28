@@ -25,6 +25,8 @@ struct Args {
     bool extract_with_true = false;
     std::optional<double> A_opt;
     channel_type channel = channel_type::Hadron; // Default to Hadron
+    eic_timeline_type timeline = eic_timeline_type::Full; // Default to Full
+    target_type target = target_type::Proton; // Default to Proton
 };
 
 Args parseArgs(int argc, char** argv);

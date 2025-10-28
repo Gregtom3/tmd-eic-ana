@@ -28,6 +28,8 @@ Args parseArgs(int argc, char** argv) {
             LOG_INFO("  --extract_with_true <t/f>  Extract with true");
             LOG_INFO("  --A_opt <value>            Optional A value");
             LOG_INFO("  --channel <type>           Channel type (Hadron or Dihadron)");
+            LOG_INFO("  --eic_timeline <type>      EIC timeline type (Full, EarlyScience)");
+            LOG_INFO("  --target <type>            Target type (Proton, Helium3)");
             exit(0);
         }
     }
@@ -113,6 +115,26 @@ Args parseArgs(int argc, char** argv) {
                 args.channel = channel_type::Dihadron;
             } else {
                 LOG_ERROR("Invalid channel type: " + channelStr);
+                exit(1);
+            }
+        } else if (arg == "--eic_timeline" && i + 1 < argc) {
+            std::string timelineStr = argv[++i];
+            if (timelineStr == "Full") {
+                args.timeline = eic_timeline_type::Full;
+            } else if (timelineStr == "EarlyScience") {
+                args.timeline = eic_timeline_type::EarlyScience;
+            } else {    
+                LOG_ERROR("Invalid EIC timeline type: " + timelineStr);
+                exit(1);
+            }
+        } else if (arg == "--target" && i + 1 < argc) {
+            std::string targetStr = argv[++i];
+            if (targetStr == "Proton") {
+                args.target = target_type::Proton;
+            } else if (targetStr == "Helium3") {
+                args.target = target_type::Helium3;
+            } else {    
+                LOG_ERROR("Invalid target type: " + targetStr);
                 exit(1);
             }
         } else if (!arg.empty() && arg[0] != '-') {

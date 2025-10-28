@@ -20,7 +20,11 @@
 
 class TMD {
 public:
-    TMD(const std::string& filename, const std::string& treename, channel_type channel = channel_type::Hadron);
+    TMD(const std::string& filename, 
+        const std::string& treename, 
+        channel_type channel = channel_type::Hadron,
+        eic_timeline_type timeline = eic_timeline_type::Full,
+        target_type target = target_type::Proton);
     void setTargetPolarization(double pol) { targetPolarization = pol; }
     double getTargetPolarization() const { return targetPolarization; }
     void setOutDir(const std::string& dir) { outDir = dir; }
@@ -55,6 +59,8 @@ public:
     std::unique_ptr<Plotter> plotter;
     InjectionProject* proj = nullptr;
     channel_type channel;
+    eic_timeline_type timeline;
+    target_type target;
 
     // MC and scaling information
     double xsTotal{0.0};     // total cross-section read from file

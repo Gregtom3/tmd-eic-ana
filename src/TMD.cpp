@@ -10,14 +10,20 @@
 #include <map>
 #include "Utility.h"
 
-TMD::TMD(const std::string& filename, const std::string& treename, channel_type channel)
+TMD::TMD(const std::string& filename, 
+         const std::string& treename, 
+         channel_type channel,
+         eic_timeline_type timeline,
+         target_type target)
     : file(nullptr)
     , tree(nullptr)
     , filename(filename)
     , treename(treename)
     , table(nullptr)
     , grid(nullptr)
-    , channel(channel) {
+    , channel(channel)
+    , timeline(timeline)
+    , target(target) {
     file = TFile::Open(filename.c_str());
     if (!file || file->IsZombie()) {
         LOG_ERROR(std::string("Could not open file ") + filename);
@@ -81,7 +87,7 @@ void TMD::loadTable(){
     table = std::make_unique<Table>();
     // compute scale if we have the necessary mc info
     if (totalEvents > 0 && xsTotal > 0.0) {
-        scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi);
+        scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi, timeline, target);
         LOG_INFO("Computed scale=" + std::to_string(scale));
     }
 }
@@ -95,7 +101,7 @@ void TMD::loadTable(const std::string& tablePath, const std::string& energyConfi
     table = std::make_unique<Table>(tablePath);
     // compute scale if we have the necessary mc info
     if (totalEvents > 0 && xsTotal > 0.0) {
-        scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi);
+        scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi, timeline, target);
         LOG_INFO("Computed scale=" + std::to_string(scale));
     }
 }

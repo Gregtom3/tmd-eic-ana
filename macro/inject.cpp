@@ -9,8 +9,8 @@
 int main(int argc, char** argv) {
     Logger::setLevel(Logger::Level::Info);
     Args args = parseArgs(argc, argv);
-
-    TMD tmd(args.filename, args.treename);
+ 
+    TMD tmd(args.filename, args.treename, args.channel, args.timeline, args.target);
     if (!tmd.isLoaded()) {
         LOG_FATAL("Failed to load ROOT file or TTree.");
         return 1;
@@ -50,8 +50,7 @@ int main(int argc, char** argv) {
             .bin_index = args.bin_index,
             .n = args.n_injections,
             .extract_with_true = args.extract_with_true,
-            .A_opt = args.A_opt,
-            .channel = args.channel
+            .A_opt = args.A_opt
         });
     }
     // Run the queued injections

@@ -82,12 +82,13 @@ namespace util {
 // energyConfig: key to look up integrated luminosity in IntegratedLuminosities
 // out_mc and out_exp are set to the computed mc and expected luminosities (nb^-1)
 inline double computeScale(long long totalEvents, double xsTotal, const std::string& energyConfig,
-                           double& out_mc, double& out_exp) {
+                           double& out_mc, double& out_exp, eic_timeline_type timeline, target_type target) {
     // Find experimental integrated luminosity L
     double L = 0.0;
-    auto it = IntegratedLuminosities.find(energyConfig);
+    auto it = IntegratedLuminosities.find({energyConfig, timeline, target});
     if (it == IntegratedLuminosities.end()) {
-        std::cerr << "computeScale: unknown energyConfig '" << energyConfig << "' - cannot compute scale.\n";
+        std::cerr << "computeScale: unknown (energyConfig, timeline, target) combination: '"
+                  << energyConfig << "', '" << static_cast<int>(timeline) << "', '" << static_cast<int>(target) << "'." << std::endl;
         std::cerr << "Available configurations:";
         for (const auto& kv : IntegratedLuminosities) {
             std::cerr << " " << kv.first;
