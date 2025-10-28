@@ -106,8 +106,8 @@ bool InjectionProject::run() {
         out << YAML::Key << "avg_Q2" << YAML::Value << avgQ2;
         out << YAML::Key << "avg_Z" << YAML::Value << avgZ;
         out << YAML::Key << "avg_PhPerp" << YAML::Value << avgPhPerp;
-        out << YAML::Key << "exp_lumi [fb^-1]" << YAML::Value << exp_lumi;
-        out << YAML::Key << "mc_lumi [fb^-1]" << YAML::Value << mc_lumi;
+        out << YAML::Key << "exp_lumi [nb^-1]" << YAML::Value << exp_lumi;
+        out << YAML::Key << "mc_lumi [nb^-1]" << YAML::Value << mc_lumi;
         out << YAML::EndMap;
 
         ++jobIdx;
