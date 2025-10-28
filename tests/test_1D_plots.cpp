@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     std::filesystem::create_directories(outDir);
 
     // Now attempt to use TMD on this file
-    TMD tmd("out/output.root", "tree", args.channel, args.timeline, args.target); 
+    TMD tmd("out/output.root", "tree", args.outDir, args.channel, args.timeline, args.target); 
     if (!tmd.isLoaded()) {
         LOG_ERROR("TMD failed to load generated tree file");
         return 1;

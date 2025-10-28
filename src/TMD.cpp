@@ -11,12 +11,14 @@
 #include "Utility.h"
 
 TMD::TMD(const std::string& filename, 
-         const std::string& treename, 
+         const std::string& treename,
+         const std::string& outDir,
          channel_type channel,
          eic_timeline_type timeline,
          target_type target)
     : file(nullptr)
     , tree(nullptr)
+    , outDir(outDir)
     , filename(filename)
     , treename(treename)
     , table(nullptr)

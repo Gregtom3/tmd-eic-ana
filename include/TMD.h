@@ -22,6 +22,7 @@ class TMD {
 public:
     TMD(const std::string& filename, 
         const std::string& treename, 
+        const std::string& outDir = "out",
         channel_type channel = channel_type::Hadron,
         eic_timeline_type timeline = eic_timeline_type::Full,
         target_type target = target_type::Proton);

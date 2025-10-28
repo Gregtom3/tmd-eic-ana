@@ -11,7 +11,7 @@
 int main(int argc, char** argv) {
     Args args = parseArgs(argc, argv);
 
-    TMD tmd(args.filename, args.treename, args.channel, args.timeline, args.target);
+    TMD tmd(args.filename, args.treename, args.outDir, args.channel, args.timeline, args.target);
     if (!tmd.isLoaded()) {
         LOG_ERROR("TMD failed to load generated tree file");
         return 1;

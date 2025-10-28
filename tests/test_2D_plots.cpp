@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     std::filesystem::create_directories(outDir);
 
     const std::string outpath = "out/output.root";
-    TMD tmd(outpath, "tree", args.channel, args.timeline, args.target);
+    TMD tmd(outpath, "tree", args.outDir, args.channel, args.timeline, args.target);
     if (!tmd.isLoaded()) {
         LOG_ERROR("TMD failed to load generated tree file");
         return 1;

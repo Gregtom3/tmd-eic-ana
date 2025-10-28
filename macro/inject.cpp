@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     Logger::setLevel(Logger::Level::Info);
     Args args = parseArgs(argc, argv);
  
-    TMD tmd(args.filename, args.treename, args.channel, args.timeline, args.target);
+    TMD tmd(args.filename, args.treename, args.outDir, args.channel, args.timeline, args.target);
     if (!tmd.isLoaded()) {
         LOG_FATAL("Failed to load ROOT file or TTree.");
         return 1;
