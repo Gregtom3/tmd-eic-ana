@@ -229,6 +229,12 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
 
         ++result.stats.selectedEvents;
 
+        result.stats.sumXW += record.X * record.Weight;
+        result.stats.sumQW += std::sqrt(record.Q2) * record.Weight;
+        result.stats.sumQ2W += record.Q2 * record.Weight;
+        result.stats.sumZW += record.Z * record.Weight;
+        result.stats.sumPhPerpW += record.PhPerp * record.Weight;
+
         vars.PhiH->setVal(record.PhiH);
         vars.PhiS->setVal(record.PhiS);
         vars.X->setVal(record.X);

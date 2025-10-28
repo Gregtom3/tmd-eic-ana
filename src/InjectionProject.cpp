@@ -48,10 +48,23 @@ bool InjectionProject::run() {
 
         std::vector<double> extractedVals;
         std::vector<double> extractedErrs;
+        double total_sumW = 0.0;
+        double total_sumXW = 0.0;
+        double total_sumQW = 0.0;
+        double total_sumQ2W = 0.0;
+        double total_sumZW = 0.0;
+        double total_sumPhPerpW = 0.0;
         for (int i = 0; i < job.n; ++i) {
             auto res = injector->injectExtractForBin(bin, job.extract_with_true, job.A_opt);
             extractedVals.push_back(res.first);
             extractedErrs.push_back(res.second);
+            const auto& stats = injector->getLastStats();
+            total_sumW += stats.sumW;
+            total_sumXW += stats.sumXW;
+            total_sumQW += stats.sumQW;
+            total_sumQ2W += stats.sumQ2W;
+            total_sumZW += stats.sumZW;
+            total_sumPhPerpW += stats.sumPhPerpW;
         }
         // compute simple summary: mean and stddev of extractedVals
         double mean = 0.0;
@@ -60,6 +73,13 @@ bool InjectionProject::run() {
         double var = 0.0;
         for (double v : extractedVals) var += (v - mean) * (v - mean);
         double stddev = extractedVals.size() > 1 ? std::sqrt(var / (extractedVals.size() - 1)) : 0.0;
+
+        // compute averages
+        double avgX = total_sumW > 0.0 ? total_sumXW / total_sumW : 0.0;
+        double avgQ = total_sumW > 0.0 ? total_sumQW / total_sumW : 0.0;
+        double avgQ2 = total_sumW > 0.0 ? total_sumQ2W / total_sumW : 0.0;
+        double avgZ = total_sumW > 0.0 ? total_sumZW / total_sumW : 0.0;
+        double avgPhPerp = total_sumW > 0.0 ? total_sumPhPerpW / total_sumW : 0.0;
         
         // Emit YAML for this job
         out << YAML::BeginMap;
@@ -81,6 +101,11 @@ bool InjectionProject::run() {
         out << YAML::Key << "all_errors" << YAML::Value << YAML::Flow << extractedErrs;
         out << YAML::Key << "mean_extracted" << YAML::Value << mean;
         out << YAML::Key << "stddev_extracted" << YAML::Value << stddev;
+        out << YAML::Key << "avg_X" << YAML::Value << avgX;
+        out << YAML::Key << "avg_Q" << YAML::Value << avgQ;
+        out << YAML::Key << "avg_Q2" << YAML::Value << avgQ2;
+        out << YAML::Key << "avg_Z" << YAML::Value << avgZ;
+        out << YAML::Key << "avg_PhPerp" << YAML::Value << avgPhPerp;
         out << YAML::EndMap;
 
         ++jobIdx;

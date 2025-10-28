@@ -18,12 +18,30 @@
 #include <vector>
 
 class Inject {
+protected:
+    struct InjectionStats {
+        double expectedEvents{0.0};
+        double sumW{0.0};
+        double sumW2{0.0};
+        double sumTrueAsymW{0.0};
+        double sumRecoAsymW{0.0};
+        double effectiveMCEvents{0.0};
+        long long selectedEvents{0};
+        double sumXW{0.0};
+        double sumQW{0.0};
+        double sumQ2W{0.0};
+        double sumZW{0.0};
+        double sumPhPerpW{0.0};
+    };
+
 public:
     // Base interface for injection classes
     Inject(TTree* tree, const Table* table, double scale = 1.0, double targetPolarization = 1.0)
         : tree(tree), table(table), m_scale(scale), targetPolarization(targetPolarization) {}
     virtual ~Inject() = default;
     virtual std::pair<double, double> injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt = std::nullopt) = 0;
+
+    const InjectionStats& getLastStats() const { return lastStats; }
 
 protected:
     struct EventRecord {
@@ -47,16 +65,6 @@ protected:
     struct AsymmetryValues {
         double trueAsymmetry{0.0};
         double recoAsymmetry{0.0};
-    };
-
-    struct InjectionStats {
-        double expectedEvents{0.0};
-        double sumW{0.0};
-        double sumW2{0.0};
-        double sumTrueAsymW{0.0};
-        double sumRecoAsymW{0.0};
-        double effectiveMCEvents{0.0};
-        long long selectedEvents{0};
     };
 
     struct LoopVariables {
@@ -120,6 +128,7 @@ protected:
     const Table* table{nullptr};
     double m_scale{1.0};
     double targetPolarization{1.0};
+    InjectionStats lastStats;
 };
 
 

@@ -87,6 +87,8 @@ std::pair<double, double> InjectDihadron::injectExtractForBin(const Bin& bin, bo
     };
 
     auto loopResult = runInjectionLoop(bin, extract_with_true, A_opt, std::move(variables), handlers);
+
+    lastStats = loopResult.stats;
     if (!loopResult.dataSet || loopResult.dataSet->numEntries() == 0) {
         return {0.0, 0.0};
     }
