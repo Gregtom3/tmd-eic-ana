@@ -139,10 +139,10 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
     }
 
     // Prepare branch buffers for common quantities
-    float b_PhiH = 0.0, b_PhiS = 0.0, b_X = 0.0, b_Q2 = 0.0, b_Z = 0.0, b_PhPerp = 0.0;
-    float b_TruePhiH = 0.0, b_TruePhiS = 0.0, b_TrueX = 0.0, b_TrueQ2 = 0.0, b_TrueY = 0.0;
-    float b_TrueZ = 0.0, b_TruePhPerp = 0.0;
-    float b_Weight = 0.0, b_Y = 0.0;
+    double b_PhiH = 0.0, b_PhiS = 0.0, b_X = 0.0, b_Q2 = 0.0, b_Z = 0.0, b_PhPerp = 0.0;
+    double b_TruePhiH = 0.0, b_TruePhiS = 0.0, b_TrueX = 0.0, b_TrueQ2 = 0.0, b_TrueY = 0.0;
+    double b_TrueZ = 0.0, b_TruePhPerp = 0.0;
+    double b_Weight = 0.0, b_Y = 0.0;
 
     tree->SetBranchAddress("PhiH", &b_PhiH);
     tree->SetBranchAddress("PhiS", &b_PhiS);
