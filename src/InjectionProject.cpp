@@ -12,7 +12,7 @@ InjectionProject::InjectionProject(const std::string& filename, TTree* tree, con
         if (!outFilename.empty()) {
             outPrefix = std::filesystem::path(outDir) / outFilename;
         } else {
-            outPrefix = std::filesystem::path(outDir) / (std::string("injection_") + rootStem + "_" + tree->GetName() + ".yaml");
+            outPrefix = std::filesystem::path(outDir) / (std::string("injection_") + rootStem + "_" + tree->GetName());
         }
     }
 
