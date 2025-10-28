@@ -5,8 +5,8 @@
 #include "Inject.h"
 
 
-InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename, channel_type channel)
-    : filename(filename), tree(tree), table(table), scale(scale), grid(grid), targetPolarization(targetPolarization), outDir(outDir), outFilename(outFilename), channel(channel) {
+InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double exp_lumi, double mc_lumi, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename, channel_type channel)
+    : filename(filename), tree(tree), table(table), exp_lumi(exp_lumi), mc_lumi(mc_lumi), scale(scale), grid(grid), targetPolarization(targetPolarization), outDir(outDir), outFilename(outFilename), channel(channel) {
         // Create outprefix
         std::string rootStem = std::filesystem::path(filename).stem().string();
         if (!outFilename.empty()) {
@@ -106,6 +106,8 @@ bool InjectionProject::run() {
         out << YAML::Key << "avg_Q2" << YAML::Value << avgQ2;
         out << YAML::Key << "avg_Z" << YAML::Value << avgZ;
         out << YAML::Key << "avg_PhPerp" << YAML::Value << avgPhPerp;
+        out << YAML::Key << "exp_lumi [fb^-1]" << YAML::Value << exp_lumi;
+        out << YAML::Key << "mc_lumi [fb^-1]" << YAML::Value << mc_lumi;
         out << YAML::EndMap;
 
         ++jobIdx;
