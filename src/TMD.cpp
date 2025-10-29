@@ -136,7 +136,7 @@ void TMD::queueInjection(const InjectionProject::Job& job) {
         return;
     }
     if(proj == nullptr) {
-        proj = new InjectionProject(filename, tree, table.get(), exp_lumi, mc_lumi, scale, grid.get(), targetPolarization, outDir, outFilename, channel);
+        proj = new InjectionProject(filename, tree, table.get(), exp_lumi, mc_lumi, scale, grid.get(), targetPolarization, outDir, outFilename, channel, target);
     }
     proj->addJob(job);
 }

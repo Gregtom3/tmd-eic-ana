@@ -5,8 +5,8 @@
 #include "Inject.h"
 
 
-InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double exp_lumi, double mc_lumi, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename, channel_type channel)
-    : filename(filename), tree(tree), table(table), exp_lumi(exp_lumi), mc_lumi(mc_lumi), scale(scale), grid(grid), targetPolarization(targetPolarization), outDir(outDir), outFilename(outFilename), channel(channel) {
+InjectionProject::InjectionProject(const std::string& filename, TTree* tree, const Table* table, double exp_lumi, double mc_lumi, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename, channel_type channel, target_type target)
+    : filename(filename), tree(tree), table(table), exp_lumi(exp_lumi), mc_lumi(mc_lumi), scale(scale), grid(grid), targetPolarization(targetPolarization), outDir(outDir), outFilename(outFilename), channel(channel), target(target) {
         // Create outprefix
         std::string rootStem = std::filesystem::path(filename).stem().string();
         if (!outFilename.empty()) {
@@ -14,6 +14,14 @@ InjectionProject::InjectionProject(const std::string& filename, TTree* tree, con
         } else {
             outPrefix = std::filesystem::path(outDir) / (std::string("injection_") + rootStem + "_" + tree->GetName());
         }
+        
+        if(target==target_type::Helium3){
+            std::cout << "[InjectionProject] Target set to Helium-3." << std::endl;
+            std::cout << "[InjectionProject] Effective targetPolarization corrected for dilution factor"  << std::endl;
+            std::cout << "[InjectionProject] effTargetPolarization = " << targetPolarization << " * (1/3)*(0.86) = " << targetPolarization*0.286667 << std::endl;
+            this->targetPolarization = targetPolarization * (1.0/3.0) * 0.86; // effective polarization for He-3 target
+        }
+
     }
 
 void InjectionProject::addJob(const InjectionProject::Job& job = {}) {

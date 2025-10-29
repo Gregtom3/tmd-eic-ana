@@ -27,7 +27,7 @@ public:
         channel_type channel = channel_type::Hadron;
     };
 
-    InjectionProject(const std::string& filename, TTree* tree, const Table* table, double exp_lumi, double mc_lumi, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename, channel_type channel);
+    InjectionProject(const std::string& filename, TTree* tree, const Table* table, double exp_lumi, double mc_lumi, double scale, const Grid* grid, double targetPolarization, const std::string& outDir, const std::string& outFilename, channel_type channel, target_type target);
     void addJob(const Job& job);
     bool run();
 
@@ -46,6 +46,7 @@ private:
     std::string outFilename;
     std::vector<Job> jobs;
     channel_type channel;
+    target_type target;
 };
 
 #endif // INJECTION_PROJECT_H
