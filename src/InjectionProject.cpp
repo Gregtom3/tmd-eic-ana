@@ -50,6 +50,7 @@ bool InjectionProject::run() {
         std::vector<double> extractedErrs;
         double total_sumW = 0.0;
         double total_sumXW = 0.0;
+        double total_sumYW = 0.0;
         double total_sumQW = 0.0;
         double total_sumQ2W = 0.0;
         double total_sumZW = 0.0;
@@ -61,6 +62,7 @@ bool InjectionProject::run() {
             const auto& stats = injector->getLastStats();
             total_sumW += stats.sumW;
             total_sumXW += stats.sumXW;
+            total_sumYW += stats.sumYW;
             total_sumQW += stats.sumQW;
             total_sumQ2W += stats.sumQ2W;
             total_sumZW += stats.sumZW;
@@ -76,6 +78,7 @@ bool InjectionProject::run() {
 
         // compute averages
         double avgX = total_sumW > 0.0 ? total_sumXW / total_sumW : 0.0;
+        double avgY = total_sumW > 0.0 ? total_sumYW / total_sumW : 0.0;
         double avgQ = total_sumW > 0.0 ? total_sumQW / total_sumW : 0.0;
         double avgQ2 = total_sumW > 0.0 ? total_sumQ2W / total_sumW : 0.0;
         double avgZ = total_sumW > 0.0 ? total_sumZW / total_sumW : 0.0;
@@ -106,6 +109,7 @@ bool InjectionProject::run() {
         out << YAML::Key << "avg_Q2" << YAML::Value << avgQ2;
         out << YAML::Key << "avg_Z" << YAML::Value << avgZ;
         out << YAML::Key << "avg_PhPerp" << YAML::Value << avgPhPerp;
+        out << YAML::Key << "avg_Y" << YAML::Value << avgY;
         out << YAML::Key << "exp_lumi [nb^-1]" << YAML::Value << exp_lumi;
         out << YAML::Key << "mc_lumi [nb^-1]" << YAML::Value << mc_lumi;
         out << YAML::EndMap;

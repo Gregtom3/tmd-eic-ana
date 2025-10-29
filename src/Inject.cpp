@@ -234,6 +234,7 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         result.stats.sumQ2W += record.Q2 * record.Weight;
         result.stats.sumZW += record.Z * record.Weight;
         result.stats.sumPhPerpW += record.PhPerp * record.Weight;
+        result.stats.sumYW += record.Y * record.Weight;
 
         vars.PhiH->setVal(record.PhiH);
         vars.PhiS->setVal(record.PhiS);
