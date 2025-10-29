@@ -184,15 +184,15 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
     for (Long64_t i = 0; i < nentries; ++i) {
         tree->GetEntry(i);
 
-        if (i >= next_progress || i == 0 || i == nentries - 1) {
-            const Long64_t denomEntries = std::max<Long64_t>(static_cast<Long64_t>(1), nentries);
-            int percent = static_cast<int>(100.0 * static_cast<double>(i + 1) / static_cast<double>(denomEntries));
-            std::cout << "\r[" << percent << "%] Processing entry " << (i + 1) << " / " << nentries << std::flush;
-            next_progress = i + progress_step;
-            if (i == nentries - 1) {
-                std::cout << std::endl;
-            }
-        }
+        // if (i >= next_progress || i == 0 || i == nentries - 1) {
+        //     const Long64_t denomEntries = std::max<Long64_t>(static_cast<Long64_t>(1), nentries);
+        //     int percent = static_cast<int>(100.0 * static_cast<double>(i + 1) / static_cast<double>(denomEntries));
+        //     std::cout << "\r[" << percent << "%] Processing entry " << (i + 1) << " / " << nentries << std::flush;
+        //     next_progress = i + progress_step;
+        //     if (i == nentries - 1) {
+        //         std::cout << std::endl;
+        //     }
+        // }
 
         record.PhiH = b_PhiH;
         record.PhiS = b_PhiS;
