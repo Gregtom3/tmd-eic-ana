@@ -63,6 +63,7 @@ bool InjectionProject::run() {
         double total_sumQ2W = 0.0;
         double total_sumZW = 0.0;
         double total_sumPhPerpW = 0.0;
+        double total_sumRecoAsymW = 0.0; // Asymmetry in the reconstructed bin
         for (int i = 0; i < job.n; ++i) {
             auto res = injector->injectExtractForBin(bin, job.extract_with_true, job.A_opt);
             extractedVals.push_back(res.first);
@@ -75,6 +76,7 @@ bool InjectionProject::run() {
             total_sumQ2W += stats.sumQ2W;
             total_sumZW += stats.sumZW;
             total_sumPhPerpW += stats.sumPhPerpW;
+            total_sumRecoAsymW += stats.sumRecoAsymW;
         }
         // compute simple summary: mean and stddev of extractedVals
         double mean = 0.0;
@@ -91,7 +93,7 @@ bool InjectionProject::run() {
         double avgQ2 = total_sumW > 0.0 ? total_sumQ2W / total_sumW : 0.0;
         double avgZ = total_sumW > 0.0 ? total_sumZW / total_sumW : 0.0;
         double avgPhPerp = total_sumW > 0.0 ? total_sumPhPerpW / total_sumW : 0.0;
-        
+        double avgRecoAsym = total_sumW > 0.0 ? total_sumRecoAsymW / total_sumW : 0.0;
         // Emit YAML for this job
         out << YAML::BeginMap;
         out << YAML::Key << "bin_index" << YAML::Value << job.bin_index;
@@ -107,7 +109,7 @@ bool InjectionProject::run() {
         out << YAML::Key << "PhPerp_max" << YAML::Value << bin.getMax("PhPerp");
         out << YAML::Key << "used_reconstructed_kinematics" << YAML::Value << (!job.extract_with_true);
         out << YAML::Key << "n_injections" << YAML::Value << job.n;
-        out << YAML::Key << "injected" << YAML::Value << (job.A_opt.has_value() ? job.A_opt.value() : 0.0);
+        out << YAML::Key << "injected" << YAML::Value << (job.A_opt.has_value() ? job.A_opt.value() : avgRecoAsym);
         out << YAML::Key << "all_extracted" << YAML::Value << YAML::Flow << extractedVals;
         out << YAML::Key << "all_errors" << YAML::Value << YAML::Flow << extractedErrs;
         out << YAML::Key << "mean_extracted" << YAML::Value << mean;
