@@ -33,6 +33,7 @@ Inject::LoopVariables::LoopVariables(const Bin& bin, double targetPol, channel_t
       TrueY(std::make_unique<RooRealVar>("TrueY", "TrueY", -999.0, 999.0)),
       TrueZ(std::make_unique<RooRealVar>("TrueZ", "TrueZ", -999.0, 999.0)),
       TruePhPerp(std::make_unique<RooRealVar>("TruePhPerp", "TruePhPerp", -999.0, 999.0)),
+      TrueMh(std::make_unique<RooRealVar>("TrueMh", "TrueMh", -999.0, 999.0)),
       SpinIdx(std::make_unique<RooRealVar>("Spin_idx", "Spin_idx", -1.0, 1.0)),
       Weight(std::make_unique<RooRealVar>("Weight", "Weight", 0.0, 1e9)),
       TotalWeight(std::make_unique<RooRealVar>("TotalWeight", "TotalWeight", 0.0, 1e9)),
