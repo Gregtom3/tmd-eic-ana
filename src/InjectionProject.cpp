@@ -34,6 +34,7 @@ bool InjectionProject::run() {
         return false;
     }
     const auto& bins = grid->getBins();
+    LOG_DEBUG("InjectionProject: Starting run with " + std::to_string(jobs.size()) + " jobs.");
     YAML::Emitter out;
     out << YAML::BeginMap;
     out << YAML::Key << "jobs" << YAML::Value << YAML::BeginSeq;
@@ -44,14 +45,14 @@ bool InjectionProject::run() {
             LOG_ERROR("InjectionProject: bin index out of range: " + std::to_string(job.bin_index));
             continue;
         }
-    auto it = bins.begin();
-    std::advance(it, job.bin_index);
-    const Bin& bin = *(it->second);
+        auto it = bins.begin();
+        std::advance(it, job.bin_index);
+        const Bin& bin = *(it->second);
         std::unique_ptr<Inject> injector;
         if (channel == channel_type::Hadron) {
-            injector = std::make_unique<InjectHadron>(tree, table, scale, targetPolarization);
+            injector = std::make_unique<InjectHadron>(tree, table, scale, targetPolarization, channel);
         } else if (channel == channel_type::Dihadron) {
-            injector = std::make_unique<InjectDihadron>(tree, table, scale, targetPolarization);
+            injector = std::make_unique<InjectDihadron>(tree, table, scale, targetPolarization, channel);
         }
 
         std::vector<double> extractedVals;
@@ -65,6 +66,7 @@ bool InjectionProject::run() {
         double total_sumPhPerpW = 0.0;
         double total_sumRecoAsymW = 0.0; // Asymmetry in the reconstructed bin
         for (int i = 0; i < job.n; ++i) {
+            LOG_DEBUG("InjectionProject: Running injection " + std::to_string(i+1) + "/" + std::to_string(job.n) + " for job " + std::to_string(jobIdx));
             auto res = injector->injectExtractForBin(bin, job.extract_with_true, job.A_opt);
             extractedVals.push_back(res.first);
             extractedErrs.push_back(res.second);

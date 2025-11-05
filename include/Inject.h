@@ -6,6 +6,7 @@
 #include "TCut.h"
 #include "TTree.h"
 #include "Table.h"
+#include "Constants.h"
 #include <RooArgSet.h>
 #include <RooDataSet.h>
 #include <RooRealVar.h>
@@ -37,8 +38,8 @@ protected:
 
 public:
     // Base interface for injection classes
-    Inject(TTree* tree, const Table* table, double scale = 1.0, double targetPolarization = 1.0)
-        : tree(tree), table(table), m_scale(scale), targetPolarization(targetPolarization) {}
+    Inject(TTree* tree, const Table* table, double scale = 1.0, double targetPolarization = 1.0, channel_type channel = channel_type::Hadron)
+        : tree(tree), table(table), m_scale(scale), targetPolarization(targetPolarization), channel(channel) {}
     virtual ~Inject() = default;
     virtual std::pair<double, double> injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt = std::nullopt) = 0;
 
@@ -71,7 +72,7 @@ protected:
     };
 
     struct LoopVariables {
-        LoopVariables(const Bin& bin, double targetPol);
+        LoopVariables(const Bin& bin, double targetPol, channel_type channel);
 
         RooRealVar* addExtraRealVar(std::unique_ptr<RooRealVar> var);
 
@@ -134,19 +135,20 @@ protected:
     double m_scale{1.0};
     double targetPolarization{1.0};
     InjectionStats lastStats;
+    channel_type channel{channel_type::Hadron};
 };
 
 
 class InjectHadron : public Inject {
 public:
-    InjectHadron(TTree* tree, const Table* table, double scale = 1.0, double targetPolarization = 1.0);
+    InjectHadron(TTree* tree, const Table* table, double scale = 1.0, double targetPolarization = 1.0, channel_type channel = channel_type::Hadron);
     ~InjectHadron();
     std::pair<double, double> injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt = std::nullopt) override;
 };
 
 class InjectDihadron : public Inject {
 public:
-    InjectDihadron(TTree* tree, const Table* table, double scale = 1.0, double targetPolarization = 1.0);
+    InjectDihadron(TTree* tree, const Table* table, double scale = 1.0, double targetPolarization = 1.0, channel_type channel = channel_type::Dihadron);
     ~InjectDihadron();
     std::pair<double, double> injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt = std::nullopt) override;
 };

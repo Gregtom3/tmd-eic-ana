@@ -17,7 +17,7 @@ inline double clampProbability(double value) {
 }
 }
 
-Inject::LoopVariables::LoopVariables(const Bin& bin, double targetPol)
+Inject::LoopVariables::LoopVariables(const Bin& bin, double targetPol, channel_type channel)
     : Y(std::make_unique<RooRealVar>("Y", "Y", 0.0, 1.0)),
       PhiH(std::make_unique<RooRealVar>("PhiH", "PhiH", -kPiRange, kPiRange)),
       PhiS(std::make_unique<RooRealVar>("PhiS", "PhiS", -kPiRange, kPiRange)),
@@ -52,7 +52,9 @@ Inject::LoopVariables::LoopVariables(const Bin& bin, double targetPol)
     observables.add(*Z);
     observables.add(*Y);
     observables.add(*PhPerp);
-    observables.add(*Mh);
+    if (channel == channel_type::Dihadron) {
+        observables.add(*Mh);
+    }
     observables.add(*TruePhiH);
     observables.add(*TruePhiS);
     observables.add(*TrueX);
@@ -60,7 +62,9 @@ Inject::LoopVariables::LoopVariables(const Bin& bin, double targetPol)
     observables.add(*TrueY);
     observables.add(*TrueZ);
     observables.add(*TruePhPerp);
-    observables.add(*TrueMh);
+    if (channel == channel_type::Dihadron) {
+        observables.add(*TrueMh);
+    }
     observables.add(*SpinIdx);
     observables.add(*Weight);
     observables.add(*ST);
@@ -78,7 +82,7 @@ RooRealVar* Inject::LoopVariables::addExtraRealVar(std::unique_ptr<RooRealVar> v
 }
 
 std::unique_ptr<Inject::LoopVariables> Inject::createLoopVariables(const Bin& bin) const {
-    return std::make_unique<LoopVariables>(bin, targetPolarization);
+    return std::make_unique<LoopVariables>(bin, targetPolarization, channel);
 }
 
 double Inject::computeGamma(double x, double q2) {

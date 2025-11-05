@@ -9,6 +9,7 @@
 #include <iostream>
 
 int main(int argc, char** argv) {
+    Logger::setLevel(Logger::Level::Debug);
     Args args = parseArgs(argc, argv);
 
     TMD tmd(args.filename, args.treename, args.outDir, args.channel, args.timeline, args.target);
@@ -29,7 +30,7 @@ int main(int argc, char** argv) {
     tmd.buildGrid({"X"});
     std::cout << "Grid summary:" << std::endl;
     tmd.getGrid()->printGridSummary();
-
+    LOG_INFO("Queueing inject_extract job...");
     tmd.queueInjection({
         .bin_index = args.bin_index,
         .n = args.n_injections,
@@ -37,6 +38,7 @@ int main(int argc, char** argv) {
         .A_opt = args.A_opt,
         .channel = args.channel
     });
+    LOG_INFO("Starting inject_extract...");
     tmd.runQueuedInjections();
     LOG_INFO("inject_extract completed");
 

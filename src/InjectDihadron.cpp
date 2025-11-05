@@ -9,8 +9,8 @@
 
 using namespace RooFit;
 
-InjectDihadron::InjectDihadron(TTree* tree, const Table* table, double scale, double targetPolarization)
-    : Inject(tree, table, scale, targetPolarization) {}
+InjectDihadron::InjectDihadron(TTree* tree, const Table* table, double scale, double targetPolarization, channel_type channel)
+    : Inject(tree, table, scale, targetPolarization, channel) {}
 InjectDihadron::~InjectDihadron() {}
 
 std::pair<double, double> InjectDihadron::injectExtractForBin(const Bin& bin, bool extract_with_true, std::optional<double> A_opt) {
