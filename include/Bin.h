@@ -6,6 +6,7 @@
 
 class Bin {
 public:
+    virtual ~Bin() = default;
     Bin();
     Bin(double X_min, double X_max, double Q_min, double Q_max, double Z_min, double Z_max, double PhPerp_min, double PhPerp_max);
     void incrementCount();
@@ -14,10 +15,10 @@ public:
     void setEvents(int _events) const;
     int getExpectedEvents() const;
     void setExpectedEvents(int _expected_events) const;
-    double getMin(const std::string& var) const;
-    double getMax(const std::string& var) const;
-    void updateMin(const std::string& var, double value);
-    void updateMax(const std::string& var, double value);
+    virtual double getMin(const std::string& var) const;
+    virtual double getMax(const std::string& var) const;
+    virtual void updateMin(const std::string& var, double value);
+    virtual void updateMax(const std::string& var, double value);
 
 private:
     double X_min, X_max;
