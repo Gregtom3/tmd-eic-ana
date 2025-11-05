@@ -44,9 +44,9 @@ bool InjectionProject::run() {
             LOG_ERROR("InjectionProject: bin index out of range: " + std::to_string(job.bin_index));
             continue;
         }
-        auto it = bins.begin();
-        std::advance(it, job.bin_index);
-        const Bin& bin = it->second;
+    auto it = bins.begin();
+    std::advance(it, job.bin_index);
+    const Bin& bin = *(it->second);
         std::unique_ptr<Inject> injector;
         if (channel == channel_type::Hadron) {
             injector = std::make_unique<InjectHadron>(tree, table, scale, targetPolarization);

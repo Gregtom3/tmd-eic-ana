@@ -25,6 +25,7 @@ Inject::LoopVariables::LoopVariables(const Bin& bin, double targetPol)
       Q2(std::make_unique<RooRealVar>("Q2", "Q2", bin.getMin("Q") * bin.getMin("Q"), bin.getMax("Q") * bin.getMax("Q"))),
       Z(std::make_unique<RooRealVar>("Z", "Z", bin.getMin("Z"), bin.getMax("Z"))),
       PhPerp(std::make_unique<RooRealVar>("PhPerp", "PhPerp", bin.getMin("PhPerp"), bin.getMax("PhPerp"))),
+            Mh(std::make_unique<RooRealVar>("Mh", "Mh", bin.getMin("Mh"), bin.getMax("Mh"))),
       TruePhiH(std::make_unique<RooRealVar>("TruePhiH", "TruePhiH", -kPiRange, kPiRange)),
       TruePhiS(std::make_unique<RooRealVar>("TruePhiS", "TruePhiS", -kPiRange, kPiRange)),
       TrueX(std::make_unique<RooRealVar>("TrueX", "TrueX", -999.0, 999.0)),
@@ -51,6 +52,7 @@ Inject::LoopVariables::LoopVariables(const Bin& bin, double targetPol)
     observables.add(*Z);
     observables.add(*Y);
     observables.add(*PhPerp);
+    observables.add(*Mh);
     observables.add(*TruePhiH);
     observables.add(*TruePhiS);
     observables.add(*TrueX);
@@ -58,6 +60,7 @@ Inject::LoopVariables::LoopVariables(const Bin& bin, double targetPol)
     observables.add(*TrueY);
     observables.add(*TrueZ);
     observables.add(*TruePhPerp);
+    observables.add(*TrueMh);
     observables.add(*SpinIdx);
     observables.add(*Weight);
     observables.add(*ST);
@@ -139,9 +142,9 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
     }
 
     // Prepare branch buffers for common quantities
-    double b_PhiH = 0.0, b_PhiS = 0.0, b_X = 0.0, b_Q2 = 0.0, b_Z = 0.0, b_PhPerp = 0.0;
+    double b_PhiH = 0.0, b_PhiS = 0.0, b_X = 0.0, b_Q2 = 0.0, b_Z = 0.0, b_PhPerp = 0.0, b_Mh = 0.0;
     double b_TruePhiH = 0.0, b_TruePhiS = 0.0, b_TrueX = 0.0, b_TrueQ2 = 0.0, b_TrueY = 0.0;
-    double b_TrueZ = 0.0, b_TruePhPerp = 0.0;
+    double b_TrueZ = 0.0, b_TruePhPerp = 0.0, b_TrueMh = 0.0;
     double b_Weight = 0.0, b_Y = 0.0;
 
     tree->SetBranchAddress("PhiH", &b_PhiH);
@@ -150,6 +153,13 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
     tree->SetBranchAddress("Q2", &b_Q2);
     tree->SetBranchAddress("Z", &b_Z);
     tree->SetBranchAddress("PhPerp", &b_PhPerp);
+    // Mh and TrueMh may not exist in single-hadron trees. Only bind if branches are present.
+    bool hasMh = false;
+    bool hasTrueMh = false;
+    if (tree->GetBranch("Mh")) {
+        tree->SetBranchAddress("Mh", &b_Mh);
+        hasMh = true;
+    }
     tree->SetBranchAddress("TruePhiH", &b_TruePhiH);
     tree->SetBranchAddress("TruePhiS", &b_TruePhiS);
     tree->SetBranchAddress("TrueX", &b_TrueX);
@@ -157,6 +167,10 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
     tree->SetBranchAddress("TrueY", &b_TrueY);
     tree->SetBranchAddress("TrueZ", &b_TrueZ);
     tree->SetBranchAddress("TruePhPerp", &b_TruePhPerp);
+    if (tree->GetBranch("TrueMh")) {
+        tree->SetBranchAddress("TrueMh", &b_TrueMh);
+        hasTrueMh = true;
+    }
     tree->SetBranchAddress("Weight", &b_Weight);
     tree->SetBranchAddress("Y", &b_Y);
 
@@ -172,8 +186,12 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
     const double maxQ2 = bin.getMax("Q") * bin.getMax("Q");
     const double minZ = bin.getMin("Z");
     const double maxZ = bin.getMax("Z");
-    const double minPhPerp = bin.getMin("PhPerp");
-    const double maxPhPerp = bin.getMax("PhPerp");
+    // Determine whether this bin uses PhPerp (SIDIS) or Mh (DiSIDIS). If the PhPerp range is degenerate
+    // (zero width) we assume the bin uses Mh instead.
+    const bool usesPhPerp = (bin.getMax("PhPerp") - bin.getMin("PhPerp") > 1e-9);
+    const std::string perpName = usesPhPerp ? "PhPerp" : "Mh";
+    const double minPerp = bin.getMin(perpName);
+    const double maxPerp = bin.getMax(perpName);
 
     EventRecord record;
 
@@ -199,7 +217,8 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         record.X = b_X;
         record.Q2 = b_Q2;
         record.Z = b_Z;
-        record.PhPerp = b_PhPerp;
+    record.PhPerp = b_PhPerp;
+    record.Mh = b_Mh;
         record.Y = b_Y;
         record.TruePhiH = b_TruePhiH;
         record.TruePhiS = b_TruePhiS;
@@ -207,20 +226,37 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         record.TrueQ2 = b_TrueQ2;
         record.TrueY = b_TrueY;
         record.TrueZ = b_TrueZ;
-        record.TruePhPerp = b_TruePhPerp;
+    record.TruePhPerp = b_TruePhPerp;
+    record.TrueMh = b_TrueMh;
         record.Weight = b_Weight;
 
         bool passesCuts = false;
         if (extract_with_true) {
-            passesCuts = (record.TrueX >= minX && record.TrueX <= maxX &&
-                          record.TrueQ2 >= minQ2 && record.TrueQ2 <= maxQ2 &&
-                          record.TrueZ >= minZ && record.TrueZ <= maxZ &&
-                          record.TruePhPerp >= minPhPerp && record.TruePhPerp <= maxPhPerp);
+                const double perpValTrue = usesPhPerp ? record.TruePhPerp : record.TrueMh;
+                if (!usesPhPerp && !hasMh) {
+                    static bool warnedMissingMh = false;
+                    if (!warnedMissingMh) {
+                        LOG_DEBUG("Inject::runInjectionLoop: input tree missing Mh/TrueMh branches required by dihadron bin — skipping entries.");
+                        warnedMissingMh = true;
+                    }
+                    passesCuts = false;
+                } else {
+                    passesCuts = (record.TrueX >= minX && record.TrueX <= maxX &&
+                                  record.TrueQ2 >= minQ2 && record.TrueQ2 <= maxQ2 &&
+                                  record.TrueZ >= minZ && record.TrueZ <= maxZ &&
+                                  perpValTrue >= minPerp && perpValTrue <= maxPerp);
+                }
         } else {
-            passesCuts = (record.X >= minX && record.X <= maxX &&
-                          record.Q2 >= minQ2 && record.Q2 <= maxQ2 &&
-                          record.Z >= minZ && record.Z <= maxZ &&
-                          record.PhPerp >= minPhPerp && record.PhPerp <= maxPhPerp);
+            const double perpValReco = usesPhPerp ? record.PhPerp : record.Mh;
+            if (!usesPhPerp && !hasMh) {
+                // Missing Mh branch for reco selection — can't pass cuts
+                passesCuts = false;
+            } else {
+                passesCuts = (record.X >= minX && record.X <= maxX &&
+                              record.Q2 >= minQ2 && record.Q2 <= maxQ2 &&
+                              record.Z >= minZ && record.Z <= maxZ &&
+                              perpValReco >= minPerp && perpValReco <= maxPerp);
+            }
         }
 
         if (!passesCuts) {
@@ -233,7 +269,10 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         result.stats.sumQW += std::sqrt(record.Q2) * record.Weight;
         result.stats.sumQ2W += record.Q2 * record.Weight;
         result.stats.sumZW += record.Z * record.Weight;
-        result.stats.sumPhPerpW += record.PhPerp * record.Weight;
+    // Store either PhPerp or Mh into the same aggregate field so existing code that reads
+    // sumPhPerpW still has a measure of the transverse/hadronic momentum.
+    const double perpValueForStats = usesPhPerp ? record.PhPerp : record.Mh;
+    result.stats.sumPhPerpW += perpValueForStats * record.Weight;
         result.stats.sumYW += record.Y * record.Weight;
 
         vars.PhiH->setVal(record.PhiH);
@@ -241,7 +280,14 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         vars.X->setVal(record.X);
         vars.Q2->setVal(record.Q2);
         vars.Z->setVal(record.Z);
-        vars.PhPerp->setVal(record.PhPerp);
+        // Set the appropriate transverse/hadronic variable in the RooRealVars depending on bin type
+        if (usesPhPerp) {
+            vars.PhPerp->setVal(record.PhPerp);
+            vars.TruePhPerp->setVal(record.TruePhPerp);
+        } else {
+            vars.Mh->setVal(record.Mh);
+            vars.TrueMh->setVal(record.TrueMh);
+        }
         vars.Y->setVal(record.Y);
         vars.TruePhiH->setVal(record.TruePhiH);
         vars.TruePhiS->setVal(record.TruePhiS);
@@ -249,7 +295,7 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         vars.TrueQ2->setVal(record.TrueQ2);
         vars.TrueY->setVal(record.TrueY);
         vars.TrueZ->setVal(record.TrueZ);
-        vars.TruePhPerp->setVal(record.TruePhPerp);
+    // TruePhPerp/TrueMh already handled above depending on usesPhPerp
 
         const double gamma = computeGamma(record.X, record.Q2);
         const double trueGamma = computeGamma(record.TrueX, record.TrueQ2);

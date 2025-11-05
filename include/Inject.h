@@ -52,6 +52,7 @@ protected:
         float Q2{0.0};
         float Z{0.0};
         float PhPerp{0.0};
+        float Mh{0.0};
         float Y{0.0};
         float TruePhiH{0.0};
         float TruePhiS{0.0};
@@ -60,6 +61,7 @@ protected:
         float TrueY{0.0};
         float TrueZ{0.0};
         float TruePhPerp{0.0};
+        float TrueMh{0.0};
         float Weight{0.0};
     };
 
@@ -80,13 +82,15 @@ protected:
         std::unique_ptr<RooRealVar> Q2;
         std::unique_ptr<RooRealVar> Z;
         std::unique_ptr<RooRealVar> PhPerp;
+    std::unique_ptr<RooRealVar> Mh;
         std::unique_ptr<RooRealVar> TruePhiH;
         std::unique_ptr<RooRealVar> TruePhiS;
         std::unique_ptr<RooRealVar> TrueX;
         std::unique_ptr<RooRealVar> TrueQ2;
         std::unique_ptr<RooRealVar> TrueY;
         std::unique_ptr<RooRealVar> TrueZ;
-        std::unique_ptr<RooRealVar> TruePhPerp;
+    std::unique_ptr<RooRealVar> TruePhPerp;
+    std::unique_ptr<RooRealVar> TrueMh;
         std::unique_ptr<RooRealVar> SpinIdx;
         std::unique_ptr<RooRealVar> Weight;
         std::unique_ptr<RooRealVar> TotalWeight;

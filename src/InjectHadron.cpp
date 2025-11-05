@@ -30,8 +30,8 @@ std::pair<double, double> InjectHadron::injectExtractForBin(const Bin& bin, bool
         const double trueQ = record.TrueQ2 > 0.0 ? std::sqrt(record.TrueQ2) : 0.0;
 
         if (table) {
-            values.trueAsymmetry = table->lookupAUT(record.TrueX, trueQ, record.TrueZ, record.TruePhPerp);
-            values.recoAsymmetry = table->lookupAUT(record.X, recoQ, record.Z, record.PhPerp);
+            values.trueAsymmetry = table->lookupAUT_SIDIS(record.TrueX, trueQ, record.TrueZ, record.TruePhPerp);
+            values.recoAsymmetry = table->lookupAUT_SIDIS(record.X, recoQ, record.Z, record.PhPerp);
         }
         return values;
     };

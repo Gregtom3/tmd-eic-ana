@@ -1,5 +1,6 @@
 #include "Logger.h"
 #include "Table.h"
+#include "Constants.h"
 #include <iostream>
 #include <vector>
 
@@ -7,7 +8,7 @@ int main() {
     Logger::setLevel(Logger::Level::Debug);
     std::string tablePath = "tables/x_only/AUT_average_PV20_EPIC_piplus_sqrts=28.636.txt";
     std::string energyConfig = "5x41";
-    Table table(tablePath);
+    Table table(channel_type::Hadron, tablePath);
     std::vector<std::string> binNames1 = {"X"};
     try {
         Grid grid1 = table.buildGrid(binNames1);

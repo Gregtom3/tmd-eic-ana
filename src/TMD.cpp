@@ -86,7 +86,8 @@ TTree* TMD::getTree() const {
 
 void TMD::loadTable(){
     this->energyConfig = "default"; // store for cache naming
-    table = std::make_unique<Table>();
+    // Table requires the channel enum; construct with current channel
+    table = std::make_unique<Table>(channel);
     // compute scale if we have the necessary mc info
     if (totalEvents > 0 && xsTotal > 0.0) {
         scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi, timeline, target);
@@ -100,7 +101,7 @@ void TMD::loadTable(const std::string& tablePath, const std::string& energyConfi
         return;
     }
     this->energyConfig = energyConfig; // store for cache naming
-    table = std::make_unique<Table>(tablePath);
+    table = std::make_unique<Table>(channel, tablePath);
     // compute scale if we have the necessary mc info
     if (totalEvents > 0 && xsTotal > 0.0) {
         scale = util::computeScale(totalEvents, xsTotal, energyConfig, mc_lumi, exp_lumi, timeline, target);
@@ -157,7 +158,7 @@ std::map<std::string, TCut> TMD::generateBinTCuts(const Grid& grid) const {
     const auto& bins = grid.getBins();
     for (const auto& binPair : bins) {
         const std::string& key = binPair.first;
-        const Bin& bin = binPair.second;
+        const Bin& bin = *(binPair.second);
         double X_min = bin.getMin("X");
         double X_max = bin.getMax("X");
         double Q_min = bin.getMin("Q");

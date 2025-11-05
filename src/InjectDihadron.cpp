@@ -73,8 +73,8 @@ std::pair<double, double> InjectDihadron::injectExtractForBin(const Bin& bin, bo
         const double recoQ = record.Q2 > 0.0 ? std::sqrt(record.Q2) : 0.0;
         const double trueQ = record.TrueQ2 > 0.0 ? std::sqrt(record.TrueQ2) : 0.0;
         if (table) {
-            values.trueAsymmetry = table->lookupAUT(record.TrueX, trueQ, record.TrueZ, record.TruePhPerp);
-            values.recoAsymmetry = table->lookupAUT(record.X, recoQ, record.Z, record.PhPerp);
+            values.trueAsymmetry = table->lookupAUT_DISIDIS(record.TrueX, trueQ, record.TrueZ, record.TrueMh);
+            values.recoAsymmetry = table->lookupAUT_DISIDIS(record.X, recoQ, record.Z, record.Mh);
         }
         return values;
     };

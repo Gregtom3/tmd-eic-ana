@@ -1,9 +1,11 @@
 
 #include "Grid.h"
 #include <algorithm>
+#include "SidisBin.h"
+#include "DiSidisBin.h"
 
-Grid::Grid(const std::vector<std::string>& mainNames)
-    : mainBinNames(mainNames) {}
+Grid::Grid(channel_type channel, const std::vector<std::string>& mainNames)
+    : channel(channel), mainBinNames(mainNames) {}
 
 void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRanges) {
     // Main bin key: combo of mainBinNames
@@ -23,24 +25,28 @@ void Grid::addBin(const std::map<std::string, std::pair<double, double>>& binRan
     // The structure of mainKey is like "X[0.1,0.2]Q[1.0,2.0]"
     // e.g. for mainBinNames = {"X", "Q"}
 
-    // If mainKey not in map, initialize
+    // If mainKey not in map, initialize with appropriate derived Bin
     if (mainBins.find(mainKey) == mainBins.end()) {
-        mainBins[mainKey] = Bin();
+        if (channel == channel_type::Hadron) {
+            mainBins[mainKey] = std::make_unique<SidisBin>();
+        } else {
+            mainBins[mainKey] = std::make_unique<DiSidisBin>();
+        }
         mainBinLefts[mainKey] = mainBinLeft;
         mainBinRights[mainKey] = mainBinRight;
     }
-    mainBins[mainKey].incrementCount();
+    mainBins[mainKey]->incrementCount();
 
     for (const auto& name : binNames) {
         auto it = binRanges.find(name);
         if (it != binRanges.end()) {
-            mainBins[mainKey].updateMin(name, it->second.first);
-            mainBins[mainKey].updateMax(name, it->second.second);
+            mainBins[mainKey]->updateMin(name, it->second.first);
+            mainBins[mainKey]->updateMax(name, it->second.second);
         }
     }
 }
 
-const std::map<std::string, Bin>& Grid::getBins() const {
+const std::map<std::string, std::unique_ptr<Bin>>& Grid::getBins() const {
     return mainBins;
 }
 
@@ -61,15 +67,15 @@ void Grid::printGridSummary(int maxEntries) const {
     int count = 0;
     int totalBins = 0;
     for (const auto& bin : mainBins) {
-        totalBins += bin.second.getCount();
+        totalBins += bin.second->getCount();
         if (maxEntries > 0 && count >= maxEntries) {
             continue;
         }
         LOG_DEBUG(std::string("Main bin: ") + bin.first);
-        LOG_DEBUG(std::string("  Count: ") + std::to_string(bin.second.getCount()));
+        LOG_DEBUG(std::string("  Count: ") + std::to_string(bin.second->getCount()));
         for (const auto& name : binNames) {
-            LOG_DEBUG(std::string("  ") + name + " range: [" + std::to_string(bin.second.getMin(name)) + ", " +
-                      std::to_string(bin.second.getMax(name)) + "]");
+            LOG_DEBUG(std::string("  ") + name + " range: [" + std::to_string(bin.second->getMin(name)) + ", " +
+                      std::to_string(bin.second->getMax(name)) + "]");
         }
         // Print mainBinIndices if available
         auto idxIt = mainBinIndices.find(bin.first);
@@ -201,7 +207,7 @@ void Grid::computeMainBinIndices() {
             parent += (d > 0 ? "," : "") + std::to_string(low);
         }
 
-        mainBinIndices[key] = indices;
+    mainBinIndices[key] = indices;
 
         // Debug: show assignment
         LOG_DEBUG(key + " → [");
