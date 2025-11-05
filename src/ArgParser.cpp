@@ -65,7 +65,7 @@ Args parseArgs(int argc, char** argv) {
             size_t end = gridStr.find(',');
             while (end != std::string::npos) {
                 std::string gridVar = gridStr.substr(start, end - start);
-                if (gridVar != "X" && gridVar != "Q" && gridVar != "Z" && gridVar != "PhPerp") {
+                if (gridVar != "X" && gridVar != "Q" && gridVar != "Z" && gridVar != "PhPerp" && gridVar != "Mh") {
                     LOG_ERROR("Invalid grid variable: " + gridVar);
                     exit(1);
                 }
@@ -84,7 +84,7 @@ Args parseArgs(int argc, char** argv) {
             // Handle the last element
             std::string gridVar = gridStr.substr(start);
             if (!gridVar.empty()) {
-                if (gridVar != "X" && gridVar != "Q" && gridVar != "Z" && gridVar != "PhPerp") {
+                if (gridVar != "X" && gridVar != "Q" && gridVar != "Z" && gridVar != "PhPerp" && gridVar != "Mh") {
                     LOG_ERROR("Invalid grid variable: " + gridVar);
                     exit(1);
                 }

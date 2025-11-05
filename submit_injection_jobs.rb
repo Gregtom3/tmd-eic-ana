@@ -18,7 +18,7 @@ parser = OptionParser.new do |opts|
   opts.on("--n_injections INTEGER", Integer, "Number of injections (required)") { |v| options[:n_injections] = v }
   opts.on("--bins INTEGER", Integer, "Number of bins to run (required). If N <= 0, run ALL bins") { |v| options[:bins] = v }
   opts.on("--bins_per_job INTEGER", Integer, "Number of bins per job (required)") { |v| options[:bins_per_job] = v }
-  opts.on("--grid STRING", "Grid string (required) e.g. \"X,Q\". Values must be one of: X, Q, Z, PhPerp") { |v| options[:grid] = v }
+  opts.on("--grid STRING", "Grid string (required) e.g. \"X,Q\". Values must be one of: X, Q, Z, PhPerp, Mh") { |v| options[:grid] = v }
   opts.on("--maxEntries INTEGER", Integer, "Maximum entries to process from ROOT file (default: all)") { |v| options[:maxEntries] = v }
   opts.on("--extract_with_true STRING", "Whether to extract with true kinematics (default: false)") { |v| options[:extract_with_true] = v }
   opts.on("--tree STRING", "Tree name (default: #{options[:tree]})") { |v| options[:tree] = v }
@@ -43,7 +43,7 @@ if missing.any?
 end
 
 # Validate and normalize grid
-allowed_grids = %w[X Q Z PhPerp]
+allowed_grids = %w[X Q Z PhPerp Mh]
 grid_list = options[:grid].split(',').map(&:strip)
 if grid_list.empty? || grid_list.any?(&:empty?)
   puts "Error: --grid must be a comma-separated list with at least one value (e.g. 'X,Q')"
