@@ -34,7 +34,8 @@ int main(int argc, char** argv) {
         .bin_index = args.bin_index,
         .n = args.n_injections,
         .extract_with_true = args.extract_with_true,
-        .A_opt = args.A_opt
+        .A_opt = args.A_opt,
+        .channel = args.channel
     });
     tmd.runQueuedInjections();
     LOG_INFO("inject_extract completed");
