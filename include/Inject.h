@@ -34,6 +34,7 @@ protected:
         double sumZW{0.0};
         double sumPhPerpW{0.0};
         double sumYW{0.0};
+        double sumMhW{0.0};
     };
 
 public:

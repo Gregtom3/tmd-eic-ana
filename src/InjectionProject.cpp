@@ -64,6 +64,7 @@ bool InjectionProject::run() {
         double total_sumQ2W = 0.0;
         double total_sumZW = 0.0;
         double total_sumPhPerpW = 0.0;
+        double total_sumMhW = 0.0;
         double total_sumRecoAsymW = 0.0; // Asymmetry in the reconstructed bin
         for (int i = 0; i < job.n; ++i) {
             LOG_DEBUG("InjectionProject: Running injection " + std::to_string(i+1) + "/" + std::to_string(job.n) + " for job " + std::to_string(jobIdx));
@@ -78,6 +79,7 @@ bool InjectionProject::run() {
             total_sumQ2W += stats.sumQ2W;
             total_sumZW += stats.sumZW;
             total_sumPhPerpW += stats.sumPhPerpW;
+            total_sumMhW += stats.sumMhW;
             total_sumRecoAsymW += stats.sumRecoAsymW;
         }
         // compute simple summary: mean and stddev of extractedVals
@@ -95,6 +97,7 @@ bool InjectionProject::run() {
         double avgQ2 = total_sumW > 0.0 ? total_sumQ2W / total_sumW : 0.0;
         double avgZ = total_sumW > 0.0 ? total_sumZW / total_sumW : 0.0;
         double avgPhPerp = total_sumW > 0.0 ? total_sumPhPerpW / total_sumW : 0.0;
+        double avgMh = total_sumW > 0.0 ? total_sumMhW / total_sumW : 0.0;
         double avgRecoAsym = total_sumW > 0.0 ? total_sumRecoAsymW / total_sumW : 0.0;
         // Emit YAML for this job
         out << YAML::BeginMap;
@@ -126,7 +129,7 @@ bool InjectionProject::run() {
         out << YAML::Key << "avg_Z" << YAML::Value << avgZ;
         out << YAML::Key << "avg_PhPerp" << YAML::Value << avgPhPerp;
         if (channel == channel_type::Dihadron) {
-            out << YAML::Key << "avg_Mh" << YAML::Value << bin.getAvg("Mh");
+            out << YAML::Key << "avg_Mh" << YAML::Value << avgMh;
         }
         out << YAML::Key << "avg_Y" << YAML::Value << avgY;
         out << YAML::Key << "exp_lumi [nb^-1]" << YAML::Value << exp_lumi;

@@ -274,11 +274,11 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         result.stats.sumQW += std::sqrt(record.Q2) * record.Weight;
         result.stats.sumQ2W += record.Q2 * record.Weight;
         result.stats.sumZW += record.Z * record.Weight;
-    // Store either PhPerp or Mh into the same aggregate field so existing code that reads
-    // sumPhPerpW still has a measure of the transverse/hadronic momentum.
-    const double perpValueForStats = usesPhPerp ? record.PhPerp : record.Mh;
-    result.stats.sumPhPerpW += perpValueForStats * record.Weight;
+        const double perpValueForStats = usesPhPerp ? record.PhPerp : record.Mh;
+        result.stats.sumPhPerpW += perpValueForStats * record.Weight;
         result.stats.sumYW += record.Y * record.Weight;
+        const double mhValueForStats = usesPhPerp ? 0.0 : record.Mh;
+        result.stats.sumMhW += mhValueForStats * record.Weight;
 
         vars.PhiH->setVal(record.PhiH);
         vars.PhiS->setVal(record.PhiS);
