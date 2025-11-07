@@ -109,6 +109,10 @@ bool InjectionProject::run() {
         out << YAML::Key << "Z_max" << YAML::Value << bin.getMax("Z");
         out << YAML::Key << "PhPerp_min" << YAML::Value << bin.getMin("PhPerp");
         out << YAML::Key << "PhPerp_max" << YAML::Value << bin.getMax("PhPerp");
+        if (channel == channel_type::Dihadron) {
+            out << YAML::Key << "Mh_min" << YAML::Value << bin.getMin("Mh");
+            out << YAML::Key << "Mh_max" << YAML::Value << bin.getMax("Mh");
+        }
         out << YAML::Key << "used_reconstructed_kinematics" << YAML::Value << (!job.extract_with_true);
         out << YAML::Key << "n_injections" << YAML::Value << job.n;
         out << YAML::Key << "injected" << YAML::Value << (job.A_opt.has_value() ? job.A_opt.value() : avgRecoAsym);
@@ -121,6 +125,9 @@ bool InjectionProject::run() {
         out << YAML::Key << "avg_Q2" << YAML::Value << avgQ2;
         out << YAML::Key << "avg_Z" << YAML::Value << avgZ;
         out << YAML::Key << "avg_PhPerp" << YAML::Value << avgPhPerp;
+        if (channel == channel_type::Dihadron) {
+            out << YAML::Key << "avg_Mh" << YAML::Value << bin.getAvg("Mh");
+        }
         out << YAML::Key << "avg_Y" << YAML::Value << avgY;
         out << YAML::Key << "exp_lumi [nb^-1]" << YAML::Value << exp_lumi;
         out << YAML::Key << "mc_lumi [nb^-1]" << YAML::Value << mc_lumi;
