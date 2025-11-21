@@ -85,7 +85,7 @@ std::pair<double, double> InjectHadron::injectExtractForBin(const Bin& bin, bool
                                         A_fit,
                                         *loopResult.variables->PhiH,
                                         *loopResult.variables->PhiS));
-        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kFALSEbuildCutString)));
+        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kFALSE)));
         (void)fitResult;
         val = A_fit.getVal();
         rawError = A_fit.getError();
