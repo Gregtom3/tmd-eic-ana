@@ -192,11 +192,12 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
     const double minZ = bin.getMin("Z");
     const double maxZ = bin.getMax("Z");
     // Determine whether this bin uses PhPerp (SIDIS) or Mh (DiSIDIS). If the PhPerp range is degenerate
-    // (zero width) we assume the bin uses Mh instead.
+    // (zero width) we assume the bin uses Mh instead. The non-X/Q/Z variable is generically referred
+    // to below as the "fourth" variable (either `PhPerp` or `Mh`).
     const bool usesPhPerp = (bin.getMax("PhPerp") - bin.getMin("PhPerp") > 1e-9);
-    const std::string perpName = usesPhPerp ? "PhPerp" : "Mh";
-    const double minPerp = bin.getMin(perpName);
-    const double maxPerp = bin.getMax(perpName);
+    const std::string fourthName = usesPhPerp ? "PhPerp" : "Mh";
+    const double minFourth = bin.getMin(fourthName);
+    const double maxFourth = bin.getMax(fourthName);
 
     EventRecord record;
 
@@ -222,8 +223,8 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         record.X = b_X;
         record.Q2 = b_Q2;
         record.Z = b_Z;
-    record.PhPerp = b_PhPerp;
-    record.Mh = b_Mh;
+        record.PhPerp = b_PhPerp;
+        record.Mh = b_Mh;
         record.Y = b_Y;
         record.TruePhiH = b_TruePhiH;
         record.TruePhiS = b_TruePhiS;
@@ -231,13 +232,13 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         record.TrueQ2 = b_TrueQ2;
         record.TrueY = b_TrueY;
         record.TrueZ = b_TrueZ;
-    record.TruePhPerp = b_TruePhPerp;
-    record.TrueMh = b_TrueMh;
+        record.TruePhPerp = b_TruePhPerp;
+        record.TrueMh = b_TrueMh;
         record.Weight = b_Weight;
 
         bool passesCuts = false;
         if (extract_with_true) {
-                const double perpValTrue = usesPhPerp ? record.TruePhPerp : record.TrueMh;
+                const double fourthValTrue = usesPhPerp ? record.TruePhPerp : record.TrueMh;
                 if (!usesPhPerp && !hasMh) {
                     static bool warnedMissingMh = false;
                     if (!warnedMissingMh) {
@@ -246,21 +247,41 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
                     }
                     passesCuts = false;
                 } else {
-                    passesCuts = (record.TrueX >= minX && record.TrueX <= maxX &&
-                                  record.TrueQ2 >= minQ2 && record.TrueQ2 <= maxQ2 &&
-                                  record.TrueZ >= minZ && record.TrueZ <= maxZ &&
-                                  perpValTrue >= minPerp && perpValTrue <= maxPerp);
+                    // Base truth-level kinematic cuts
+                    bool baseTrueCuts = (record.TrueX >= minX && record.TrueX <= maxX &&
+                                         record.TrueQ2 >= minQ2 && record.TrueQ2 <= maxQ2 &&
+                                         record.TrueZ >= minZ && record.TrueZ <= maxZ &&
+                                         fourthValTrue >= minFourth && fourthValTrue <= maxFourth);
+
+                    if (!usesPhPerp) {
+                        // For dihadron bins require Mh / Q < 0.75 (use sqrt(Q2) as Q)
+                        double qTrue = record.TrueQ2 > 0.0 ? std::sqrt(record.TrueQ2) : 0.0;
+                        bool mhOverQok = (qTrue > 0.0) ? ((record.TrueMh / qTrue) < 0.75) : false;
+                        passesCuts = baseTrueCuts && mhOverQok;
+                    } else {
+                        passesCuts = baseTrueCuts;
+                    }
                 }
         } else {
-            const double perpValReco = usesPhPerp ? record.PhPerp : record.Mh;
+            const double fourthValReco = usesPhPerp ? record.PhPerp : record.Mh;
             if (!usesPhPerp && !hasMh) {
                 // Missing Mh branch for reco selection — can't pass cuts
                 passesCuts = false;
             } else {
-                passesCuts = (record.X >= minX && record.X <= maxX &&
-                              record.Q2 >= minQ2 && record.Q2 <= maxQ2 &&
-                              record.Z >= minZ && record.Z <= maxZ &&
-                              perpValReco >= minPerp && perpValReco <= maxPerp);
+                // Base reconstructed-level kinematic cuts
+                bool baseRecoCuts = (record.X >= minX && record.X <= maxX &&
+                                     record.Q2 >= minQ2 && record.Q2 <= maxQ2 &&
+                                     record.Z >= minZ && record.Z <= maxZ &&
+                                     fourthValReco >= minFourth && fourthValReco <= maxFourth);
+
+                if (!usesPhPerp) {
+                    // For dihadron bins require Mh / Q < 0.75 (use sqrt(Q2) as Q)
+                    double qReco = record.Q2 > 0.0 ? std::sqrt(record.Q2) : 0.0;
+                    bool mhOverQok = (qReco > 0.0) ? ((record.Mh / qReco) < 0.75) : false;
+                    passesCuts = baseRecoCuts && mhOverQok;
+                } else {
+                    passesCuts = baseRecoCuts;
+                }
             }
         }
 
@@ -274,8 +295,8 @@ Inject::LoopResult Inject::runInjectionLoop(const Bin& bin,
         result.stats.sumQW += std::sqrt(record.Q2) * record.Weight;
         result.stats.sumQ2W += record.Q2 * record.Weight;
         result.stats.sumZW += record.Z * record.Weight;
-        const double perpValueForStats = usesPhPerp ? record.PhPerp : record.Mh;
-        result.stats.sumPhPerpW += perpValueForStats * record.Weight;
+        const double fourthValueForStats = usesPhPerp ? record.PhPerp : record.Mh;
+        result.stats.sumPhPerpW += fourthValueForStats * record.Weight;
         result.stats.sumYW += record.Y * record.Weight;
         const double mhValueForStats = usesPhPerp ? 0.0 : record.Mh;
         result.stats.sumMhW += mhValueForStats * record.Weight;

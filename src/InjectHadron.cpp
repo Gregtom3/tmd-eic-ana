@@ -72,7 +72,7 @@ std::pair<double, double> InjectHadron::injectExtractForBin(const Bin& bin, bool
                                         A_fit,
                                         *loopResult.variables->TruePhiH,
                                         *loopResult.variables->TruePhiS));
-        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kTRUE)));
+        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kFALSE)));
         (void)fitResult; // suppress unused warning when compiled without RTTI
         val = A_fit.getVal();
         rawError = A_fit.getError();
@@ -85,7 +85,7 @@ std::pair<double, double> InjectHadron::injectExtractForBin(const Bin& bin, bool
                                         A_fit,
                                         *loopResult.variables->PhiH,
                                         *loopResult.variables->PhiS));
-        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kTRUE)));
+        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kFALSEbuildCutString)));
         (void)fitResult;
         val = A_fit.getVal();
         rawError = A_fit.getError();

@@ -107,7 +107,7 @@ std::pair<double, double> InjectDihadron::injectExtractForBin(const Bin& bin, bo
                                         A_fit,
                                         *TruePhiRperp,
                                         *loopResult.variables->TruePhiS));
-        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kTRUE)));
+        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kFALSE)));
         (void)fitResult;
         val = A_fit.getVal();
         rawError = A_fit.getError();
@@ -121,7 +121,7 @@ std::pair<double, double> InjectDihadron::injectExtractForBin(const Bin& bin, bo
                                         A_fit,
                                         *PhiRperp,
                                         *loopResult.variables->PhiS));
-        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kTRUE)));
+        std::unique_ptr<RooFitResult> fitResult(model.fitTo(*loopResult.dataSet, Save(), PrintLevel(-1), SumW2Error(kFALSE)));
         (void)fitResult;
         val = A_fit.getVal();
         rawError = A_fit.getError();
